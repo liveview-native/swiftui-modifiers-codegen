@@ -39,9 +39,12 @@ modifier-swift --input /path/to/SwiftUICore.swiftinterface --output ./Generated
 
 ### Options
 
-- `-i, --input <path>` - Path to the `.swiftinterface` file to parse (required)
+- `-i, --input <path>` - Path to a `.swiftinterface` file **or directory** to parse (required)
+  - If a file: processes that file
+  - If a directory: recursively finds and processes all `.swiftinterface` files
 - `-o, --output <path>` - Output directory for generated Swift files (default: `./Generated`)
 - `-v, --verbose` - Enable verbose output
+- `--clean` - Clean output directory before generating
 - `--version` - Show version information
 - `-h, --help` - Show help information
 
@@ -72,54 +75,64 @@ swift test
 ### Running the CLI in Development
 
 ```bash
-# Basic usage
+# Process a single file
 swift run modifier-swift --input arm64e-apple-ios.swiftinterface --output ./Generated
+
+# Process all .swiftinterface files in a directory
+swift run modifier-swift --input /path/to/interfaces --output ./Generated
 
 # With verbose output
 swift run modifier-swift --input arm64e-apple-ios.swiftinterface --output ./Generated --verbose
 
 # Clean output directory before generating
-swift run modifier-swift --input arm64e-apple-ios.swiftinterface --output ./Generated --clean
-
-# Disable categorization (all in one directory)
-swift run modifier-swift --input arm64e-apple-ios.swiftinterface --output ./Generated --no-categorize
+swift run modifier-swift --input /path/to/interfaces --output ./Generated --clean
 ```
 
-### Real-World Example
+### Real-World Examples
 
-Processing the actual SwiftUI interface file:
+**Processing a single interface file:**
 
 ```bash
-$ modifier-swift --input arm64e-apple-ios.swiftinterface --output ./Generated --verbose --clean
+$ modifier-swift --input arm64e-apple-ios.swiftinterface --output ./Generated --clean
 
-ModifierSwift v0.1.0
-Input: arm64e-apple-ios.swiftinterface
-Output: ./Generated
-
-📖 Parsing interface file...
-✓ Found 199 modifiers
-
-📊 Categorized into 7 groups:
-  • Animation: 2 modifiers
-  • Appearance: 14 modifiers
-  • Environment: 2 modifiers
-  • Interaction: 5 modifiers
-  • Layout: 11 modifiers
-  • Other: 161 modifiers
-  • Text: 4 modifiers
-
-🔨 Generating code...
-  ✓ Generated TextModifier.swift (4 modifiers)
-  ✓ Generated AppearanceModifier.swift (14 modifiers)
-  ✓ Generated OtherModifier.swift (161 modifiers)
-  ✓ Generated LayoutModifier.swift (11 modifiers)
-  ✓ Generated AnimationModifier.swift (2 modifiers)
-  ✓ Generated InteractionModifier.swift (5 modifiers)
-  ✓ Generated EnvironmentModifier.swift (2 modifiers)
-
-✅ Successfully generated 7 enum(s) with 199 total modifiers
+✅ Successfully generated 134 enum file(s) for 199 total modifier variants
 📁 Output: ./Generated
 ```
+
+**Processing multiple interface files from a directory:**
+
+```bash
+$ modifier-swift --input /path/to/swiftinterfaces --output ./Generated --verbose --clean
+
+ModifierSwift v0.1.0
+Input: /path/to/swiftinterfaces
+Output: ./Generated
+
+📖 Parsing 2 interface files...
+  • arm64e-apple-ios-alt.swiftinterface
+  • arm64e-apple-ios.swiftinterface
+
+  ✓ arm64e-apple-ios-alt.swiftinterface: 595 modifiers
+  ✓ arm64e-apple-ios.swiftinterface: 199 modifiers
+
+✓ Total modifiers found: 794
+
+📊 Grouped into 468 unique modifiers:
+  • _makeView: 11 variants (merged from both files)
+  • background: 8 variants
+  • padding: 2 variants
+  ... and 465 more
+
+🔨 Generating code...
+  ✓ Generated _makeViewModifier.swift (11 variants)
+  ... and 467 more files
+
+✅ Successfully generated 468 enum file(s) for 794 total modifier variants
+📚 Processed 2 interface files
+📁 Output: ./Generated
+```
+
+**Key Feature:** When multiple interface files define the same modifier, they are automatically merged into a single enum file with all variants.
 
 ### Code Formatting
 
