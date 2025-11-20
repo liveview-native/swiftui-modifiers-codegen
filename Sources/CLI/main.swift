@@ -52,44 +52,55 @@ struct ModifierSwiftCLI: ParsableCommand {
             return
         }
         
-        // Step 2: Categorize modifiers
-        let analyzer = TypeAnalyzer()
-        let categories = categorize 
-            ? analyzer.categorize(modifiers: modifiers)
-            : ["All": modifiers]
+        // Step 2: Group modifiers by name (all overloads together)
+        var modifiersByName: [String: [ModifierInfo]] = [:]
+        for modifier in modifiers {
+            modifiersByName[modifier.name, default: []].append(modifier)
+        }
         
         if verbose {
-            print("📊 Categorized into \(categories.count) groups:")
-            for (category, mods) in categories.sorted(by: { $0.key < $1.key }) {
-                print("  • \(category): \(mods.count) modifiers")
+            print("📊 Grouped into \(modifiersByName.count) unique modifiers:")
+            let sortedNames = modifiersByName.keys.sorted()
+            for name in sortedNames.prefix(20) {
+                let count = modifiersByName[name]!.count
+                print("  • \(name): \(count) variant\(count == 1 ? "" : "s")")
+            }
+            if modifiersByName.count > 20 {
+                print("  ... and \(modifiersByName.count - 20) more")
             }
             print()
         }
         
-        // Step 3: Generate code for each category
+        // Step 3: Generate one file per modifier name
         if verbose {
             print("🔨 Generating code...")
         }
         
         let generator = EnumGenerator()
-        var generatedCodesByCategory: [String: [GeneratedCode]] = [:]
+        var generatedCodes: [GeneratedCode] = []
         var totalGenerated = 0
         
-        for (category, mods) in categories {
-            guard !mods.isEmpty else { continue }
+        for (name, variants) in modifiersByName.sorted(by: { $0.key < $1.key }) {
+            guard !variants.isEmpty else { continue }
             
-            let enumName = "\(category)Modifier"
+            // Create enum name from modifier name
+            let enumName = name.prefix(1).uppercased() + name.dropFirst() + "Modifier"
+            
             do {
-                let code = try generator.generate(enumName: enumName, modifiers: mods)
-                generatedCodesByCategory[category] = [code]
+                let code = try generator.generate(enumName: enumName, modifiers: variants)
+                generatedCodes.append(code)
                 totalGenerated += 1
                 
-                if verbose {
-                    print("  ✓ Generated \(enumName).swift (\(code.modifierCount) modifiers)")
+                if verbose && totalGenerated <= 20 {
+                    print("  ✓ Generated \(enumName).swift (\(code.modifierCount) variant\(code.modifierCount == 1 ? "" : "s"))")
                 }
             } catch {
                 print("  ⚠️  Failed to generate \(enumName): \(error)")
             }
+        }
+        
+        if verbose && totalGenerated > 20 {
+            print("  ... and \(totalGenerated - 20) more files")
         }
         
         if verbose {
@@ -98,6 +109,7 @@ struct ModifierSwiftCLI: ParsableCommand {
         
         // Step 4: Write output files
         if verbose {
+            print()
             print("💾 Writing files to \(output)...")
         }
         
@@ -111,20 +123,18 @@ struct ModifierSwiftCLI: ParsableCommand {
             }
         }
         
-        // Write files
-        if categorize {
-            try outputManager.writeByCategory(generatedCodesByCategory, to: output)
-        } else {
-            let allCode = generatedCodesByCategory.values.flatMap { $0 }
-            try outputManager.writeAll(allCode, to: output)
-        }
+        // Write all files to output directory
+        try outputManager.writeAll(generatedCodes, to: output)
         
         if verbose {
             print()
         }
         
         // Step 5: Summary
-        print("✅ Successfully generated \(totalGenerated) enum(s) with \(modifiers.count) total modifiers")
+        if verbose {
+            print()
+        }
+        print("✅ Successfully generated \(totalGenerated) enum file(s) for \(modifiers.count) total modifier variants")
         print("📁 Output: \(output)")
     }
 }
