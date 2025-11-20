@@ -22,6 +22,9 @@ DerivedData/
 *.perspectivev3
 !default.perspectivev3
 
+# SwiftInterface files (large, generated)
+*.swiftinterface
+
 # Swift Package Manager
 .swiftpm/
 Package.resolved
