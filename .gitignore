@@ -25,6 +25,10 @@ DerivedData/
 # SwiftInterface files (large, generated)
 *.swiftinterface
 
+# Generated output (created by modifier-swift CLI)
+Generated/
+/Generated/
+
 # Swift Package Manager
 .swiftpm/
 Package.resolved
