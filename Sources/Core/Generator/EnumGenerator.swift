@@ -409,22 +409,50 @@ public struct EnumGenerator: Sendable {
             return lines
         }
         
-        // Generate guard statements for each parameter
+        // Generate parsing statements for each parameter (positional or labeled, defaults supported)
         for (index, param) in nonClosureParams.enumerated() {
             let varName = param.label ?? "value\(index)"
             let type = cleanTypeForEnumCase(param.type)
-            
-            if type.hasSuffix("?") {
-                // Optional type - parse without guard, allow nil
-                let baseType = String(type.dropLast())
-                lines.append("\(indent)let \(varName) = \(baseType)(syntax: syntax.arguments[\(index)].expression)")
+            let hasDefault = param.hasDefaultValue
+            let defaultVal = param.defaultValue ?? "nil"
+
+            // Build an argument expression accessor that returns an ExprSyntax?.
+            // Use labeled lookup when present; otherwise use positional lookup guarded by count.
+            let argAccessor: String
+            if let label = param.label {
+                // Use the faster helper available in another package
+                argAccessor = "syntax.argument(named: \"\(label)\")?.expression"
             } else {
-                // Required type - use guard
-                let parseExpr = "\(type)(syntax: syntax.arguments[\(index)].expression)"
-                let expectedTypes = nonClosureParams.map { cleanTypeForEnumCase($0.type) }.joined(separator: ", ")
-                lines.append("\(indent)guard let \(varName) = \(parseExpr) else {")
-                lines.append("\(indent)    throw ModifierParseError.invalidArguments(modifier: \"\(enumName)\", variant: \"\(caseName)\", expectedTypes: \"\(expectedTypes)\")")
-                lines.append("\(indent)}")
+                argAccessor = "(syntax.arguments.count > \(index) ? syntax.arguments[\(index)].expression : nil)"
+            }
+
+            if type.hasSuffix("?") {
+                // Optional type - parse when argument is present, otherwise use default or nil
+                let baseType = String(type.dropLast())
+
+                if hasDefault {
+                    // If default exists, perform a parsed-or-default assignment using if-expression
+                    lines.append("\(indent)let \(varName) = if let expr = \(argAccessor), let parsed = \(baseType)(syntax: expr) { parsed } else { \(defaultVal) }")
+                } else {
+                    // No default, just try to parse the argument (may be nil)
+                    lines.append("\(indent)let \(varName) = if let expr = \(argAccessor) { \(baseType)(syntax: expr) } else { nil }")
+                }
+            } else {
+                // Non-optional (required) type
+                if hasDefault {
+                    // Use argument if present and parsable, otherwise fall back to the default value
+                    lines.append("\(indent)let \(varName): \(type) = if let expr = \(argAccessor), let parsed = \(type)(syntax: expr) { parsed } else { \(defaultVal) }")
+                } else {
+                    // Required type - use guard with labeled/positional lookup
+                    if let label = param.label {
+                        lines.append("\(indent)guard let expr_\(varName) = syntax.argument(named: \"\(label)\")?.expression, let \(varName) = \(type)(syntax: expr_\(varName)) else {")
+                    } else {
+                        lines.append("\(indent)guard let expr_\(varName) = (syntax.arguments.count > \(index) ? syntax.arguments[\(index)].expression : nil), let \(varName) = \(type)(syntax: expr_\(varName)) else {")
+                    }
+                    let expectedTypes = nonClosureParams.map { cleanTypeForEnumCase($0.type) }.joined(separator: ", ")
+                    lines.append("\(indent)    throw ModifierParseError.invalidArguments(modifier: \"\(enumName)\", variant: \"\(caseName)\", expectedTypes: \"\(expectedTypes)\")")
+                    lines.append("\(indent)}")
+                }
             }
         }
         
@@ -449,12 +477,22 @@ public struct EnumGenerator: Sendable {
             let varName = param.label ?? "value\(index)"
             let type = cleanTypeForEnumCase(param.type)
             
-            if type.hasSuffix("?") {
+            // If the parameter is optional or has a default value, it should not be required for the condition.
+            if type.hasSuffix("?") || param.hasDefaultValue {
                 // Optional parameters don't contribute to the condition
                 // They'll be parsed separately
             } else {
-                let parseExpr = "\(type)(syntax: syntax.arguments[\(index)].expression)"
-                conditions.append("let \(varName) = \(parseExpr)")
+                // Use labeled lookup when available, else positional
+                if let label = param.label {
+                    // We'll bind the expression first, then parse it
+                    let exprName = "expr_\(varName)"
+                    let exprBind = "let \(exprName) = syntax.argument(named: \"\(label)\")?.expression"
+                    let parseBind = "let \(varName) = \(type)(syntax: \(exprName))"
+                    conditions.append(exprBind + ", " + parseBind)
+                } else {
+                    let parseExpr = "\(type)(syntax: syntax.arguments[\(index)].expression)"
+                    conditions.append("let \(varName) = \(parseExpr)")
+                }
                 bindings.append((name: varName, index: index))
             }
         }
@@ -524,14 +562,33 @@ public struct EnumGenerator: Sendable {
             for (paramIndex, param) in nonClosureParams.enumerated() {
                 let varName = param.label ?? "value\(paramIndex)"
                 let type = cleanTypeForEnumCase(param.type)
-                
+                let hasDefault = param.hasDefaultValue
+
+                // Build argument accessor for this parameter
+                let argAccessor: String
+                if let label = param.label {
+                    argAccessor = "syntax.argument(named: \"\(label)\")?.expression"
+                } else {
+                    argAccessor = "(syntax.arguments.count > \(paramIndex) ? syntax.arguments[\(paramIndex)].expression : nil)"
+                }
+
                 if type.hasSuffix("?") {
                     // Track optional params to parse after the condition
                     let baseType = String(type.dropLast())
                     optionalParams.append((varName: varName, type: baseType, index: paramIndex))
+                } else if hasDefault {
+                    // Parameters with defaults are not required for the condition; parse in block
+                    optionalParams.append((varName: varName, type: type, index: paramIndex))
                 } else {
-                    let parseExpr = "\(type)(syntax: syntax.arguments[\(paramIndex)].expression)"
-                    conditions.append("let \(varName) = \(parseExpr)")
+                    if let label = param.label {
+                        let exprName = "expr_\(varName)"
+                        let exprBind = "let \(exprName) = syntax.argument(named: \"\(label)\")?.expression"
+                        let parseBind = "let \(varName) = \(type)(syntax: \(exprName))"
+                        conditions.append(exprBind + ", " + parseBind)
+                    } else {
+                        let parseExpr = "\(type)(syntax: \(argAccessor)!)"
+                        conditions.append("let \(varName) = \(parseExpr)")
+                    }
                 }
             }
             
@@ -542,7 +599,17 @@ public struct EnumGenerator: Sendable {
                 if index == 0 {
                     // Just use this variant directly
                     for opt in optionalParams {
-                        lines.append("\(indent)let \(opt.varName) = \(opt.type)(syntax: syntax.arguments[\(opt.index)].expression)")
+                        // Build an accessor for optional param
+                        let argAccessor: String
+                        if let label = nonClosureParams[opt.index].label {
+                            argAccessor = "syntax.argument(named: \"\(label)\")?.expression"
+                        } else {
+                            argAccessor = "(syntax.arguments.count > \(opt.index) ? syntax.arguments[\(opt.index)].expression : nil)"
+                        }
+                        
+                        // If parameter is optional (opt.type is base type without ?), parse into optional value
+                        // Here opt.type is the base type for optional entries.
+                        lines.append("\(indent)let \(opt.varName) = if let expr = \(argAccessor) { \(opt.type)(syntax: expr) } else { nil }")
                     }
                     let caseParams = nonClosureParams.enumerated().map { idx, param -> String in
                         let varName = param.label ?? "value\(idx)"
@@ -557,9 +624,26 @@ public struct EnumGenerator: Sendable {
                 lines.append("\(indent)\(keyword) \(conditions.joined(separator: ", ")) {")
             }
             
-            // Parse optional parameters inside the if block
+            // Parse optional and defaulted parameters inside the if block
             for opt in optionalParams {
-                lines.append("\(indent)    let \(opt.varName) = \(opt.type)(syntax: syntax.arguments[\(opt.index)].expression)")
+                let label = nonClosureParams[opt.index].label
+                let argAccessor: String
+                if let label = label {
+                    argAccessor = "syntax.argument(named: \"\(label)\")?.expression"
+                } else {
+                    argAccessor = "(syntax.arguments.count > \(opt.index) ? syntax.arguments[\(opt.index)].expression : nil)"
+                }
+
+                // If this param has a default value, we should fall back to it when parse fails.
+                let hasDefault = nonClosureParams[opt.index].hasDefaultValue
+                let defaultVal = nonClosureParams[opt.index].defaultValue ?? "nil"
+
+                if hasDefault {
+                    lines.append("\(indent)    let \(opt.varName) = { if let expr = \(argAccessor), let parsed = \(opt.type)(syntax: expr) { return parsed } else { return \(defaultVal) } }()")
+                } else {
+                    // No default - just try to parse (optional result)
+                    lines.append("\(indent)    let \(opt.varName) = { if let expr = \(argAccessor) { return \(opt.type)(syntax: expr) } else { return nil } }()")
+                }
             }
             
             // Build case parameters
