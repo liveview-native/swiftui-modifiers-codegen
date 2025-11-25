@@ -383,7 +383,8 @@ public struct EnumGenerator: Sendable {
         return lines.joined(separator: "\n")
     }
     
-    /// Generates the init case parsing code for a modifier variant.
+    /// Generates the init case parsing code for a modifier variant using guard statements.
+    /// This is used when there's only one variant for a given argument count.
     private func generateInitCase(for modifier: ModifierInfo, caseName: String, enumName: String, indent: String) -> [String] {
         var lines: [String] = []
         
@@ -394,26 +395,23 @@ public struct EnumGenerator: Sendable {
             return lines
         }
         
-        // Generate parsing for each parameter
-        var guardConditions: [String] = []
-        
+        // Generate guard statements for each parameter
         for (index, param) in nonClosureParams.enumerated() {
             let varName = param.label ?? "value\(index)"
             let type = cleanTypeForEnumCase(param.type)
             
-            // Generate the parsing expression
-            if !type.hasSuffix("?") {
+            if type.hasSuffix("?") {
+                // Optional type - parse without guard, allow nil
+                let baseType = String(type.dropLast())
+                lines.append("\(indent)let \(varName) = \(baseType)(syntax: syntax.arguments[\(index)].expression)")
+            } else {
+                // Required type - use guard
                 let parseExpr = "\(type)(syntax: syntax.arguments[\(index)].expression)"
-                guardConditions.append("let \(varName) = \(parseExpr)")
+                let expectedTypes = nonClosureParams.map { cleanTypeForEnumCase($0.type) }.joined(separator: ", ")
+                lines.append("\(indent)guard let \(varName) = \(parseExpr) else {")
+                lines.append("\(indent)    throw \(enumName).ParseError.invalidArguments(forVariant: \"\(caseName)\", expectedTypes: \"\(expectedTypes)\")")
+                lines.append("\(indent)}")
             }
-        }
-        
-        if !guardConditions.isEmpty {
-            lines.append("\(indent)guard \(guardConditions.joined(separator: ", ")) else {")
-            // Generate specific error with parameter info
-            let expectedTypes = nonClosureParams.map { cleanTypeForEnumCase($0.type) }.joined(separator: ", ")
-            lines.append("\(indent)    throw \(enumName).ParseError.invalidArguments(forVariant: \"\(caseName)\", expectedTypes: \"\(expectedTypes)\")")
-            lines.append("\(indent)}")
         }
         
         let caseParams = nonClosureParams.enumerated().map { index, param -> String in
@@ -426,7 +424,32 @@ public struct EnumGenerator: Sendable {
         return lines
     }
     
+    /// Generates an if-let condition for trying to parse a single variant.
+    /// Returns the condition string and the variable bindings.
+    private func generateIfLetCondition(for modifier: ModifierInfo, caseName: String) -> (condition: String, bindings: [(name: String, index: Int)]) {
+        let nonClosureParams = modifier.parameters.filter { !isClosure($0.type) }
+        var conditions: [String] = []
+        var bindings: [(name: String, index: Int)] = []
+        
+        for (index, param) in nonClosureParams.enumerated() {
+            let varName = param.label ?? "value\(index)"
+            let type = cleanTypeForEnumCase(param.type)
+            
+            if type.hasSuffix("?") {
+                // Optional parameters don't contribute to the condition
+                // They'll be parsed separately
+            } else {
+                let parseExpr = "\(type)(syntax: syntax.arguments[\(index)].expression)"
+                conditions.append("let \(varName) = \(parseExpr)")
+                bindings.append((name: varName, index: index))
+            }
+        }
+        
+        return (conditions.joined(separator: ", "), bindings)
+    }
+    
     /// Generates disambiguation logic for multiple variants with the same argument count.
+    /// Uses if/else if chains to try each variant by type.
     private func generateDisambiguatedInitCases(for variants: [(ModifierInfo, String)], enumName: String, indent: String) -> [String] {
         var lines: [String] = []
         
@@ -455,11 +478,8 @@ public struct EnumGenerator: Sendable {
                     let (modifier, caseName) = labelVariants[0]
                     lines.append(contentsOf: generateInitCase(for: modifier, caseName: caseName, enumName: enumName, indent: indent + "    "))
                 } else {
-                    // Still ambiguous - try second-level disambiguation or fall back to first
-                    let (modifier, caseName) = labelVariants[0]
-                    let otherVariants = labelVariants.dropFirst().map { $0.1 }.joined(separator: ", ")
-                    lines.append("\(indent)    // Note: Could not fully disambiguate from variants: \(otherVariants)")
-                    lines.append(contentsOf: generateInitCase(for: modifier, caseName: caseName, enumName: enumName, indent: indent + "    "))
+                    // Multiple variants with same label - try each by type
+                    lines.append(contentsOf: generateTypeBasedDisambiguation(for: labelVariants, enumName: enumName, indent: indent + "    "))
                 }
             }
             
@@ -469,14 +489,83 @@ public struct EnumGenerator: Sendable {
             lines.append("\(indent)    throw \(enumName).ParseError.ambiguousVariant(expectedLabels: [\(expectedLabels)])")
             lines.append("\(indent)}")
         } else {
-            // Cannot disambiguate by label - try by type
-            // For now, attempt first variant and provide detailed error on failure
-            let (modifier, caseName) = variants[0]
-            let otherVariants = variants.dropFirst().map { $0.1 }.joined(separator: ", ")
-            lines.append("\(indent)// Note: Multiple variants with same argument count and labels. Attempting: \(caseName)")
-            lines.append("\(indent)// Other variants: \(otherVariants)")
-            lines.append(contentsOf: generateInitCase(for: modifier, caseName: caseName, enumName: enumName, indent: indent))
+            // Cannot disambiguate by label - try each variant by type
+            lines.append(contentsOf: generateTypeBasedDisambiguation(for: variants, enumName: enumName, indent: indent))
         }
+        
+        return lines
+    }
+    
+    /// Generates if/else if chain to try each variant by parsing their types.
+    private func generateTypeBasedDisambiguation(for variants: [(ModifierInfo, String)], enumName: String, indent: String) -> [String] {
+        var lines: [String] = []
+        
+        for (index, (modifier, caseName)) in variants.enumerated() {
+            let nonClosureParams = modifier.parameters.filter { !isClosure($0.type) }
+            
+            // Build the if condition
+            var conditions: [String] = []
+            var optionalParams: [(varName: String, type: String, index: Int)] = []
+            
+            for (paramIndex, param) in nonClosureParams.enumerated() {
+                let varName = param.label ?? "value\(paramIndex)"
+                let type = cleanTypeForEnumCase(param.type)
+                
+                if type.hasSuffix("?") {
+                    // Track optional params to parse after the condition
+                    let baseType = String(type.dropLast())
+                    optionalParams.append((varName: varName, type: baseType, index: paramIndex))
+                } else {
+                    let parseExpr = "\(type)(syntax: syntax.arguments[\(paramIndex)].expression)"
+                    conditions.append("let \(varName) = \(parseExpr)")
+                }
+            }
+            
+            let keyword = index == 0 ? "if" : "} else if"
+            
+            if conditions.isEmpty {
+                // All parameters are optional - this variant always matches
+                if index == 0 {
+                    // Just use this variant directly
+                    for opt in optionalParams {
+                        lines.append("\(indent)let \(opt.varName) = \(opt.type)(syntax: syntax.arguments[\(opt.index)].expression)")
+                    }
+                    let caseParams = nonClosureParams.enumerated().map { idx, param -> String in
+                        let varName = param.label ?? "value\(idx)"
+                        return param.label != nil ? "\(param.label!): \(varName)" : varName
+                    }.joined(separator: ", ")
+                    lines.append("\(indent)self = .\(caseName)(\(caseParams))")
+                    return lines
+                } else {
+                    lines.append("\(indent)\(keyword) true {")
+                }
+            } else {
+                lines.append("\(indent)\(keyword) \(conditions.joined(separator: ", ")) {")
+            }
+            
+            // Parse optional parameters inside the if block
+            for opt in optionalParams {
+                lines.append("\(indent)    let \(opt.varName) = \(opt.type)(syntax: syntax.arguments[\(opt.index)].expression)")
+            }
+            
+            // Build case parameters
+            let caseParams = nonClosureParams.enumerated().map { idx, param -> String in
+                let varName = param.label ?? "value\(idx)"
+                return param.label != nil ? "\(param.label!): \(varName)" : varName
+            }.joined(separator: ", ")
+            
+            lines.append("\(indent)    self = .\(caseName)(\(caseParams))")
+        }
+        
+        // Add else clause with error
+        let allExpectedTypes = variants.map { modifier, caseName in
+            let nonClosureParams = modifier.parameters.filter { !isClosure($0.type) }
+            return nonClosureParams.map { cleanTypeForEnumCase($0.type) }.joined(separator: ", ")
+        }.joined(separator: " or ")
+        
+        lines.append("\(indent)} else {")
+        lines.append("\(indent)    throw \(enumName).ParseError.invalidArguments(forVariant: \"multiple variants\", expectedTypes: \"\(allExpectedTypes)\")")
+        lines.append("\(indent)}")
         
         return lines
     }
