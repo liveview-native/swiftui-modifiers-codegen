@@ -61,6 +61,44 @@ public struct EnumGenerator: Sendable {
         )
     }
     
+    /// Generates the global ModifierParseError type.
+    ///
+    /// This should be called once and the result included in the output.
+    /// - Returns: A GeneratedCode instance containing the error type.
+    public func generateParseErrorType() -> GeneratedCode {
+        let sourceCode = """
+        import Foundation
+        
+        /// Errors that can occur when parsing modifiers from syntax.
+        public enum ModifierParseError: Error, CustomStringConvertible {
+            /// The number of arguments doesn't match any known variant.
+            case unexpectedArgumentCount(modifier: String, expected: [Int], found: Int)
+            /// The arguments could not be parsed for the specified variant.
+            case invalidArguments(modifier: String, variant: String, expectedTypes: String)
+            /// Multiple variants match the argument count but labels don't match.
+            case ambiguousVariant(modifier: String, expectedLabels: [String])
+        
+            public var description: String {
+                switch self {
+                case .unexpectedArgumentCount(let modifier, let expected, let found):
+                    return "\\(modifier): unexpected argument count \\(found), expected one of \\(expected)"
+                case .invalidArguments(let modifier, let variant, let expectedTypes):
+                    return "\\(modifier): invalid arguments for '\\(variant)', expected types: \\(expectedTypes)"
+                case .ambiguousVariant(let modifier, let expectedLabels):
+                    return "\\(modifier): ambiguous variant, expected first argument label to be one of \\(expectedLabels)"
+                }
+            }
+        }
+        """
+        
+        return GeneratedCode(
+            sourceCode: sourceCode,
+            fileName: "ModifierParseError.swift",
+            modifierCount: 0,
+            warnings: []
+        )
+    }
+    
     // MARK: - Type Erasure Transformation
     
     /// Transforms a modifier to use type erasers for generic parameters.
@@ -297,36 +335,12 @@ public struct EnumGenerator: Sendable {
         let baseName = originalModifiers.first?.name ?? "modifier"
         
         // Enum declaration
-        lines.append("public enum \(enumName): Equatable, Sendable {")
+        lines.append("public enum \(enumName): Sendable {")
         
         // Add cases
         for caseStr in cases {
             lines.append("    \(caseStr)")
         }
-        
-        lines.append("")
-        
-        // Add ParseError nested type
-        lines.append("    /// Errors that can occur when parsing this modifier from syntax.")
-        lines.append("    public enum ParseError: Error, CustomStringConvertible {")
-        lines.append("        /// The number of arguments doesn't match any known variant.")
-        lines.append("        case unexpectedArgumentCount(expected: [Int], found: Int)")
-        lines.append("        /// The arguments could not be parsed for the specified variant.")
-        lines.append("        case invalidArguments(forVariant: String, expectedTypes: String)")
-        lines.append("        /// Multiple variants match the argument count but labels don't match.")
-        lines.append("        case ambiguousVariant(expectedLabels: [String])")
-        lines.append("")
-        lines.append("        public var description: String {")
-        lines.append("            switch self {")
-        lines.append("            case .unexpectedArgumentCount(let expected, let found):")
-        lines.append("                return \"\(enumName): unexpected argument count \\(found), expected one of \\(expected)\"")
-        lines.append("            case .invalidArguments(let variant, let expectedTypes):")
-        lines.append("                return \"\(enumName): invalid arguments for '\\(variant)', expected types: \\(expectedTypes)\"")
-        lines.append("            case .ambiguousVariant(let expectedLabels):")
-        lines.append("                return \"\(enumName): ambiguous variant, expected first argument label to be one of \\(expectedLabels)\"")
-        lines.append("            }")
-        lines.append("        }")
-        lines.append("    }")
         
         lines.append("}")
         lines.append("")
@@ -362,7 +376,7 @@ public struct EnumGenerator: Sendable {
         }
         
         lines.append("        default:")
-        lines.append("            throw \(enumName).ParseError.unexpectedArgumentCount(expected: [\(modifiersByArgCount.keys.sorted().map { String($0) }.joined(separator: ", "))], found: syntax.arguments.count)")
+        lines.append("            throw ModifierParseError.unexpectedArgumentCount(modifier: \"\(enumName)\", expected: [\(modifiersByArgCount.keys.sorted().map { String($0) }.joined(separator: ", "))], found: syntax.arguments.count)")
         lines.append("        }")
         lines.append("    }")
         lines.append("")
@@ -409,7 +423,7 @@ public struct EnumGenerator: Sendable {
                 let parseExpr = "\(type)(syntax: syntax.arguments[\(index)].expression)"
                 let expectedTypes = nonClosureParams.map { cleanTypeForEnumCase($0.type) }.joined(separator: ", ")
                 lines.append("\(indent)guard let \(varName) = \(parseExpr) else {")
-                lines.append("\(indent)    throw \(enumName).ParseError.invalidArguments(forVariant: \"\(caseName)\", expectedTypes: \"\(expectedTypes)\")")
+                lines.append("\(indent)    throw ModifierParseError.invalidArguments(modifier: \"\(enumName)\", variant: \"\(caseName)\", expectedTypes: \"\(expectedTypes)\")")
                 lines.append("\(indent)}")
             }
         }
@@ -486,7 +500,7 @@ public struct EnumGenerator: Sendable {
             // Add default case for unexpected labels
             let expectedLabels = variantsByFirstLabel.keys.compactMap { $0 }.map { "\"\($0)\"" }.joined(separator: ", ")
             lines.append("\(indent)default:")
-            lines.append("\(indent)    throw \(enumName).ParseError.ambiguousVariant(expectedLabels: [\(expectedLabels)])")
+            lines.append("\(indent)    throw ModifierParseError.ambiguousVariant(modifier: \"\(enumName)\", expectedLabels: [\(expectedLabels)])")
             lines.append("\(indent)}")
         } else {
             // Cannot disambiguate by label - try each variant by type
@@ -558,13 +572,13 @@ public struct EnumGenerator: Sendable {
         }
         
         // Add else clause with error
-        let allExpectedTypes = variants.map { modifier, caseName in
+        let allExpectedTypes = variants.map { modifier, _ in
             let nonClosureParams = modifier.parameters.filter { !isClosure($0.type) }
             return nonClosureParams.map { cleanTypeForEnumCase($0.type) }.joined(separator: ", ")
         }.joined(separator: " or ")
         
         lines.append("\(indent)} else {")
-        lines.append("\(indent)    throw \(enumName).ParseError.invalidArguments(forVariant: \"multiple variants\", expectedTypes: \"\(allExpectedTypes)\")")
+        lines.append("\(indent)    throw ModifierParseError.invalidArguments(modifier: \"\(enumName)\", variant: \"multiple variants\", expectedTypes: \"\(allExpectedTypes)\")")
         lines.append("\(indent)}")
         
         return lines

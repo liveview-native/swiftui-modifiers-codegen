@@ -204,8 +204,11 @@ struct ModifierSwiftCLI: ParsableCommand {
             }
         }
         
-        // Write all files to output directory (type erasers + modifiers)
-        let allCodes = typeEraserCodes + generatedCodes
+        // Generate the global parse error type
+        let parseErrorCode = generator.generateParseErrorType()
+        
+        // Write all files to output directory (parse error + type erasers + modifiers)
+        let allCodes = [parseErrorCode] + typeEraserCodes + generatedCodes
         try outputManager.writeAll(allCodes, to: output)
         
         if verbose {

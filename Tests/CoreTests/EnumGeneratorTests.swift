@@ -232,19 +232,6 @@ final class EnumGeneratorTests: XCTestCase {
     
     // MARK: - Conformance Tests
     
-    func test_generate_enumConformsToEquatable() throws {
-        // Arrange
-        let modifiers = [
-            ModifierInfo(name: "padding", parameters: [], returnType: "some View")
-        ]
-        
-        // Act
-        let result = try sut.generate(enumName: "PaddingModifier", modifiers: modifiers)
-        
-        // Assert
-        XCTAssertTrue(result.sourceCode.contains("Equatable"))
-    }
-    
     func test_generate_enumConformsToSendable() throws {
         // Arrange
         let modifiers = [
