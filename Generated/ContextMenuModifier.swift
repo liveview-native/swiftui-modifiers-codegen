@@ -23,7 +23,7 @@ extension ContextMenuModifier: RuntimeViewModifier {
             let firstLabel = syntax.arguments.first?.label?.text
             switch firstLabel {
             case nil:
-                let value0 = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUI.ContextMenu<AnyView>(syntax: expr) } else { nil }
+                let value0: SwiftUI.ContextMenu<AnyView>? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUI.ContextMenu<AnyView>(syntax: expr) } else { nil }
                 self = .contextMenuWithContextMenuAnyViewOptional(value0)
             case "forSelectionType":
                 let forSelectionType: AnyHashable.Type = if let expr = syntax.argument(named: "forSelectionType")?.expression, let parsed = AnyHashable.Type(syntax: expr) { parsed } else { I.self }

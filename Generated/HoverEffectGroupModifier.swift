@@ -19,10 +19,10 @@ extension HoverEffectGroupModifier: RuntimeViewModifier {
         case 0:
             self = .hoverEffectGroup
         case 1:
-            let value0 = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUI.HoverEffectGroup(syntax: expr) } else { nil }
+            let value0: SwiftUI.HoverEffectGroup? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUI.HoverEffectGroup(syntax: expr) } else { nil }
             self = .hoverEffectGroupWithHoverEffectGroupOptional(value0)
         case 3:
-            let id = if let expr = syntax.argument(named: "id")?.expression, let parsed = Swift.String(syntax: expr) { parsed } else { nil }
+            let id: Swift.String? = if let expr = syntax.argument(named: "id")?.expression, let parsed = Swift.String(syntax: expr) { parsed } else { nil }
             guard let expr_in = syntax.argument(named: "in")?.expression, let in = SwiftUICore.Namespace.ID(syntax: expr_in) else {
                 throw ModifierParseError.invalidArguments(modifier: "HoverEffectGroupModifier", variant: "hoverEffectGroupWithStringOptionalIDBehavior", expectedTypes: "Swift.String?, SwiftUICore.Namespace.ID, SwiftUI.HoverEffectGroup.Behavior")
             }

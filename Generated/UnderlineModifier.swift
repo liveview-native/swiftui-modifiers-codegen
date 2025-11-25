@@ -17,7 +17,7 @@ extension UnderlineModifier: RuntimeViewModifier {
         case 3:
             let value0: Swift.Bool = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = Swift.Bool(syntax: expr) { parsed } else { true }
             let pattern: SwiftUICore.Text.LineStyle.Pattern = if let expr = syntax.argument(named: "pattern")?.expression, let parsed = SwiftUICore.Text.LineStyle.Pattern(syntax: expr) { parsed } else { .solid }
-            let color = if let expr = syntax.argument(named: "color")?.expression, let parsed = SwiftUICore.Color(syntax: expr) { parsed } else { nil }
+            let color: SwiftUICore.Color? = if let expr = syntax.argument(named: "color")?.expression, let parsed = SwiftUICore.Color(syntax: expr) { parsed } else { nil }
             self = .underline(value0, pattern: pattern, color: color)
         default:
             throw ModifierParseError.unexpectedArgumentCount(modifier: "UnderlineModifier", expected: [3], found: syntax.arguments.count)

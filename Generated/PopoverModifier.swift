@@ -23,14 +23,14 @@ extension PopoverModifier: RuntimeViewModifier {
                     throw ModifierParseError.invalidArguments(modifier: "PopoverModifier", variant: "popoverWithBoolPopoverAttachmentAnchorEdgeOptionalClosureAnyView", expectedTypes: "SwiftUICore.Binding<Swift.Bool>, SwiftUI.PopoverAttachmentAnchor, SwiftUICore.Edge?")
                 }
                 let attachmentAnchor: SwiftUI.PopoverAttachmentAnchor = if let expr = syntax.argument(named: "attachmentAnchor")?.expression, let parsed = SwiftUI.PopoverAttachmentAnchor(syntax: expr) { parsed } else { .rect(.bounds) }
-                let arrowEdge = if let expr = syntax.argument(named: "arrowEdge")?.expression, let parsed = SwiftUICore.Edge(syntax: expr) { parsed } else { nil }
+                let arrowEdge: SwiftUICore.Edge? = if let expr = syntax.argument(named: "arrowEdge")?.expression, let parsed = SwiftUICore.Edge(syntax: expr) { parsed } else { nil }
                 self = .popoverWithBoolPopoverAttachmentAnchorEdgeOptionalClosureAnyView(isPresented: isPresented, attachmentAnchor: attachmentAnchor, arrowEdge: arrowEdge)
             case "item":
                 guard let expr_item = syntax.argument(named: "item")?.expression, let item = SwiftUICore.Binding<Item?>(syntax: expr_item) else {
                     throw ModifierParseError.invalidArguments(modifier: "PopoverModifier", variant: "popoverWithBindingItemOptionalPopoverAttachmentAnchorEdgeOptionalClosureAnyView", expectedTypes: "SwiftUICore.Binding<Item?>, SwiftUI.PopoverAttachmentAnchor, SwiftUICore.Edge?")
                 }
                 let attachmentAnchor: SwiftUI.PopoverAttachmentAnchor = if let expr = syntax.argument(named: "attachmentAnchor")?.expression, let parsed = SwiftUI.PopoverAttachmentAnchor(syntax: expr) { parsed } else { .rect(.bounds) }
-                let arrowEdge = if let expr = syntax.argument(named: "arrowEdge")?.expression, let parsed = SwiftUICore.Edge(syntax: expr) { parsed } else { nil }
+                let arrowEdge: SwiftUICore.Edge? = if let expr = syntax.argument(named: "arrowEdge")?.expression, let parsed = SwiftUICore.Edge(syntax: expr) { parsed } else { nil }
                 self = .popoverWithBindingItemOptionalPopoverAttachmentAnchorEdgeOptionalClosureAnyView(item: item, attachmentAnchor: attachmentAnchor, arrowEdge: arrowEdge)
             default:
                 throw ModifierParseError.ambiguousVariant(modifier: "PopoverModifier", expectedLabels: ["isPresented", "item"])

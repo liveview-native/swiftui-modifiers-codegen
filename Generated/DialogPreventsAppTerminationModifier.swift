@@ -15,7 +15,7 @@ extension DialogPreventsAppTerminationModifier: RuntimeViewModifier {
     public init(syntax: FunctionCallExprSyntax) throws {
         switch syntax.arguments.count {
         case 1:
-            let value0 = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { Swift.Bool(syntax: expr) } else { nil }
+            let value0: Swift.Bool? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { Swift.Bool(syntax: expr) } else { nil }
             self = .dialogPreventsAppTermination(value0)
         default:
             throw ModifierParseError.unexpectedArgumentCount(modifier: "DialogPreventsAppTerminationModifier", expected: [1], found: syntax.arguments.count)

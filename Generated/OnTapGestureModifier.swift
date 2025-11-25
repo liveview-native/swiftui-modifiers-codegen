@@ -20,8 +20,8 @@ extension OnTapGestureModifier: RuntimeViewModifier {
             let count: Swift.Int = if let expr = syntax.argument(named: "count")?.expression, let parsed = Swift.Int(syntax: expr) { parsed } else { 1 }
             self = .onTapGestureWithIntVoid(count: count)
         case 2:
-            let count = if let expr = syntax.argument(named: "count")?.expression { Swift.Int(syntax: expr) } else { nil }
-            let coordinateSpace = if let expr = syntax.argument(named: "coordinateSpace")?.expression { SwiftUICore.CoordinateSpace(syntax: expr) } else { nil }
+            let count: Swift.Int? = if let expr = syntax.argument(named: "count")?.expression { Swift.Int(syntax: expr) } else { nil }
+            let coordinateSpace: SwiftUICore.CoordinateSpace? = if let expr = syntax.argument(named: "coordinateSpace")?.expression { SwiftUICore.CoordinateSpace(syntax: expr) } else { nil }
             self = .onTapGestureWithIntCoordinateSpaceVoid(count: count, coordinateSpace: coordinateSpace)
         default:
             throw ModifierParseError.unexpectedArgumentCount(modifier: "OnTapGestureModifier", expected: [1, 2], found: syntax.arguments.count)

@@ -16,7 +16,7 @@ extension EnvironmentModifier: RuntimeViewModifier {
     public init(syntax: FunctionCallExprSyntax) throws {
         switch syntax.arguments.count {
         case 1:
-            let value0 = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { T(syntax: expr) } else { nil }
+            let value0: T? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { T(syntax: expr) } else { nil }
             self = .environmentWithTOptional(value0)
         case 2:
             guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = Swift.WritableKeyPath<SwiftUICore.EnvironmentValues, V>(syntax: expr_value0) else {

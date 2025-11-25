@@ -17,11 +17,11 @@ extension ContainerRelativeFrameModifier: RuntimeViewModifier {
     public init(syntax: FunctionCallExprSyntax) throws {
         switch syntax.arguments.count {
         case 2:
-            if let value0 = SwiftUICore.Axis.Set(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
-                let alignment = { if let expr = syntax.argument(named: "alignment")?.expression, let parsed = SwiftUICore.Alignment(syntax: expr) { return parsed } else { return .center } }()
+            if let value0: SwiftUICore.Axis.Set = SwiftUICore.Axis.Set(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                let alignment: SwiftUICore.Alignment = if let expr = syntax.argument(named: "alignment")?.expression, let parsed = SwiftUICore.Alignment(syntax: expr) { parsed } else { .center }
                 self = .containerRelativeFrameWithSetAlignment(value0, alignment: alignment)
-            } else if let value0 = SwiftUICore.Axis.Set(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
-                let alignment = { if let expr = syntax.argument(named: "alignment")?.expression, let parsed = SwiftUICore.Alignment(syntax: expr) { return parsed } else { return .center } }()
+            } else if let value0: SwiftUICore.Axis.Set = SwiftUICore.Axis.Set(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                let alignment: SwiftUICore.Alignment = if let expr = syntax.argument(named: "alignment")?.expression, let parsed = SwiftUICore.Alignment(syntax: expr) { parsed } else { .center }
                 self = .containerRelativeFrameWithSetAlignmentCGFloat(value0, alignment: alignment)
             } else {
                 throw ModifierParseError.invalidArguments(modifier: "ContainerRelativeFrameModifier", variant: "multiple variants", expectedTypes: "SwiftUICore.Axis.Set, SwiftUICore.Alignment or SwiftUICore.Axis.Set, SwiftUICore.Alignment")

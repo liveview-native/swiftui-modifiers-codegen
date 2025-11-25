@@ -29,7 +29,7 @@ extension ScrollIndicatorsFlashModifier: RuntimeViewModifier {
                 }
                 self = .scrollIndicatorsFlashWithsomeEquatable(trigger: trigger)
             default:
-                throw ModifierParseError.ambiguousVariant(modifier: "ScrollIndicatorsFlashModifier", expectedLabels: ["trigger", "onAppear"])
+                throw ModifierParseError.ambiguousVariant(modifier: "ScrollIndicatorsFlashModifier", expectedLabels: ["onAppear", "trigger"])
             }
         default:
             throw ModifierParseError.unexpectedArgumentCount(modifier: "ScrollIndicatorsFlashModifier", expected: [1], found: syntax.arguments.count)

@@ -21,11 +21,11 @@ extension InspectorColumnWidthModifier: RuntimeViewModifier {
             }
             self = .inspectorColumnWidthWithCGFloat(value0)
         case 3:
-            let min = if let expr = syntax.argument(named: "min")?.expression, let parsed = CoreFoundation.CGFloat(syntax: expr) { parsed } else { nil }
+            let min: CoreFoundation.CGFloat? = if let expr = syntax.argument(named: "min")?.expression, let parsed = CoreFoundation.CGFloat(syntax: expr) { parsed } else { nil }
             guard let expr_ideal = syntax.argument(named: "ideal")?.expression, let ideal = CoreFoundation.CGFloat(syntax: expr_ideal) else {
                 throw ModifierParseError.invalidArguments(modifier: "InspectorColumnWidthModifier", variant: "inspectorColumnWidthWithCGFloatOptionalCGFloatCGFloatOptional", expectedTypes: "CoreFoundation.CGFloat?, CoreFoundation.CGFloat, CoreFoundation.CGFloat?")
             }
-            let max = if let expr = syntax.argument(named: "max")?.expression, let parsed = CoreFoundation.CGFloat(syntax: expr) { parsed } else { nil }
+            let max: CoreFoundation.CGFloat? = if let expr = syntax.argument(named: "max")?.expression, let parsed = CoreFoundation.CGFloat(syntax: expr) { parsed } else { nil }
             self = .inspectorColumnWidthWithCGFloatOptionalCGFloatCGFloatOptional(min: min, ideal: ideal, max: max)
         default:
             throw ModifierParseError.unexpectedArgumentCount(modifier: "InspectorColumnWidthModifier", expected: [1, 3], found: syntax.arguments.count)

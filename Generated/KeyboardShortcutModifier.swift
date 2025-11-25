@@ -18,10 +18,10 @@ extension KeyboardShortcutModifier: RuntimeViewModifier {
     public init(syntax: FunctionCallExprSyntax) throws {
         switch syntax.arguments.count {
         case 1:
-            if let value0 = SwiftUI.KeyboardShortcut(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+            if let value0: SwiftUI.KeyboardShortcut = SwiftUI.KeyboardShortcut(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
                 self = .keyboardShortcutWithKeyboardShortcut(value0)
             } else if true {
-                let value0 = { if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { return SwiftUI.KeyboardShortcut(syntax: expr) } else { return nil } }()
+                let value0: SwiftUI.KeyboardShortcut = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUI.KeyboardShortcut(syntax: expr) } else { nil }
                 self = .keyboardShortcutWithKeyboardShortcutOptional(value0)
             } else {
                 throw ModifierParseError.invalidArguments(modifier: "KeyboardShortcutModifier", variant: "multiple variants", expectedTypes: "SwiftUI.KeyboardShortcut or SwiftUI.KeyboardShortcut?")

@@ -17,10 +17,10 @@ extension SimultaneousGestureModifier: RuntimeViewModifier {
     public init(syntax: FunctionCallExprSyntax) throws {
         switch syntax.arguments.count {
         case 2:
-            if let value0 = AnyGesture<Any>(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
-                let including = { if let expr = syntax.argument(named: "including")?.expression, let parsed = SwiftUICore.GestureMask(syntax: expr) { return parsed } else { return .all } }()
+            if let value0: AnyGesture<Any> = AnyGesture<Any>(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                let including: SwiftUICore.GestureMask = if let expr = syntax.argument(named: "including")?.expression, let parsed = SwiftUICore.GestureMask(syntax: expr) { parsed } else { .all }
                 self = .simultaneousGestureWithAnyGestureAnyGestureMask(value0, including: including)
-            } else if let value0 = AnyGesture<Any>(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isEnabled = syntax.argument(named: "isEnabled")?.expression, let isEnabled = Swift.Bool(syntax: expr_isEnabled) {
+            } else if let value0: AnyGesture<Any> = AnyGesture<Any>(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isEnabled = syntax.argument(named: "isEnabled")?.expression, let isEnabled = Swift.Bool(syntax: expr_isEnabled) {
                 self = .simultaneousGestureWithAnyGestureAnyBool(value0, isEnabled: isEnabled)
             } else {
                 throw ModifierParseError.invalidArguments(modifier: "SimultaneousGestureModifier", variant: "multiple variants", expectedTypes: "AnyGesture<Any>, SwiftUICore.GestureMask or AnyGesture<Any>, Swift.Bool")

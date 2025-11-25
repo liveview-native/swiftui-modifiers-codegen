@@ -15,7 +15,7 @@ extension ListRowSeparatorTintModifier: RuntimeViewModifier {
     public init(syntax: FunctionCallExprSyntax) throws {
         switch syntax.arguments.count {
         case 2:
-            let value0 = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUICore.Color(syntax: expr) } else { nil }
+            let value0: SwiftUICore.Color? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUICore.Color(syntax: expr) } else { nil }
             let edges: SwiftUICore.VerticalEdge.Set = if let expr = syntax.argument(named: "edges")?.expression, let parsed = SwiftUICore.VerticalEdge.Set(syntax: expr) { parsed } else { .all }
             self = .listRowSeparatorTint(value0, edges: edges)
         default:

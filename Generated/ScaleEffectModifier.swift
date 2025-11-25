@@ -17,11 +17,11 @@ extension ScaleEffectModifier: RuntimeViewModifier {
     public init(syntax: FunctionCallExprSyntax) throws {
         switch syntax.arguments.count {
         case 2:
-            if let value0 = CoreFoundation.CGSize(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
-                let anchor = { if let expr = syntax.argument(named: "anchor")?.expression, let parsed = SwiftUICore.UnitPoint(syntax: expr) { return parsed } else { return .center } }()
+            if let value0: CoreFoundation.CGSize = CoreFoundation.CGSize(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                let anchor: SwiftUICore.UnitPoint = if let expr = syntax.argument(named: "anchor")?.expression, let parsed = SwiftUICore.UnitPoint(syntax: expr) { parsed } else { .center }
                 self = .scaleEffectWithCGSizeUnitPoint(value0, anchor: anchor)
-            } else if let value0 = CoreFoundation.CGFloat(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
-                let anchor = { if let expr = syntax.argument(named: "anchor")?.expression, let parsed = SwiftUICore.UnitPoint(syntax: expr) { return parsed } else { return .center } }()
+            } else if let value0: CoreFoundation.CGFloat = CoreFoundation.CGFloat(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                let anchor: SwiftUICore.UnitPoint = if let expr = syntax.argument(named: "anchor")?.expression, let parsed = SwiftUICore.UnitPoint(syntax: expr) { parsed } else { .center }
                 self = .scaleEffectWithCGFloatUnitPoint(value0, anchor: anchor)
             } else {
                 throw ModifierParseError.invalidArguments(modifier: "ScaleEffectModifier", variant: "multiple variants", expectedTypes: "CoreFoundation.CGSize, SwiftUICore.UnitPoint or CoreFoundation.CGFloat, SwiftUICore.UnitPoint")

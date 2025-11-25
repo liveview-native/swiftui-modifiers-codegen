@@ -16,10 +16,10 @@ extension FocusedSceneObjectModifier: RuntimeViewModifier {
     public init(syntax: FunctionCallExprSyntax) throws {
         switch syntax.arguments.count {
         case 1:
-            if let value0 = T(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+            if let value0: T = T(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
                 self = .focusedSceneObjectWithT(value0)
             } else if true {
-                let value0 = { if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { return T(syntax: expr) } else { return nil } }()
+                let value0: T = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { T(syntax: expr) } else { nil }
                 self = .focusedSceneObjectWithTOptional(value0)
             } else {
                 throw ModifierParseError.invalidArguments(modifier: "FocusedSceneObjectModifier", variant: "multiple variants", expectedTypes: "T or T?")

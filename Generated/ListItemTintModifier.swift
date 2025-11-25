@@ -16,7 +16,7 @@ extension ListItemTintModifier: RuntimeViewModifier {
     public init(syntax: FunctionCallExprSyntax) throws {
         switch syntax.arguments.count {
         case 1:
-            let value0 = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUI.ListItemTint(syntax: expr) } else { nil }
+            let value0: SwiftUI.ListItemTint? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUI.ListItemTint(syntax: expr) } else { nil }
             self = .listItemTintWithListItemTintOptional(value0)
         default:
             throw ModifierParseError.unexpectedArgumentCount(modifier: "ListItemTintModifier", expected: [1], found: syntax.arguments.count)

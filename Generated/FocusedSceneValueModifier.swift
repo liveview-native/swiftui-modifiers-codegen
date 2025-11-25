@@ -17,13 +17,13 @@ extension FocusedSceneValueModifier: RuntimeViewModifier {
     public init(syntax: FunctionCallExprSyntax) throws {
         switch syntax.arguments.count {
         case 1:
-            let value0 = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { T(syntax: expr) } else { nil }
+            let value0: T? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { T(syntax: expr) } else { nil }
             self = .focusedSceneValueWithTOptional(value0)
         case 2:
-            if let value0 = Swift.WritableKeyPath<SwiftUI.FocusedValues, T?>(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let value1 = T(syntax: (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil)!) {
+            if let value0: Swift.WritableKeyPath<SwiftUI.FocusedValues, T?> = Swift.WritableKeyPath<SwiftUI.FocusedValues, T?>(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let value1: T = T(syntax: (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil)!) {
                 self = .focusedSceneValueWithFocusedValuesTOptionalT(value0, value1)
-            } else if let value0 = Swift.WritableKeyPath<SwiftUI.FocusedValues, T?>(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
-                let value1 = { if let expr = (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil) { return T(syntax: expr) } else { return nil } }()
+            } else if let value0: Swift.WritableKeyPath<SwiftUI.FocusedValues, T?> = Swift.WritableKeyPath<SwiftUI.FocusedValues, T?>(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                let value1: T = if let expr = (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil) { T(syntax: expr) } else { nil }
                 self = .focusedSceneValueWithFocusedValuesTOptionalTOptional(value0, value1)
             } else {
                 throw ModifierParseError.invalidArguments(modifier: "FocusedSceneValueModifier", variant: "multiple variants", expectedTypes: "Swift.WritableKeyPath<SwiftUI.FocusedValues, T?>, T or Swift.WritableKeyPath<SwiftUI.FocusedValues, T?>, T?")

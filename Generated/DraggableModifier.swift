@@ -26,26 +26,26 @@ extension DraggableModifier: RuntimeViewModifier {
             let firstLabel = syntax.arguments.first?.label?.text
             switch firstLabel {
             case nil:
-                let value0 = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { Item.Type(syntax: expr) } else { nil }
-                let containerNamespace = if let expr = syntax.argument(named: "containerNamespace")?.expression { SwiftUICore.Namespace.ID(syntax: expr) } else { nil }
+                let value0: Item.Type? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { Item.Type(syntax: expr) } else { nil }
+                let containerNamespace: SwiftUICore.Namespace.ID? = if let expr = syntax.argument(named: "containerNamespace")?.expression { SwiftUICore.Namespace.ID(syntax: expr) } else { nil }
                 self = .draggableWithTypeClosureItemOptionalIDOptional(value0, containerNamespace: containerNamespace)
             case "containerItemID":
                 guard let expr_containerItemID = syntax.argument(named: "containerItemID")?.expression, let containerItemID = ItemID(syntax: expr_containerItemID) else {
                     throw ModifierParseError.invalidArguments(modifier: "DraggableModifier", variant: "draggableWithItemIDIDOptional", expectedTypes: "ItemID, SwiftUICore.Namespace.ID?")
                 }
-                let containerNamespace = if let expr = syntax.argument(named: "containerNamespace")?.expression, let parsed = SwiftUICore.Namespace.ID(syntax: expr) { parsed } else { nil }
+                let containerNamespace: SwiftUICore.Namespace.ID? = if let expr = syntax.argument(named: "containerNamespace")?.expression, let parsed = SwiftUICore.Namespace.ID(syntax: expr) { parsed } else { nil }
                 self = .draggableWithItemIDIDOptional(containerItemID: containerItemID, containerNamespace: containerNamespace)
             default:
                 throw ModifierParseError.ambiguousVariant(modifier: "DraggableModifier", expectedLabels: ["containerItemID"])
             }
         case 3:
             if let expr_id = syntax.argument(named: "id")?.expression, let id = Swift.KeyPath<Item, ItemID>(syntax: expr_id) {
-                let value0 = { if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = Item.Type(syntax: expr) { return parsed } else { return Item.self } }()
-                let containerNamespace = { if let expr = syntax.argument(named: "containerNamespace")?.expression, let parsed = SwiftUICore.Namespace.ID(syntax: expr) { return parsed } else { return nil } }()
+                let value0: Item.Type = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = Item.Type(syntax: expr) { parsed } else { Item.self }
+                let containerNamespace: SwiftUICore.Namespace.ID = if let expr = syntax.argument(named: "containerNamespace")?.expression, let parsed = SwiftUICore.Namespace.ID(syntax: expr) { parsed } else { nil }
                 self = .draggableWithTypeKeyPathItemItemIDClosureItemOptionalIDOptional(value0, id: id, containerNamespace: containerNamespace)
             } else if let expr_id = syntax.argument(named: "id")?.expression, let id = Swift.KeyPath<Item, ItemID>(syntax: expr_id) {
-                let value0 = { if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = Item.Type(syntax: expr) { return parsed } else { return Item.self } }()
-                let containerNamespace = { if let expr = syntax.argument(named: "containerNamespace")?.expression, let parsed = SwiftUICore.Namespace.ID(syntax: expr) { return parsed } else { return nil } }()
+                let value0: Item.Type = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = Item.Type(syntax: expr) { parsed } else { Item.self }
+                let containerNamespace: SwiftUICore.Namespace.ID = if let expr = syntax.argument(named: "containerNamespace")?.expression, let parsed = SwiftUICore.Namespace.ID(syntax: expr) { parsed } else { nil }
                 self = .draggableWithTypeKeyPathItemItemIDIDOptionalClosureItemOptional(value0, id: id, containerNamespace: containerNamespace)
             } else {
                 throw ModifierParseError.invalidArguments(modifier: "DraggableModifier", variant: "multiple variants", expectedTypes: "Item.Type, Swift.KeyPath<Item, ItemID>, SwiftUICore.Namespace.ID? or Item.Type, Swift.KeyPath<Item, ItemID>, SwiftUICore.Namespace.ID?")

@@ -29,10 +29,10 @@ extension ToolbarModifier: RuntimeViewModifier {
                 }
                 self = .toolbarWithStringClosureContent(id: id)
             case "removing":
-                let removing = if let expr = syntax.argument(named: "removing")?.expression { SwiftUI.ToolbarDefaultItemKind(syntax: expr) } else { nil }
+                let removing: SwiftUI.ToolbarDefaultItemKind? = if let expr = syntax.argument(named: "removing")?.expression { SwiftUI.ToolbarDefaultItemKind(syntax: expr) } else { nil }
                 self = .toolbarWithToolbarDefaultItemKindOptional(removing: removing)
             default:
-                throw ModifierParseError.ambiguousVariant(modifier: "ToolbarModifier", expectedLabels: ["id", "removing"])
+                throw ModifierParseError.ambiguousVariant(modifier: "ToolbarModifier", expectedLabels: ["removing", "id"])
             }
         case 2:
             guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUICore.Visibility(syntax: expr_value0) else {

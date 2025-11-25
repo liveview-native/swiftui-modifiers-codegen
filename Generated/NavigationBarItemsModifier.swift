@@ -30,7 +30,7 @@ extension NavigationBarItemsModifier: RuntimeViewModifier {
                 }
                 self = .navigationBarItemsWithAnyView1(trailing: trailing)
             default:
-                throw ModifierParseError.ambiguousVariant(modifier: "NavigationBarItemsModifier", expectedLabels: ["leading", "trailing"])
+                throw ModifierParseError.ambiguousVariant(modifier: "NavigationBarItemsModifier", expectedLabels: ["trailing", "leading"])
             }
         case 2:
             guard let expr_leading = syntax.argument(named: "leading")?.expression, let leading = AnyView(syntax: expr_leading) else {

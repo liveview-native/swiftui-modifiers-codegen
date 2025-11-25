@@ -21,18 +21,18 @@ extension OnDropModifier: RuntimeViewModifier {
         switch syntax.arguments.count {
         case 2:
             if let expr_of = syntax.argument(named: "of")?.expression, let of = [UniformTypeIdentifiers.UTType](syntax: expr_of) {
-                let isTargeted = { if let expr = syntax.argument(named: "isTargeted")?.expression { return SwiftUICore.Binding<Swift.Bool>(syntax: expr) } else { return nil } }()
+                let isTargeted: SwiftUICore.Binding<Swift.Bool> = if let expr = syntax.argument(named: "isTargeted")?.expression { SwiftUICore.Binding<Swift.Bool>(syntax: expr) } else { nil }
                 self = .onDropWithUTTypeBoolOptionalBool(of: of, isTargeted: isTargeted)
             } else if let expr_of = syntax.argument(named: "of")?.expression, let of = [UniformTypeIdentifiers.UTType](syntax: expr_of) {
-                let isTargeted = { if let expr = syntax.argument(named: "isTargeted")?.expression { return SwiftUICore.Binding<Swift.Bool>(syntax: expr) } else { return nil } }()
+                let isTargeted: SwiftUICore.Binding<Swift.Bool> = if let expr = syntax.argument(named: "isTargeted")?.expression { SwiftUICore.Binding<Swift.Bool>(syntax: expr) } else { nil }
                 self = .onDropWithUTTypeBoolOptionalBool1(of: of, isTargeted: isTargeted)
             } else if let expr_of = syntax.argument(named: "of")?.expression, let of = [UniformTypeIdentifiers.UTType](syntax: expr_of), let expr_delegate = syntax.argument(named: "delegate")?.expression, let delegate = any SwiftUI.DropDelegate(syntax: expr_delegate) {
                 self = .onDropWithUTTypeDropDelegate(of: of, delegate: delegate)
             } else if let expr_of = syntax.argument(named: "of")?.expression, let of = [Swift.String](syntax: expr_of) {
-                let isTargeted = { if let expr = syntax.argument(named: "isTargeted")?.expression { return SwiftUICore.Binding<Swift.Bool>(syntax: expr) } else { return nil } }()
+                let isTargeted: SwiftUICore.Binding<Swift.Bool> = if let expr = syntax.argument(named: "isTargeted")?.expression { SwiftUICore.Binding<Swift.Bool>(syntax: expr) } else { nil }
                 self = .onDropWithStringBoolOptionalBool(of: of, isTargeted: isTargeted)
             } else if let expr_of = syntax.argument(named: "of")?.expression, let of = [Swift.String](syntax: expr_of) {
-                let isTargeted = { if let expr = syntax.argument(named: "isTargeted")?.expression { return SwiftUICore.Binding<Swift.Bool>(syntax: expr) } else { return nil } }()
+                let isTargeted: SwiftUICore.Binding<Swift.Bool> = if let expr = syntax.argument(named: "isTargeted")?.expression { SwiftUICore.Binding<Swift.Bool>(syntax: expr) } else { nil }
                 self = .onDropWithStringBoolOptionalBool1(of: of, isTargeted: isTargeted)
             } else if let expr_of = syntax.argument(named: "of")?.expression, let of = [Swift.String](syntax: expr_of), let expr_delegate = syntax.argument(named: "delegate")?.expression, let delegate = any SwiftUI.DropDelegate(syntax: expr_delegate) {
                 self = .onDropWithStringDropDelegate(of: of, delegate: delegate)

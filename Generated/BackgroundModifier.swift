@@ -31,27 +31,27 @@ extension BackgroundModifier: RuntimeViewModifier {
                 let ignoresSafeAreaEdges: SwiftUICore.Edge.Set = if let expr = syntax.argument(named: "ignoresSafeAreaEdges")?.expression, let parsed = SwiftUICore.Edge.Set(syntax: expr) { parsed } else { .all }
                 self = .backgroundWithSet(ignoresSafeAreaEdges: ignoresSafeAreaEdges)
             default:
-                throw ModifierParseError.ambiguousVariant(modifier: "BackgroundModifier", expectedLabels: ["ignoresSafeAreaEdges", "alignment"])
+                throw ModifierParseError.ambiguousVariant(modifier: "BackgroundModifier", expectedLabels: ["alignment", "ignoresSafeAreaEdges"])
             }
         case 2:
             let firstLabel = syntax.arguments.first?.label?.text
             switch firstLabel {
             case nil:
-                if let value0 = AnyView(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
-                    let alignment = { if let expr = syntax.argument(named: "alignment")?.expression, let parsed = SwiftUICore.Alignment(syntax: expr) { return parsed } else { return .center } }()
+                if let value0: AnyView = AnyView(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                    let alignment: SwiftUICore.Alignment = if let expr = syntax.argument(named: "alignment")?.expression, let parsed = SwiftUICore.Alignment(syntax: expr) { parsed } else { .center }
                     self = .backgroundWithAnyViewAlignment(value0, alignment: alignment)
-                } else if let value0 = AnyShapeStyle(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
-                    let ignoresSafeAreaEdges = { if let expr = syntax.argument(named: "ignoresSafeAreaEdges")?.expression, let parsed = SwiftUICore.Edge.Set(syntax: expr) { return parsed } else { return .all } }()
+                } else if let value0: AnyShapeStyle = AnyShapeStyle(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                    let ignoresSafeAreaEdges: SwiftUICore.Edge.Set = if let expr = syntax.argument(named: "ignoresSafeAreaEdges")?.expression, let parsed = SwiftUICore.Edge.Set(syntax: expr) { parsed } else { .all }
                     self = .backgroundWithAnyShapeStyleSet(value0, ignoresSafeAreaEdges: ignoresSafeAreaEdges)
                 } else {
                     throw ModifierParseError.invalidArguments(modifier: "BackgroundModifier", variant: "multiple variants", expectedTypes: "AnyView, SwiftUICore.Alignment or AnyShapeStyle, SwiftUICore.Edge.Set")
                 }
             case "in":
                 if let expr_in = syntax.argument(named: "in")?.expression, let in = AnyShape(syntax: expr_in) {
-                    let fillStyle = { if let expr = syntax.argument(named: "fillStyle")?.expression, let parsed = SwiftUICore.FillStyle(syntax: expr) { return parsed } else { return FillStyle() } }()
+                    let fillStyle: SwiftUICore.FillStyle = if let expr = syntax.argument(named: "fillStyle")?.expression, let parsed = SwiftUICore.FillStyle(syntax: expr) { parsed } else { FillStyle() }
                     self = .backgroundWithAnyShapeFillStyle(in: in, fillStyle: fillStyle)
                 } else if let expr_in = syntax.argument(named: "in")?.expression, let in = AnyShape(syntax: expr_in) {
-                    let fillStyle = { if let expr = syntax.argument(named: "fillStyle")?.expression, let parsed = SwiftUICore.FillStyle(syntax: expr) { return parsed } else { return FillStyle() } }()
+                    let fillStyle: SwiftUICore.FillStyle = if let expr = syntax.argument(named: "fillStyle")?.expression, let parsed = SwiftUICore.FillStyle(syntax: expr) { parsed } else { FillStyle() }
                     self = .backgroundWithAnyShapeFillStyle1(in: in, fillStyle: fillStyle)
                 } else {
                     throw ModifierParseError.invalidArguments(modifier: "BackgroundModifier", variant: "multiple variants", expectedTypes: "AnyShape, SwiftUICore.FillStyle or AnyShape, SwiftUICore.FillStyle")
@@ -60,11 +60,11 @@ extension BackgroundModifier: RuntimeViewModifier {
                 throw ModifierParseError.ambiguousVariant(modifier: "BackgroundModifier", expectedLabels: ["in"])
             }
         case 3:
-            if let value0 = AnyShapeStyle(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_in = syntax.argument(named: "in")?.expression, let in = AnyShape(syntax: expr_in) {
-                let fillStyle = { if let expr = syntax.argument(named: "fillStyle")?.expression, let parsed = SwiftUICore.FillStyle(syntax: expr) { return parsed } else { return FillStyle() } }()
+            if let value0: AnyShapeStyle = AnyShapeStyle(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_in = syntax.argument(named: "in")?.expression, let in = AnyShape(syntax: expr_in) {
+                let fillStyle: SwiftUICore.FillStyle = if let expr = syntax.argument(named: "fillStyle")?.expression, let parsed = SwiftUICore.FillStyle(syntax: expr) { parsed } else { FillStyle() }
                 self = .backgroundWithAnyShapeStyleAnyShapeFillStyle(value0, in: in, fillStyle: fillStyle)
-            } else if let value0 = AnyShapeStyle(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_in = syntax.argument(named: "in")?.expression, let in = AnyShape(syntax: expr_in) {
-                let fillStyle = { if let expr = syntax.argument(named: "fillStyle")?.expression, let parsed = SwiftUICore.FillStyle(syntax: expr) { return parsed } else { return FillStyle() } }()
+            } else if let value0: AnyShapeStyle = AnyShapeStyle(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_in = syntax.argument(named: "in")?.expression, let in = AnyShape(syntax: expr_in) {
+                let fillStyle: SwiftUICore.FillStyle = if let expr = syntax.argument(named: "fillStyle")?.expression, let parsed = SwiftUICore.FillStyle(syntax: expr) { parsed } else { FillStyle() }
                 self = .backgroundWithAnyShapeStyleAnyShapeFillStyle1(value0, in: in, fillStyle: fillStyle)
             } else {
                 throw ModifierParseError.invalidArguments(modifier: "BackgroundModifier", variant: "multiple variants", expectedTypes: "AnyShapeStyle, AnyShape, SwiftUICore.FillStyle or AnyShapeStyle, AnyShape, SwiftUICore.FillStyle")

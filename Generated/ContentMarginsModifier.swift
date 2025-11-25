@@ -23,14 +23,14 @@ extension ContentMarginsModifier: RuntimeViewModifier {
             let for: SwiftUI.ContentMarginPlacement = if let expr = syntax.argument(named: "for")?.expression, let parsed = SwiftUI.ContentMarginPlacement(syntax: expr) { parsed } else { .automatic }
             self = .contentMarginsWithCGFloatContentMarginPlacement(value0, for: for)
         case 3:
-            if let value1 = SwiftUICore.EdgeInsets(syntax: (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil)!) {
-                let value0 = { if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = SwiftUICore.Edge.Set(syntax: expr) { return parsed } else { return .all } }()
-                let for = { if let expr = syntax.argument(named: "for")?.expression, let parsed = SwiftUI.ContentMarginPlacement(syntax: expr) { return parsed } else { return .automatic } }()
+            if let value1: SwiftUICore.EdgeInsets = SwiftUICore.EdgeInsets(syntax: (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil)!) {
+                let value0: SwiftUICore.Edge.Set = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = SwiftUICore.Edge.Set(syntax: expr) { parsed } else { .all }
+                let for: SwiftUI.ContentMarginPlacement = if let expr = syntax.argument(named: "for")?.expression, let parsed = SwiftUI.ContentMarginPlacement(syntax: expr) { parsed } else { .automatic }
                 self = .contentMarginsWithSetEdgeInsetsContentMarginPlacement(value0, value1, for: for)
             } else if true {
-                let value0 = { if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = SwiftUICore.Edge.Set(syntax: expr) { return parsed } else { return .all } }()
-                let value1 = { if let expr = (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil) { return CoreFoundation.CGFloat(syntax: expr) } else { return nil } }()
-                let for = { if let expr = syntax.argument(named: "for")?.expression, let parsed = SwiftUI.ContentMarginPlacement(syntax: expr) { return parsed } else { return .automatic } }()
+                let value0: SwiftUICore.Edge.Set = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = SwiftUICore.Edge.Set(syntax: expr) { parsed } else { .all }
+                let value1: CoreFoundation.CGFloat = if let expr = (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil) { CoreFoundation.CGFloat(syntax: expr) } else { nil }
+                let for: SwiftUI.ContentMarginPlacement = if let expr = syntax.argument(named: "for")?.expression, let parsed = SwiftUI.ContentMarginPlacement(syntax: expr) { parsed } else { .automatic }
                 self = .contentMarginsWithSetCGFloatOptionalContentMarginPlacement(value0, value1, for: for)
             } else {
                 throw ModifierParseError.invalidArguments(modifier: "ContentMarginsModifier", variant: "multiple variants", expectedTypes: "SwiftUICore.Edge.Set, SwiftUICore.EdgeInsets, SwiftUI.ContentMarginPlacement or SwiftUICore.Edge.Set, CoreFoundation.CGFloat?, SwiftUI.ContentMarginPlacement")

@@ -87,7 +87,7 @@ extension AccessibilityModifier: RuntimeViewModifier {
                 }
                 self = .accessibilityWithText(value: value)
             default:
-                throw ModifierParseError.ambiguousVariant(modifier: "AccessibilityModifier", expectedLabels: ["identifier", "inputLabels", "hint", "hidden", "selectionIdentifier", "addTraits", "value", "activationPoint", "label", "sortPriority", "removeTraits"])
+                throw ModifierParseError.ambiguousVariant(modifier: "AccessibilityModifier", expectedLabels: ["inputLabels", "addTraits", "selectionIdentifier", "identifier", "hint", "value", "hidden", "activationPoint", "removeTraits", "label", "sortPriority"])
             }
         default:
             throw ModifierParseError.unexpectedArgumentCount(modifier: "AccessibilityModifier", expected: [1], found: syntax.arguments.count)

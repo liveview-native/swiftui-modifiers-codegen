@@ -35,7 +35,7 @@ extension NavigationDestinationModifier: RuntimeViewModifier {
                 }
                 self = .navigationDestinationWithOptionalAnyHashableClosureAnyView(item: item)
             default:
-                throw ModifierParseError.ambiguousVariant(modifier: "NavigationDestinationModifier", expectedLabels: ["item", "for", "isPresented"])
+                throw ModifierParseError.ambiguousVariant(modifier: "NavigationDestinationModifier", expectedLabels: ["item", "isPresented", "for"])
             }
         default:
             throw ModifierParseError.unexpectedArgumentCount(modifier: "NavigationDestinationModifier", expected: [1], found: syntax.arguments.count)

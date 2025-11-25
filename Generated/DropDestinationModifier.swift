@@ -18,7 +18,7 @@ extension DropDestinationModifier: RuntimeViewModifier {
     public init(syntax: FunctionCallExprSyntax) throws {
         switch syntax.arguments.count {
         case 1:
-            let for = if let expr = syntax.argument(named: "for")?.expression { T.Type(syntax: expr) } else { nil }
+            let for: T.Type? = if let expr = syntax.argument(named: "for")?.expression { T.Type(syntax: expr) } else { nil }
             self = .dropDestinationWithTypeBoolVoid(for: for)
         case 2:
             let for: T.Type = if let expr = syntax.argument(named: "for")?.expression, let parsed = T.Type(syntax: expr) { parsed } else { T.self }

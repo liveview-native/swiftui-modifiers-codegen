@@ -16,12 +16,12 @@ extension SymbolEffectModifier: RuntimeViewModifier {
     public init(syntax: FunctionCallExprSyntax) throws {
         switch syntax.arguments.count {
         case 3:
-            if let value0 = T(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
-                let options = { if let expr = syntax.argument(named: "options")?.expression, let parsed = Symbols.SymbolEffectOptions(syntax: expr) { return parsed } else { return .default } }()
-                let isActive = { if let expr = syntax.argument(named: "isActive")?.expression, let parsed = Swift.Bool(syntax: expr) { return parsed } else { return true } }()
+            if let value0: T = T(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                let options: Symbols.SymbolEffectOptions = if let expr = syntax.argument(named: "options")?.expression, let parsed = Symbols.SymbolEffectOptions(syntax: expr) { parsed } else { .default }
+                let isActive: Swift.Bool = if let expr = syntax.argument(named: "isActive")?.expression, let parsed = Swift.Bool(syntax: expr) { parsed } else { true }
                 self = .symbolEffectWithTSymbolEffectOptionsBool(value0, options: options, isActive: isActive)
-            } else if let value0 = T(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_value = syntax.argument(named: "value")?.expression, let value = U(syntax: expr_value) {
-                let options = { if let expr = syntax.argument(named: "options")?.expression, let parsed = Symbols.SymbolEffectOptions(syntax: expr) { return parsed } else { return .default } }()
+            } else if let value0: T = T(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_value = syntax.argument(named: "value")?.expression, let value = U(syntax: expr_value) {
+                let options: Symbols.SymbolEffectOptions = if let expr = syntax.argument(named: "options")?.expression, let parsed = Symbols.SymbolEffectOptions(syntax: expr) { parsed } else { .default }
                 self = .symbolEffectWithTSymbolEffectOptionsU(value0, options: options, value: value)
             } else {
                 throw ModifierParseError.invalidArguments(modifier: "SymbolEffectModifier", variant: "multiple variants", expectedTypes: "T, Symbols.SymbolEffectOptions, Swift.Bool or T, Symbols.SymbolEffectOptions, U")

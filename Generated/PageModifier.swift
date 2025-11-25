@@ -29,7 +29,7 @@ extension PageModifier: RuntimeViewModifier {
                 }
                 self = .pageWithIndexDisplayMode(indexDisplayMode: indexDisplayMode)
             default:
-                throw ModifierParseError.ambiguousVariant(modifier: "PageModifier", expectedLabels: ["backgroundDisplayMode", "indexDisplayMode"])
+                throw ModifierParseError.ambiguousVariant(modifier: "PageModifier", expectedLabels: ["indexDisplayMode", "backgroundDisplayMode"])
             }
         default:
             throw ModifierParseError.unexpectedArgumentCount(modifier: "PageModifier", expected: [1], found: syntax.arguments.count)

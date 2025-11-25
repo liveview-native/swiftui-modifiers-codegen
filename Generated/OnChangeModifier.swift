@@ -23,10 +23,10 @@ extension OnChangeModifier: RuntimeViewModifier {
             self = .onChangeWithVVoid(of: of)
         case 2:
             if let expr_of = syntax.argument(named: "of")?.expression, let of = V(syntax: expr_of) {
-                let initial = { if let expr = syntax.argument(named: "initial")?.expression, let parsed = Swift.Bool(syntax: expr) { return parsed } else { return false } }()
+                let initial: Swift.Bool = if let expr = syntax.argument(named: "initial")?.expression, let parsed = Swift.Bool(syntax: expr) { parsed } else { false }
                 self = .onChangeWithVBoolVoid(of: of, initial: initial)
             } else if let expr_of = syntax.argument(named: "of")?.expression, let of = V(syntax: expr_of) {
-                let initial = { if let expr = syntax.argument(named: "initial")?.expression, let parsed = Swift.Bool(syntax: expr) { return parsed } else { return false } }()
+                let initial: Swift.Bool = if let expr = syntax.argument(named: "initial")?.expression, let parsed = Swift.Bool(syntax: expr) { parsed } else { false }
                 self = .onChangeWithVBoolVoid1(of: of, initial: initial)
             } else {
                 throw ModifierParseError.invalidArguments(modifier: "OnChangeModifier", variant: "multiple variants", expectedTypes: "V, Swift.Bool or V, Swift.Bool")

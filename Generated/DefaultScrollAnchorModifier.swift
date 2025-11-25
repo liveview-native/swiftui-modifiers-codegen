@@ -16,10 +16,10 @@ extension DefaultScrollAnchorModifier: RuntimeViewModifier {
     public init(syntax: FunctionCallExprSyntax) throws {
         switch syntax.arguments.count {
         case 1:
-            let value0 = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUICore.UnitPoint(syntax: expr) } else { nil }
+            let value0: SwiftUICore.UnitPoint? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUICore.UnitPoint(syntax: expr) } else { nil }
             self = .defaultScrollAnchorWithUnitPointOptional(value0)
         case 2:
-            let value0 = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUICore.UnitPoint(syntax: expr) } else { nil }
+            let value0: SwiftUICore.UnitPoint? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUICore.UnitPoint(syntax: expr) } else { nil }
             guard let expr_for = syntax.argument(named: "for")?.expression, let for = SwiftUI.ScrollAnchorRole(syntax: expr_for) else {
                 throw ModifierParseError.invalidArguments(modifier: "DefaultScrollAnchorModifier", variant: "defaultScrollAnchorWithUnitPointOptionalScrollAnchorRole", expectedTypes: "SwiftUICore.UnitPoint?, SwiftUI.ScrollAnchorRole")
             }

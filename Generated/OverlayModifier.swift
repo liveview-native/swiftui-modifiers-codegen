@@ -21,11 +21,11 @@ extension OverlayModifier: RuntimeViewModifier {
             let alignment: SwiftUICore.Alignment = if let expr = syntax.argument(named: "alignment")?.expression, let parsed = SwiftUICore.Alignment(syntax: expr) { parsed } else { .center }
             self = .overlayWithAlignmentClosureAnyView(alignment: alignment)
         case 2:
-            if let value0 = AnyView(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
-                let alignment = { if let expr = syntax.argument(named: "alignment")?.expression, let parsed = SwiftUICore.Alignment(syntax: expr) { return parsed } else { return .center } }()
+            if let value0: AnyView = AnyView(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                let alignment: SwiftUICore.Alignment = if let expr = syntax.argument(named: "alignment")?.expression, let parsed = SwiftUICore.Alignment(syntax: expr) { parsed } else { .center }
                 self = .overlayWithAnyViewAlignment(value0, alignment: alignment)
-            } else if let value0 = AnyShapeStyle(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
-                let ignoresSafeAreaEdges = { if let expr = syntax.argument(named: "ignoresSafeAreaEdges")?.expression, let parsed = SwiftUICore.Edge.Set(syntax: expr) { return parsed } else { return .all } }()
+            } else if let value0: AnyShapeStyle = AnyShapeStyle(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                let ignoresSafeAreaEdges: SwiftUICore.Edge.Set = if let expr = syntax.argument(named: "ignoresSafeAreaEdges")?.expression, let parsed = SwiftUICore.Edge.Set(syntax: expr) { parsed } else { .all }
                 self = .overlayWithAnyShapeStyleSet(value0, ignoresSafeAreaEdges: ignoresSafeAreaEdges)
             } else {
                 throw ModifierParseError.invalidArguments(modifier: "OverlayModifier", variant: "multiple variants", expectedTypes: "AnyView, SwiftUICore.Alignment or AnyShapeStyle, SwiftUICore.Edge.Set")
