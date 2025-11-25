@@ -68,6 +68,37 @@ public struct InterfaceParser: Sendable {
                     modifiers.append(modifier)
                 }
             }
+            // Also handle functions inside #if blocks
+            else if let ifConfigDecl = member.decl.as(IfConfigDeclSyntax.self) {
+                modifiers.append(contentsOf: parseFunctionsFromIfConfig(ifConfigDecl))
+            }
+        }
+        
+        return modifiers
+    }
+    
+    /// Recursively extracts functions from #if/#elseif/#else blocks.
+    private func parseFunctionsFromIfConfig(_ ifConfig: IfConfigDeclSyntax) -> [ModifierInfo] {
+        var modifiers: [ModifierInfo] = []
+        
+        for clause in ifConfig.clauses {
+            // Process all elements in this clause (whether #if, #elseif, or #else)
+            if let elements = clause.elements {
+                // The elements can be a MemberBlockItemListSyntax
+                if let memberList = elements.as(MemberBlockItemListSyntax.self) {
+                    for member in memberList {
+                        if let funcDecl = member.decl.as(FunctionDeclSyntax.self) {
+                            if let modifier = parseFunction(funcDecl) {
+                                modifiers.append(modifier)
+                            }
+                        }
+                        // Handle nested #if blocks
+                        else if let nestedIfConfig = member.decl.as(IfConfigDeclSyntax.self) {
+                            modifiers.append(contentsOf: parseFunctionsFromIfConfig(nestedIfConfig))
+                        }
+                    }
+                }
+            }
         }
         
         return modifiers
