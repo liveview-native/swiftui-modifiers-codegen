@@ -304,6 +304,30 @@ public struct EnumGenerator: Sendable {
             lines.append("    \(caseStr)")
         }
         
+        lines.append("")
+        
+        // Add ParseError nested type
+        lines.append("    /// Errors that can occur when parsing this modifier from syntax.")
+        lines.append("    public enum ParseError: Error, CustomStringConvertible {")
+        lines.append("        /// The number of arguments doesn't match any known variant.")
+        lines.append("        case unexpectedArgumentCount(expected: [Int], found: Int)")
+        lines.append("        /// The arguments could not be parsed for the specified variant.")
+        lines.append("        case invalidArguments(forVariant: String, expectedTypes: String)")
+        lines.append("        /// Multiple variants match the argument count but labels don't match.")
+        lines.append("        case ambiguousVariant(expectedLabels: [String])")
+        lines.append("")
+        lines.append("        public var description: String {")
+        lines.append("            switch self {")
+        lines.append("            case .unexpectedArgumentCount(let expected, let found):")
+        lines.append("                return \"\(enumName): unexpected argument count \\(found), expected one of \\(expected)\"")
+        lines.append("            case .invalidArguments(let variant, let expectedTypes):")
+        lines.append("                return \"\(enumName): invalid arguments for '\\(variant)', expected types: \\(expectedTypes)\"")
+        lines.append("            case .ambiguousVariant(let expectedLabels):")
+        lines.append("                return \"\(enumName): ambiguous variant, expected first argument label to be one of \\(expectedLabels)\"")
+        lines.append("            }")
+        lines.append("        }")
+        lines.append("    }")
+        
         lines.append("}")
         lines.append("")
         
@@ -330,18 +354,15 @@ public struct EnumGenerator: Sendable {
             
             if variants.count == 1 {
                 let (modifier, caseName) = variants[0]
-                lines.append(contentsOf: generateInitCase(for: modifier, caseName: caseName, indent: "            "))
+                lines.append(contentsOf: generateInitCase(for: modifier, caseName: caseName, enumName: enumName, indent: "            "))
             } else {
-                // Multiple variants with same arg count - need to disambiguate
-                // For now, just use the first one and add a TODO
-                let (modifier, caseName) = variants[0]
-                lines.append("            // TODO: Disambiguate between multiple variants")
-                lines.append(contentsOf: generateInitCase(for: modifier, caseName: caseName, indent: "            "))
+                // Multiple variants with same arg count - disambiguate by argument labels
+                lines.append(contentsOf: generateDisambiguatedInitCases(for: variants, enumName: enumName, indent: "            "))
             }
         }
         
         lines.append("        default:")
-        lines.append("            throw ModifierError()")
+        lines.append("            throw \(enumName).ParseError.unexpectedArgumentCount(expected: [\(modifiersByArgCount.keys.sorted().map { String($0) }.joined(separator: ", "))], found: syntax.arguments.count)")
         lines.append("        }")
         lines.append("    }")
         lines.append("")
@@ -363,7 +384,7 @@ public struct EnumGenerator: Sendable {
     }
     
     /// Generates the init case parsing code for a modifier variant.
-    private func generateInitCase(for modifier: ModifierInfo, caseName: String, indent: String) -> [String] {
+    private func generateInitCase(for modifier: ModifierInfo, caseName: String, enumName: String, indent: String) -> [String] {
         var lines: [String] = []
         
         let nonClosureParams = modifier.parameters.filter { !isClosure($0.type) }
@@ -375,33 +396,23 @@ public struct EnumGenerator: Sendable {
         
         // Generate parsing for each parameter
         var guardConditions: [String] = []
-        var paramValues: [String] = []
         
         for (index, param) in nonClosureParams.enumerated() {
             let varName = param.label ?? "value\(index)"
             let type = cleanTypeForEnumCase(param.type)
             
             // Generate the parsing expression
-            let parseExpr: String
-            if type.hasSuffix("?") {
-                // Optional type - use optional init
-                let baseType = String(type.dropLast())
-                parseExpr = "\(baseType)(syntax: syntax.arguments[\(index)].expression)"
-            } else {
-                parseExpr = "\(type)(syntax: syntax.arguments[\(index)].expression)"
+            if !type.hasSuffix("?") {
+                let parseExpr = "\(type)(syntax: syntax.arguments[\(index)].expression)"
                 guardConditions.append("let \(varName) = \(parseExpr)")
-            }
-            
-            if type.hasSuffix("?") {
-                paramValues.append("\(varName): \(type.dropLast())(syntax: syntax.arguments[\(index)].expression)")
-            } else {
-                paramValues.append(param.label != nil ? "\(param.label!): \(varName)" : varName)
             }
         }
         
         if !guardConditions.isEmpty {
-            lines.append("\(indent)guard \(guardConditions.joined(separator: ",")) else {")
-            lines.append("\(indent)    throw ModifierError()")
+            lines.append("\(indent)guard \(guardConditions.joined(separator: ", ")) else {")
+            // Generate specific error with parameter info
+            let expectedTypes = nonClosureParams.map { cleanTypeForEnumCase($0.type) }.joined(separator: ", ")
+            lines.append("\(indent)    throw \(enumName).ParseError.invalidArguments(forVariant: \"\(caseName)\", expectedTypes: \"\(expectedTypes)\")")
             lines.append("\(indent)}")
         }
         
@@ -411,6 +422,61 @@ public struct EnumGenerator: Sendable {
         }.joined(separator: ", ")
         
         lines.append("\(indent)self = .\(caseName)(\(caseParams))")
+        
+        return lines
+    }
+    
+    /// Generates disambiguation logic for multiple variants with the same argument count.
+    private func generateDisambiguatedInitCases(for variants: [(ModifierInfo, String)], enumName: String, indent: String) -> [String] {
+        var lines: [String] = []
+        
+        // Build a mapping of argument labels to variants
+        // Use the first argument's label as the primary discriminator
+        var variantsByFirstLabel: [String?: [(ModifierInfo, String)]] = [:]
+        for (modifier, caseName) in variants {
+            let nonClosureParams = modifier.parameters.filter { !isClosure($0.type) }
+            let firstLabel = nonClosureParams.first?.label
+            variantsByFirstLabel[firstLabel, default: []].append((modifier, caseName))
+        }
+        
+        // If we can disambiguate by first argument label
+        if variantsByFirstLabel.count > 1 {
+            lines.append("\(indent)let firstLabel = syntax.arguments.first?.label?.text")
+            lines.append("\(indent)switch firstLabel {")
+            
+            for (label, labelVariants) in variantsByFirstLabel.sorted(by: { ($0.key ?? "") < ($1.key ?? "") }) {
+                if let label = label {
+                    lines.append("\(indent)case \"\(label)\":")
+                } else {
+                    lines.append("\(indent)case nil:")
+                }
+                
+                if labelVariants.count == 1 {
+                    let (modifier, caseName) = labelVariants[0]
+                    lines.append(contentsOf: generateInitCase(for: modifier, caseName: caseName, enumName: enumName, indent: indent + "    "))
+                } else {
+                    // Still ambiguous - try second-level disambiguation or fall back to first
+                    let (modifier, caseName) = labelVariants[0]
+                    let otherVariants = labelVariants.dropFirst().map { $0.1 }.joined(separator: ", ")
+                    lines.append("\(indent)    // Note: Could not fully disambiguate from variants: \(otherVariants)")
+                    lines.append(contentsOf: generateInitCase(for: modifier, caseName: caseName, enumName: enumName, indent: indent + "    "))
+                }
+            }
+            
+            // Add default case for unexpected labels
+            let expectedLabels = variantsByFirstLabel.keys.compactMap { $0 }.map { "\"\($0)\"" }.joined(separator: ", ")
+            lines.append("\(indent)default:")
+            lines.append("\(indent)    throw \(enumName).ParseError.ambiguousVariant(expectedLabels: [\(expectedLabels)])")
+            lines.append("\(indent)}")
+        } else {
+            // Cannot disambiguate by label - try by type
+            // For now, attempt first variant and provide detailed error on failure
+            let (modifier, caseName) = variants[0]
+            let otherVariants = variants.dropFirst().map { $0.1 }.joined(separator: ", ")
+            lines.append("\(indent)// Note: Multiple variants with same argument count and labels. Attempting: \(caseName)")
+            lines.append("\(indent)// Other variants: \(otherVariants)")
+            lines.append(contentsOf: generateInitCase(for: modifier, caseName: caseName, enumName: enumName, indent: indent))
+        }
         
         return lines
     }
