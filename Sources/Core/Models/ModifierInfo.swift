@@ -24,6 +24,9 @@ public struct ModifierInfo: Equatable, Sendable {
     /// Generic constraints if applicable.
     public let genericConstraints: [String]
     
+    /// Generic parameters with their constraints (e.g., ["Label": "View", "S": "StringProtocol"]).
+    public let genericParameters: [GenericParameter]
+    
     /// Creates a new modifier info instance.
     ///
     /// - Parameters:
@@ -34,6 +37,7 @@ public struct ModifierInfo: Equatable, Sendable {
     ///   - documentation: Optional documentation comments.
     ///   - isGeneric: Whether this modifier is generic. Defaults to false.
     ///   - genericConstraints: Generic constraints if applicable. Defaults to empty array.
+    ///   - genericParameters: Generic parameters with constraints. Defaults to empty array.
     public init(
         name: String,
         parameters: [Parameter],
@@ -41,7 +45,8 @@ public struct ModifierInfo: Equatable, Sendable {
         availability: String? = nil,
         documentation: String? = nil,
         isGeneric: Bool = false,
-        genericConstraints: [String] = []
+        genericConstraints: [String] = [],
+        genericParameters: [GenericParameter] = []
     ) {
         self.name = name
         self.parameters = parameters
@@ -50,6 +55,26 @@ public struct ModifierInfo: Equatable, Sendable {
         self.documentation = documentation
         self.isGeneric = isGeneric
         self.genericConstraints = genericConstraints
+        self.genericParameters = genericParameters
+    }
+    
+    /// Represents a generic parameter with its constraint.
+    public struct GenericParameter: Equatable, Sendable {
+        /// The name of the generic parameter (e.g., "Label", "S", "Content").
+        public let name: String
+        
+        /// The constraint type (e.g., "View", "StringProtocol", "Hashable").
+        public let constraint: String?
+        
+        /// Creates a new generic parameter.
+        ///
+        /// - Parameters:
+        ///   - name: The name of the generic parameter.
+        ///   - constraint: The constraint type if any.
+        public init(name: String, constraint: String? = nil) {
+            self.name = name
+            self.constraint = constraint
+        }
     }
     
     /// Represents a parameter in a modifier method.

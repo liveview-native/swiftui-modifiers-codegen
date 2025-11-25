@@ -23,9 +23,6 @@ struct ModifierSwiftCLI: ParsableCommand {
     @Flag(name: .long, help: "Clean output directory before generating")
     var clean: Bool = false
     
-    @Flag(name: .long, inversion: .prefixedNo, help: "Organize output files by category (default: true)")
-    var categorize: Bool = true
-    
     func run() throws {
         if verbose {
             print("ModifierSwift v0.1.0")
@@ -101,16 +98,70 @@ struct ModifierSwiftCLI: ParsableCommand {
             print()
         }
         
-        // Step 4: Generate one file per modifier name
+        // Step 4: Filter out underscore-prefixed modifiers
+        let filteredModifiersByName = modifiersByName.filter { name, _ in
+            !name.hasPrefix("_")
+        }
+        
+        if verbose && filteredModifiersByName.count < modifiersByName.count {
+            let skipped = modifiersByName.count - filteredModifiersByName.count
+            print("⏭️  Skipping \(skipped) underscore-prefixed modifier(s)")
+            print()
+        }
+        
+        // Step 5: Parse protocol styles for type erasers
+        let styleParser = ProtocolStyleParser()
+        var allStyles: [String: Set<ProtocolStyleParser.StyleCase>] = [:]
+        
+        for file in interfaceFiles {
+            do {
+                let styles = try styleParser.parse(filePath: file)
+                for (protocol_, cases) in styles {
+                    allStyles[protocol_, default: []].formUnion(cases)
+                }
+            } catch {
+                // Silently skip files that fail to parse for styles
+            }
+        }
+        
+        if verbose && !allStyles.isEmpty {
+            print("🎨 Found \(allStyles.count) protocol style(s) for type erasers")
+            print()
+        }
+        
+        // Step 6: Generate type eraser enums
+        let typeEraserGenerator = TypeEraserGenerator()
+        var typeEraserCodes: [GeneratedCode] = []
+        
+        for (protocolName, cases) in allStyles.sorted(by: { $0.key < $1.key }) {
+            if let eraserName = TypeEraserMapping.customEraserName(for: protocolName) {
+                let code = typeEraserGenerator.generate(
+                    protocolName: protocolName,
+                    eraserName: eraserName,
+                    styleCases: cases
+                )
+                typeEraserCodes.append(code)
+                
+                if verbose {
+                    print("  ✓ Generated \(eraserName).swift (\(cases.count) style case\(cases.count == 1 ? "" : "s"))")
+                }
+            }
+        }
+        
+        if verbose && !typeEraserCodes.isEmpty {
+            print()
+        }
+        
+        // Step 7: Generate one file per modifier name
         if verbose {
-            print("🔨 Generating code...")
+            print("🔨 Generating modifier code...")
         }
         
         let generator = EnumGenerator()
         var generatedCodes: [GeneratedCode] = []
         var totalGenerated = 0
         
-        for (name, variants) in modifiersByName.sorted(by: { $0.key < $1.key }) {
+        for (name, variants) in filteredModifiersByName.sorted(by: { $0.key < $1.key }) {
             guard !variants.isEmpty else { continue }
             
             // Create enum name from modifier name
@@ -137,7 +188,7 @@ struct ModifierSwiftCLI: ParsableCommand {
             print()
         }
         
-        // Step 5: Write output files
+        // Step 8: Write output files
         if verbose {
             print()
             print("💾 Writing files to \(output)...")
@@ -153,18 +204,25 @@ struct ModifierSwiftCLI: ParsableCommand {
             }
         }
         
-        // Write all files to output directory
-        try outputManager.writeAll(generatedCodes, to: output)
+        // Write all files to output directory (type erasers + modifiers)
+        let allCodes = typeEraserCodes + generatedCodes
+        try outputManager.writeAll(allCodes, to: output)
         
         if verbose {
             print()
         }
         
-        // Step 6: Summary
+        // Step 9: Summary
         if verbose {
             print()
         }
-        print("✅ Successfully generated \(totalGenerated) enum file(s) for \(allModifiers.count) total modifier variants")
+        let totalFiles = totalGenerated + typeEraserCodes.count
+        print("✅ Successfully generated \(totalFiles) file(s):")
+        print("   • \(totalGenerated) modifier enum(s)")
+        if !typeEraserCodes.isEmpty {
+            print("   • \(typeEraserCodes.count) type eraser(s)")
+        }
+        print("   • \(allModifiers.count) total modifier variants")
         if interfaceFiles.count > 1 {
             print("📚 Processed \(interfaceFiles.count) interface files")
         }

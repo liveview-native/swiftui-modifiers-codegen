@@ -109,6 +109,9 @@ public struct InterfaceParser: Sendable {
         // Extract generic constraints
         let genericConstraints = extractGenericConstraints(from: funcDecl.genericWhereClause)
         
+        // Extract generic parameters with their constraints
+        let genericParameters = extractGenericParameters(from: funcDecl.genericParameterClause, whereClause: funcDecl.genericWhereClause)
+        
         return ModifierInfo(
             name: name,
             parameters: parameters,
@@ -116,7 +119,8 @@ public struct InterfaceParser: Sendable {
             availability: availability,
             documentation: documentation,
             isGeneric: isGeneric,
-            genericConstraints: genericConstraints
+            genericConstraints: genericConstraints,
+            genericParameters: genericParameters
         )
     }
     
@@ -207,6 +211,49 @@ public struct InterfaceParser: Sendable {
         
         return clause.requirements.map { req in
             req.description.trimmingCharacters(in: .whitespaces)
+        }
+    }
+    
+    /// Extracts generic parameters with their constraints.
+    private func extractGenericParameters(from clause: GenericParameterClauseSyntax?, whereClause: GenericWhereClauseSyntax?) -> [ModifierInfo.GenericParameter] {
+        guard let clause = clause else {
+            return []
+        }
+        
+        // Build a map of constraints from the where clause
+        var constraintMap: [String: String] = [:]
+        if let whereClause = whereClause {
+            for requirement in whereClause.requirements {
+                // Handle conformance requirements like "Label: View"
+                if let conformance = requirement.requirement.as(ConformanceRequirementSyntax.self) {
+                    let leftType = conformance.leftType.description.trimmingCharacters(in: .whitespaces)
+                    let rightType = conformance.rightType.description.trimmingCharacters(in: .whitespaces)
+                    constraintMap[leftType] = rightType
+                }
+                // Handle same-type requirements like "Label == Text"
+                else if let sameType = requirement.requirement.as(SameTypeRequirementSyntax.self) {
+                    let leftType = sameType.leftType.description.trimmingCharacters(in: .whitespaces)
+                    let rightType = sameType.rightType.description.trimmingCharacters(in: .whitespaces)
+                    constraintMap[leftType] = rightType
+                }
+            }
+        }
+        
+        return clause.parameters.map { param in
+            let name = param.name.text
+            
+            // First check for inherited type in the parameter declaration (e.g., <Label: View>)
+            var constraint: String? = nil
+            if let inheritedType = param.inheritedType {
+                constraint = inheritedType.description.trimmingCharacters(in: .whitespaces)
+            }
+            
+            // Override with where clause constraint if present
+            if let whereConstraint = constraintMap[name] {
+                constraint = whereConstraint
+            }
+            
+            return ModifierInfo.GenericParameter(name: name, constraint: constraint)
         }
     }
 }
