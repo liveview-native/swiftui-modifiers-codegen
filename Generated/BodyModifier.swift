@@ -13,17 +13,13 @@ extension BodyModifier: RuntimeViewModifier {
     public static var baseName: String { "body" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_children = syntax.argument(named: "children")?.expression, let children = SwiftUICore._VariadicView.Children(syntax: expr_children) else {
-                throw ModifierParseError.invalidArguments(modifier: "BodyModifier", variant: "body", expectedTypes: "SwiftUICore._VariadicView.Children")
+        if syntax.arguments.count == 1 {
+            if let children = SwiftUICore._VariadicView.Children(syntax: syntax.argument(named: "children")?.expression!) {
+                self = .body(children: children)
+                return
             }
-            self = .body(children: children)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "BodyModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .body(let children):

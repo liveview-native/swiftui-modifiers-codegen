@@ -14,28 +14,17 @@ extension ScrollIndicatorsFlashModifier: RuntimeViewModifier {
     public static var baseName: String { "scrollIndicatorsFlash" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let firstLabel = syntax.arguments.first?.label?.text
-            switch firstLabel {
-            case "onAppear":
-                guard let expr_onAppear = syntax.argument(named: "onAppear")?.expression, let onAppear = Swift.Bool(syntax: expr_onAppear) else {
-                    throw ModifierParseError.invalidArguments(modifier: "ScrollIndicatorsFlashModifier", variant: "scrollIndicatorsFlashWithBool", expectedTypes: "Swift.Bool")
-                }
-                self = .scrollIndicatorsFlashWithBool(onAppear: onAppear)
-            case "trigger":
-                guard let expr_trigger = syntax.argument(named: "trigger")?.expression, let trigger = some Equatable(syntax: expr_trigger) else {
-                    throw ModifierParseError.invalidArguments(modifier: "ScrollIndicatorsFlashModifier", variant: "scrollIndicatorsFlashWithsomeEquatable", expectedTypes: "some Equatable")
-                }
+        if syntax.arguments.count == 1 {
+            if let trigger = some Equatable(syntax: syntax.argument(named: "trigger")?.expression!) {
                 self = .scrollIndicatorsFlashWithsomeEquatable(trigger: trigger)
-            default:
-                throw ModifierParseError.ambiguousVariant(modifier: "ScrollIndicatorsFlashModifier", expectedLabels: ["onAppear", "trigger"])
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ScrollIndicatorsFlashModifier", expected: [1], found: syntax.arguments.count)
+            if let onAppear = Swift.Bool(syntax: syntax.argument(named: "onAppear")?.expression!) {
+                self = .scrollIndicatorsFlashWithBool(onAppear: onAppear)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .scrollIndicatorsFlashWithsomeEquatable(let trigger):

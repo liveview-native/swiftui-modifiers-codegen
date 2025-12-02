@@ -13,16 +13,11 @@ extension ListSectionMarginsModifier: RuntimeViewModifier {
     public static var baseName: String { "listSectionMargins" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            let value0: SwiftUICore.Edge.Set = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = SwiftUICore.Edge.Set(syntax: expr) { parsed } else { .all }
-            let value1: CoreFoundation.CGFloat? = if let expr = (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil) { CoreFoundation.CGFloat(syntax: expr) } else { nil }
-            self = .listSectionMargins(value0, value1)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ListSectionMarginsModifier", expected: [2], found: syntax.arguments.count)
-        }
+        let value0: SwiftUICore.Edge.Set = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { SwiftUICore.Edge.Set(syntax: $0) } ?? .all
+        let value1: CoreFoundation.CGFloat? = (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil).flatMap { CoreFoundation.CGFloat(syntax: $0) } ?? nil
+        self = .listSectionMargins(value0, value1)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .listSectionMargins(let value0, let value1):

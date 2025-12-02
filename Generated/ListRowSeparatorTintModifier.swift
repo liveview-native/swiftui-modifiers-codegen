@@ -13,16 +13,11 @@ extension ListRowSeparatorTintModifier: RuntimeViewModifier {
     public static var baseName: String { "listRowSeparatorTint" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            let value0: SwiftUICore.Color? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUICore.Color(syntax: expr) } else { nil }
-            let edges: SwiftUICore.VerticalEdge.Set = if let expr = syntax.argument(named: "edges")?.expression, let parsed = SwiftUICore.VerticalEdge.Set(syntax: expr) { parsed } else { .all }
-            self = .listRowSeparatorTint(value0, edges: edges)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ListRowSeparatorTintModifier", expected: [2], found: syntax.arguments.count)
-        }
+        let value0: SwiftUICore.Color? = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { SwiftUICore.Color(syntax: $0) } ?? nil
+        let edges: SwiftUICore.VerticalEdge.Set = syntax.argument(named: "edges")?.expression.flatMap { SwiftUICore.VerticalEdge.Set(syntax: $0) } ?? .all
+        self = .listRowSeparatorTint(value0, edges: edges)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .listRowSeparatorTint(let value0, let edges):

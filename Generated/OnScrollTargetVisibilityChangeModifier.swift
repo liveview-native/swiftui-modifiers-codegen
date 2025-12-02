@@ -13,18 +13,11 @@ extension OnScrollTargetVisibilityChangeModifier: RuntimeViewModifier {
     public static var baseName: String { "onScrollTargetVisibilityChange" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            guard let expr_idType = syntax.argument(named: "idType")?.expression, let idType = AnyHashable.Type(syntax: expr_idType) else {
-                throw ModifierParseError.invalidArguments(modifier: "OnScrollTargetVisibilityChangeModifier", variant: "onScrollTargetVisibilityChange", expectedTypes: "AnyHashable.Type, Swift.Double")
-            }
-            let threshold: Swift.Double = if let expr = syntax.argument(named: "threshold")?.expression, let parsed = Swift.Double(syntax: expr) { parsed } else { 0.5 }
-            self = .onScrollTargetVisibilityChange(idType: idType, threshold: threshold)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "OnScrollTargetVisibilityChangeModifier", expected: [2], found: syntax.arguments.count)
-        }
+        let idType: AnyHashable.Type = syntax.argument(named: "idType")?.expression.flatMap { AnyHashable.Type(syntax: $0) }
+        let threshold: Swift.Double = syntax.argument(named: "threshold")?.expression.flatMap { Swift.Double(syntax: $0) } ?? 0.5
+        self = .onScrollTargetVisibilityChange(idType: idType, threshold: threshold)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .onScrollTargetVisibilityChange(let idType, let threshold):

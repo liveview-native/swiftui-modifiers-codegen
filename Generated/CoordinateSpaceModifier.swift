@@ -14,28 +14,17 @@ extension CoordinateSpaceModifier: RuntimeViewModifier {
     public static var baseName: String { "coordinateSpace" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let firstLabel = syntax.arguments.first?.label?.text
-            switch firstLabel {
-            case nil:
-                guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUICore.NamedCoordinateSpace(syntax: expr_value0) else {
-                    throw ModifierParseError.invalidArguments(modifier: "CoordinateSpaceModifier", variant: "coordinateSpaceWithNamedCoordinateSpace", expectedTypes: "SwiftUICore.NamedCoordinateSpace")
-                }
-                self = .coordinateSpaceWithNamedCoordinateSpace(value0)
-            case "name":
-                guard let expr_name = syntax.argument(named: "name")?.expression, let name = AnyHashable(syntax: expr_name) else {
-                    throw ModifierParseError.invalidArguments(modifier: "CoordinateSpaceModifier", variant: "coordinateSpaceWithAnyHashable", expectedTypes: "AnyHashable")
-                }
+        if syntax.arguments.count == 1 {
+            if let name = AnyHashable(syntax: syntax.argument(named: "name")?.expression!) {
                 self = .coordinateSpaceWithAnyHashable(name: name)
-            default:
-                throw ModifierParseError.ambiguousVariant(modifier: "CoordinateSpaceModifier", expectedLabels: ["name"])
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "CoordinateSpaceModifier", expected: [1], found: syntax.arguments.count)
+            if let value0 = SwiftUICore.NamedCoordinateSpace(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .coordinateSpaceWithNamedCoordinateSpace(value0)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .coordinateSpaceWithAnyHashable(let name):

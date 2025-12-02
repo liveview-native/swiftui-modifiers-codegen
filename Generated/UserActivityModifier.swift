@@ -14,22 +14,17 @@ extension UserActivityModifier: RuntimeViewModifier {
     public static var baseName: String { "userActivity" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            if let value0: Swift.String = Swift.String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
-                let isActive: Swift.Bool = if let expr = syntax.argument(named: "isActive")?.expression, let parsed = Swift.Bool(syntax: expr) { parsed } else { true }
-                self = .userActivityWithStringBoolClosure(value0, isActive: isActive)
-            } else if let value0: Swift.String = Swift.String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
-                let element: P = if let expr = syntax.argument(named: "element")?.expression { P(syntax: expr) } else { nil }
+        if syntax.arguments.count == 2 {
+            if let value0 = Swift.String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let element = P(syntax: syntax.argument(named: "element")?.expression!) {
                 self = .userActivityWithStringPOptionalClosure(value0, element: element)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "UserActivityModifier", variant: "multiple variants", expectedTypes: "Swift.String, Swift.Bool or Swift.String, P?")
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "UserActivityModifier", expected: [2], found: syntax.arguments.count)
         }
+        let value0: Swift.String = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { Swift.String(syntax: $0) }
+        let isActive: Swift.Bool = syntax.argument(named: "isActive")?.expression.flatMap { Swift.Bool(syntax: $0) } ?? true
+        self = .userActivityWithStringBoolClosure(value0, isActive: isActive)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .userActivityWithStringBoolClosure(let value0, let isActive):

@@ -14,28 +14,15 @@ extension FullScreenCoverModifier: RuntimeViewModifier {
     public static var baseName: String { "fullScreenCover" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let firstLabel = syntax.arguments.first?.label?.text
-            switch firstLabel {
-            case "isPresented":
-                guard let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) else {
-                    throw ModifierParseError.invalidArguments(modifier: "FullScreenCoverModifier", variant: "fullScreenCoverWithBoolVoidOptionalClosureAnyView", expectedTypes: "SwiftUICore.Binding<Swift.Bool>")
-                }
-                self = .fullScreenCoverWithBoolVoidOptionalClosureAnyView(isPresented: isPresented)
-            case "item":
-                guard let expr_item = syntax.argument(named: "item")?.expression, let item = SwiftUICore.Binding<Item?>(syntax: expr_item) else {
-                    throw ModifierParseError.invalidArguments(modifier: "FullScreenCoverModifier", variant: "fullScreenCoverWithBindingItemOptionalVoidOptionalClosureAnyView", expectedTypes: "SwiftUICore.Binding<Item?>")
-                }
-                self = .fullScreenCoverWithBindingItemOptionalVoidOptionalClosureAnyView(item: item)
-            default:
-                throw ModifierParseError.ambiguousVariant(modifier: "FullScreenCoverModifier", expectedLabels: ["item", "isPresented"])
-            }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "FullScreenCoverModifier", expected: [1], found: syntax.arguments.count)
+        if syntax.argument(named: "item") != nil || syntax.argument(named: "onDismiss") != nil || syntax.argument(named: "content") != nil {
+            let item: SwiftUICore.Binding<Item?> = syntax.argument(named: "item")?.expression.flatMap { SwiftUICore.Binding<Item?>(syntax: $0) }
+            self = .fullScreenCoverWithBindingItemOptionalVoidOptionalClosureAnyView(item: item)
+            return
         }
+        let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+        self = .fullScreenCoverWithBoolVoidOptionalClosureAnyView(isPresented: isPresented)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .fullScreenCoverWithBindingItemOptionalVoidOptionalClosureAnyView(let item):

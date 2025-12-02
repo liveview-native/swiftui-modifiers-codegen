@@ -13,14 +13,11 @@ extension OnExitCommandModifier: RuntimeViewModifier {
     public static var baseName: String { "onExitCommand" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .onExitCommand
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "OnExitCommandModifier", expected: [0], found: syntax.arguments.count)
+            return
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .onExitCommand:

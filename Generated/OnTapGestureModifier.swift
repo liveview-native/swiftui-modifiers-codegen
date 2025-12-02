@@ -15,19 +15,22 @@ extension OnTapGestureModifier: RuntimeViewModifier {
     public static var baseName: String { "onTapGesture" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let count: Swift.Int = if let expr = syntax.argument(named: "count")?.expression, let parsed = Swift.Int(syntax: expr) { parsed } else { 1 }
-            self = .onTapGestureWithIntVoid(count: count)
-        case 2:
-            let count: Swift.Int? = if let expr = syntax.argument(named: "count")?.expression { Swift.Int(syntax: expr) } else { nil }
-            let coordinateSpace: SwiftUICore.CoordinateSpace? = if let expr = syntax.argument(named: "coordinateSpace")?.expression { SwiftUICore.CoordinateSpace(syntax: expr) } else { nil }
+        if syntax.argument(named: "count") != nil || syntax.argument(named: "coordinateSpace") != nil || syntax.argument(named: "perform") != nil {
+            let count: Swift.Int = syntax.argument(named: "count")?.expression.flatMap { Swift.Int(syntax: $0) } ?? 1
+            let coordinateSpace: SwiftUICore.CoordinateSpace = syntax.argument(named: "coordinateSpace")?.expression.flatMap { SwiftUICore.CoordinateSpace(syntax: $0) } ?? .local
             self = .onTapGestureWithIntCoordinateSpaceVoid(count: count, coordinateSpace: coordinateSpace)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "OnTapGestureModifier", expected: [1, 2], found: syntax.arguments.count)
+            return
         }
+        if syntax.argument(named: "count") != nil || syntax.argument(named: "coordinateSpace") != nil || syntax.argument(named: "perform") != nil {
+            let count: Swift.Int = syntax.argument(named: "count")?.expression.flatMap { Swift.Int(syntax: $0) } ?? 1
+            let coordinateSpace: some CoordinateSpaceProtocol = syntax.argument(named: "coordinateSpace")?.expression.flatMap { some CoordinateSpaceProtocol(syntax: $0) } ?? .local
+            self = .onTapGestureWithIntsomeCoordinateSpaceProtocolVoid(count: count, coordinateSpace: coordinateSpace)
+            return
+        }
+        let count: Swift.Int = syntax.argument(named: "count")?.expression.flatMap { Swift.Int(syntax: $0) } ?? 1
+        self = .onTapGestureWithIntVoid(count: count)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .onTapGestureWithIntCoordinateSpaceVoid(let count, let coordinateSpace):

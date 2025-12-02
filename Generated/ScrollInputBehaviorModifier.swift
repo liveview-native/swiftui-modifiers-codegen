@@ -13,20 +13,13 @@ extension ScrollInputBehaviorModifier: RuntimeViewModifier {
     public static var baseName: String { "scrollInputBehavior" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUI.ScrollInputBehavior(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "ScrollInputBehaviorModifier", variant: "scrollInputBehavior", expectedTypes: "SwiftUI.ScrollInputBehavior, SwiftUI.ScrollInputKind")
+        if syntax.arguments.count == 2 {
+            if let value0 = SwiftUI.ScrollInputBehavior(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let for = SwiftUI.ScrollInputKind(syntax: syntax.argument(named: "for")?.expression!) {
+                self = .scrollInputBehavior(value0, for: for)
+                return
             }
-            guard let expr_for = syntax.argument(named: "for")?.expression, let for = SwiftUI.ScrollInputKind(syntax: expr_for) else {
-                throw ModifierParseError.invalidArguments(modifier: "ScrollInputBehaviorModifier", variant: "scrollInputBehavior", expectedTypes: "SwiftUI.ScrollInputBehavior, SwiftUI.ScrollInputKind")
-            }
-            self = .scrollInputBehavior(value0, for: for)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ScrollInputBehaviorModifier", expected: [2], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .scrollInputBehavior(let value0, let for):

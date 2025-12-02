@@ -13,15 +13,10 @@ extension DefaultAdaptableTabBarPlacementModifier: RuntimeViewModifier {
     public static var baseName: String { "defaultAdaptableTabBarPlacement" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let value0: SwiftUI.AdaptableTabBarPlacement = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = SwiftUI.AdaptableTabBarPlacement(syntax: expr) { parsed } else { .automatic }
-            self = .defaultAdaptableTabBarPlacement(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "DefaultAdaptableTabBarPlacementModifier", expected: [1], found: syntax.arguments.count)
-        }
+        let value0: SwiftUI.AdaptableTabBarPlacement = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { SwiftUI.AdaptableTabBarPlacement(syntax: $0) } ?? .automatic
+        self = .defaultAdaptableTabBarPlacement(value0)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .defaultAdaptableTabBarPlacement(let value0):

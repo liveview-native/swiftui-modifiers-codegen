@@ -13,15 +13,10 @@ extension DragContainerSelectionModifier: RuntimeViewModifier {
     public static var baseName: String { "dragContainerSelection" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let containerNamespace: SwiftUICore.Namespace.ID? = if let expr = syntax.argument(named: "containerNamespace")?.expression, let parsed = SwiftUICore.Namespace.ID(syntax: expr) { parsed } else { nil }
-            self = .dragContainerSelection(containerNamespace: containerNamespace)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "DragContainerSelectionModifier", expected: [1], found: syntax.arguments.count)
-        }
+        let containerNamespace: SwiftUICore.Namespace.ID? = syntax.argument(named: "containerNamespace")?.expression.flatMap { SwiftUICore.Namespace.ID(syntax: $0) } ?? nil
+        self = .dragContainerSelection(containerNamespace: containerNamespace)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .dragContainerSelection(let containerNamespace):

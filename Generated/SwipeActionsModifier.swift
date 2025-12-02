@@ -13,16 +13,11 @@ extension SwipeActionsModifier: RuntimeViewModifier {
     public static var baseName: String { "swipeActions" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            let edge: SwiftUICore.HorizontalEdge = if let expr = syntax.argument(named: "edge")?.expression, let parsed = SwiftUICore.HorizontalEdge(syntax: expr) { parsed } else { .trailing }
-            let allowsFullSwipe: Swift.Bool = if let expr = syntax.argument(named: "allowsFullSwipe")?.expression, let parsed = Swift.Bool(syntax: expr) { parsed } else { true }
-            self = .swipeActions(edge: edge, allowsFullSwipe: allowsFullSwipe)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "SwipeActionsModifier", expected: [2], found: syntax.arguments.count)
-        }
+        let edge: SwiftUICore.HorizontalEdge = syntax.argument(named: "edge")?.expression.flatMap { SwiftUICore.HorizontalEdge(syntax: $0) } ?? .trailing
+        let allowsFullSwipe: Swift.Bool = syntax.argument(named: "allowsFullSwipe")?.expression.flatMap { Swift.Bool(syntax: $0) } ?? true
+        self = .swipeActions(edge: edge, allowsFullSwipe: allowsFullSwipe)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .swipeActions(let edge, let allowsFullSwipe):

@@ -15,24 +15,21 @@ extension PaddingModifier: RuntimeViewModifier {
     public static var baseName: String { "padding" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            if let value0: SwiftUICore.EdgeInsets = SwiftUICore.EdgeInsets(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUICore.EdgeInsets(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
                 self = .paddingWithEdgeInsets(value0)
-            } else if let value0: CoreFoundation.CGFloat = CoreFoundation.CGFloat(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
-                self = .paddingWithCGFloat(value0)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "PaddingModifier", variant: "multiple variants", expectedTypes: "SwiftUICore.EdgeInsets or CoreFoundation.CGFloat")
+                return
             }
-        case 2:
-            let value0: SwiftUICore.Edge.Set = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = SwiftUICore.Edge.Set(syntax: expr) { parsed } else { .all }
-            let value1: CoreFoundation.CGFloat? = if let expr = (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil), let parsed = CoreFoundation.CGFloat(syntax: expr) { parsed } else { nil }
-            self = .paddingWithSetCGFloatOptional(value0, value1)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "PaddingModifier", expected: [1, 2], found: syntax.arguments.count)
+            if let value0 = CoreFoundation.CGFloat(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .paddingWithCGFloat(value0)
+                return
+            }
         }
+        let value0: SwiftUICore.Edge.Set = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { SwiftUICore.Edge.Set(syntax: $0) } ?? .all
+        let value1: CoreFoundation.CGFloat? = (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil).flatMap { CoreFoundation.CGFloat(syntax: $0) } ?? nil
+        self = .paddingWithSetCGFloatOptional(value0, value1)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .paddingWithEdgeInsets(let value0):

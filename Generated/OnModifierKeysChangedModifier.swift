@@ -13,16 +13,11 @@ extension OnModifierKeysChangedModifier: RuntimeViewModifier {
     public static var baseName: String { "onModifierKeysChanged" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            let mask: SwiftUICore.EventModifiers = if let expr = syntax.argument(named: "mask")?.expression, let parsed = SwiftUICore.EventModifiers(syntax: expr) { parsed } else { .all }
-            let initial: Swift.Bool = if let expr = syntax.argument(named: "initial")?.expression, let parsed = Swift.Bool(syntax: expr) { parsed } else { true }
-            self = .onModifierKeysChanged(mask: mask, initial: initial)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "OnModifierKeysChangedModifier", expected: [2], found: syntax.arguments.count)
-        }
+        let mask: SwiftUICore.EventModifiers = syntax.argument(named: "mask")?.expression.flatMap { SwiftUICore.EventModifiers(syntax: $0) } ?? .all
+        let initial: Swift.Bool = syntax.argument(named: "initial")?.expression.flatMap { Swift.Bool(syntax: $0) } ?? true
+        self = .onModifierKeysChanged(mask: mask, initial: initial)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .onModifierKeysChanged(let mask, let initial):

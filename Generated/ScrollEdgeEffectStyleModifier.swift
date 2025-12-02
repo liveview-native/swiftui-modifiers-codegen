@@ -13,18 +13,13 @@ extension ScrollEdgeEffectStyleModifier: RuntimeViewModifier {
     public static var baseName: String { "scrollEdgeEffectStyle" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            let value0: SwiftUI.ScrollEdgeEffectStyle? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUI.ScrollEdgeEffectStyle(syntax: expr) } else { nil }
-            guard let expr_for = syntax.argument(named: "for")?.expression, let for = SwiftUICore.Edge.Set(syntax: expr_for) else {
-                throw ModifierParseError.invalidArguments(modifier: "ScrollEdgeEffectStyleModifier", variant: "scrollEdgeEffectStyle", expectedTypes: "SwiftUI.ScrollEdgeEffectStyle?, SwiftUICore.Edge.Set")
+        if syntax.arguments.count == 2 {
+            if let value0 = SwiftUI.ScrollEdgeEffectStyle(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let for = SwiftUICore.Edge.Set(syntax: syntax.argument(named: "for")?.expression!) {
+                self = .scrollEdgeEffectStyle(value0, for: for)
+                return
             }
-            self = .scrollEdgeEffectStyle(value0, for: for)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ScrollEdgeEffectStyleModifier", expected: [2], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .scrollEdgeEffectStyle(let value0, let for):

@@ -13,20 +13,13 @@ extension AccessibilityLinkedGroupModifier: RuntimeViewModifier {
     public static var baseName: String { "accessibilityLinkedGroup" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            guard let expr_id = syntax.argument(named: "id")?.expression, let id = AnyHashable(syntax: expr_id) else {
-                throw ModifierParseError.invalidArguments(modifier: "AccessibilityLinkedGroupModifier", variant: "accessibilityLinkedGroup", expectedTypes: "AnyHashable, SwiftUICore.Namespace.AnyHashable")
+        if syntax.arguments.count == 2 {
+            if let id = AnyHashable(syntax: syntax.argument(named: "id")?.expression!), let in = SwiftUICore.Namespace.AnyHashable(syntax: syntax.argument(named: "in")?.expression!) {
+                self = .accessibilityLinkedGroup(id: id, in: in)
+                return
             }
-            guard let expr_in = syntax.argument(named: "in")?.expression, let in = SwiftUICore.Namespace.AnyHashable(syntax: expr_in) else {
-                throw ModifierParseError.invalidArguments(modifier: "AccessibilityLinkedGroupModifier", variant: "accessibilityLinkedGroup", expectedTypes: "AnyHashable, SwiftUICore.Namespace.AnyHashable")
-            }
-            self = .accessibilityLinkedGroup(id: id, in: in)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "AccessibilityLinkedGroupModifier", expected: [2], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .accessibilityLinkedGroup(let id, let in):

@@ -13,18 +13,11 @@ extension ListRowSeparatorModifier: RuntimeViewModifier {
     public static var baseName: String { "listRowSeparator" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUICore.Visibility(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "ListRowSeparatorModifier", variant: "listRowSeparator", expectedTypes: "SwiftUICore.Visibility, SwiftUICore.VerticalEdge.Set")
-            }
-            let edges: SwiftUICore.VerticalEdge.Set = if let expr = syntax.argument(named: "edges")?.expression, let parsed = SwiftUICore.VerticalEdge.Set(syntax: expr) { parsed } else { .all }
-            self = .listRowSeparator(value0, edges: edges)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ListRowSeparatorModifier", expected: [2], found: syntax.arguments.count)
-        }
+        let value0: SwiftUICore.Visibility = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { SwiftUICore.Visibility(syntax: $0) }
+        let edges: SwiftUICore.VerticalEdge.Set = syntax.argument(named: "edges")?.expression.flatMap { SwiftUICore.VerticalEdge.Set(syntax: $0) } ?? .all
+        self = .listRowSeparator(value0, edges: edges)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .listRowSeparator(let value0, let edges):

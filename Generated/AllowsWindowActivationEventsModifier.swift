@@ -14,17 +14,17 @@ extension AllowsWindowActivationEventsModifier: RuntimeViewModifier {
     public static var baseName: String { "allowsWindowActivationEvents" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .allowsWindowActivationEvents
-        case 1:
-            let value0: Swift.Bool? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { Swift.Bool(syntax: expr) } else { nil }
-            self = .allowsWindowActivationEventsWithBoolOptional(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "AllowsWindowActivationEventsModifier", expected: [0, 1], found: syntax.arguments.count)
+            return
+        }
+        if syntax.arguments.count == 1 {
+            if let value0 = Swift.Bool(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .allowsWindowActivationEventsWithBoolOptional(value0)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .allowsWindowActivationEventsWithBoolOptional(let value0):

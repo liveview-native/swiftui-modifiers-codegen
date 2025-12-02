@@ -16,19 +16,26 @@ extension DropDestinationModifier: RuntimeViewModifier {
     public static var baseName: String { "dropDestination" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let for: T.Type? = if let expr = syntax.argument(named: "for")?.expression { T.Type(syntax: expr) } else { nil }
+        if syntax.argument(named: "for") != nil || syntax.argument(named: "action") != nil || syntax.argument(named: "isTargeted") != nil {
+            let for: T.Type = syntax.argument(named: "for")?.expression.flatMap { T.Type(syntax: $0) } ?? T.self
             self = .dropDestinationWithTypeBoolVoid(for: for)
-        case 2:
-            let for: T.Type = if let expr = syntax.argument(named: "for")?.expression, let parsed = T.Type(syntax: expr) { parsed } else { T.self }
-            let isEnabled: Swift.Bool = if let expr = syntax.argument(named: "isEnabled")?.expression, let parsed = Swift.Bool(syntax: expr) { parsed } else { true }
-            self = .dropDestinationWithTypeBoolVoid1(for: for, isEnabled: isEnabled)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "DropDestinationModifier", expected: [1, 2], found: syntax.arguments.count)
+            return
         }
+        if syntax.argument(named: "for") != nil || syntax.argument(named: "isEnabled") != nil || syntax.argument(named: "action") != nil {
+            let for: T.Type = syntax.argument(named: "for")?.expression.flatMap { T.Type(syntax: $0) } ?? T.self
+            let isEnabled: Swift.Bool = syntax.argument(named: "isEnabled")?.expression.flatMap { Swift.Bool(syntax: $0) } ?? true
+            self = .dropDestinationWithTypeBoolVoid1(for: for, isEnabled: isEnabled)
+            return
+        }
+        if syntax.argument(named: "for") != nil || syntax.argument(named: "action") != nil {
+            let for: T.Type = syntax.argument(named: "for")?.expression.flatMap { T.Type(syntax: $0) } ?? T.self
+            self = .dropDestinationWithTypeVoid(for: for)
+            return
+        }
+        let for: T.Type = syntax.argument(named: "for")?.expression.flatMap { T.Type(syntax: $0) } ?? T.self
+        self = .dropDestinationWithTypeBoolVoid2(for: for)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .dropDestinationWithTypeBoolVoid(let for):

@@ -13,17 +13,13 @@ extension OnScrollGeometryChangeModifier: RuntimeViewModifier {
     public static var baseName: String { "onScrollGeometryChange" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_for = syntax.argument(named: "for")?.expression, let for = T.Type(syntax: expr_for) else {
-                throw ModifierParseError.invalidArguments(modifier: "OnScrollGeometryChangeModifier", variant: "onScrollGeometryChange", expectedTypes: "T.Type")
+        if syntax.arguments.count == 1 {
+            if let for = T.Type(syntax: syntax.argument(named: "for")?.expression!) {
+                self = .onScrollGeometryChange(for: for)
+                return
             }
-            self = .onScrollGeometryChange(for: for)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "OnScrollGeometryChangeModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .onScrollGeometryChange(let for):

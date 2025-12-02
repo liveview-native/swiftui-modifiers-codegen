@@ -13,15 +13,10 @@ extension PasteDestinationModifier: RuntimeViewModifier {
     public static var baseName: String { "pasteDestination" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let for: T.Type = if let expr = syntax.argument(named: "for")?.expression, let parsed = T.Type(syntax: expr) { parsed } else { T.self }
-            self = .pasteDestination(for: for)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "PasteDestinationModifier", expected: [1], found: syntax.arguments.count)
-        }
+        let for: T.Type = syntax.argument(named: "for")?.expression.flatMap { T.Type(syntax: $0) } ?? T.self
+        self = .pasteDestination(for: for)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .pasteDestination(let for):

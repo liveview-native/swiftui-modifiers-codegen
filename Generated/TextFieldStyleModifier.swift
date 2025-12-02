@@ -13,17 +13,13 @@ extension TextFieldStyleModifier: RuntimeViewModifier {
     public static var baseName: String { "textFieldStyle" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = AnyTextFieldStyle(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "TextFieldStyleModifier", variant: "textFieldStyle", expectedTypes: "AnyTextFieldStyle")
+        if syntax.arguments.count == 1 {
+            if let value0 = AnyTextFieldStyle(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .textFieldStyle(value0)
+                return
             }
-            self = .textFieldStyle(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "TextFieldStyleModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .textFieldStyle(let value0):

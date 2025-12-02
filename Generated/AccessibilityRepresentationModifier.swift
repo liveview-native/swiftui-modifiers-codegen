@@ -13,14 +13,11 @@ extension AccessibilityRepresentationModifier: RuntimeViewModifier {
     public static var baseName: String { "accessibilityRepresentation" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .accessibilityRepresentation
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "AccessibilityRepresentationModifier", expected: [0], found: syntax.arguments.count)
+            return
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .accessibilityRepresentation:

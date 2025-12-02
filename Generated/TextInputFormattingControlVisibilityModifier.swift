@@ -13,20 +13,13 @@ extension TextInputFormattingControlVisibilityModifier: RuntimeViewModifier {
     public static var baseName: String { "textInputFormattingControlVisibility" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUICore.Visibility(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "TextInputFormattingControlVisibilityModifier", variant: "textInputFormattingControlVisibility", expectedTypes: "SwiftUICore.Visibility, SwiftUI.TextInputFormattingControlPlacement.Set")
+        if syntax.arguments.count == 2 {
+            if let value0 = SwiftUICore.Visibility(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let for = SwiftUI.TextInputFormattingControlPlacement.Set(syntax: syntax.argument(named: "for")?.expression!) {
+                self = .textInputFormattingControlVisibility(value0, for: for)
+                return
             }
-            guard let expr_for = syntax.argument(named: "for")?.expression, let for = SwiftUI.TextInputFormattingControlPlacement.Set(syntax: expr_for) else {
-                throw ModifierParseError.invalidArguments(modifier: "TextInputFormattingControlVisibilityModifier", variant: "textInputFormattingControlVisibility", expectedTypes: "SwiftUICore.Visibility, SwiftUI.TextInputFormattingControlPlacement.Set")
-            }
-            self = .textInputFormattingControlVisibility(value0, for: for)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "TextInputFormattingControlVisibilityModifier", expected: [2], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .textInputFormattingControlVisibility(let value0, let for):

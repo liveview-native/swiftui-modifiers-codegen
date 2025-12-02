@@ -14,20 +14,17 @@ extension MatchedTransitionSourceModifier: RuntimeViewModifier {
     public static var baseName: String { "matchedTransitionSource" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            if let expr_id = syntax.argument(named: "id")?.expression, let id = some Hashable(syntax: expr_id), let expr_in = syntax.argument(named: "in")?.expression, let in = SwiftUICore.Namespace.ID(syntax: expr_in) {
+        if syntax.arguments.count == 2 {
+            if let id = some Hashable(syntax: syntax.argument(named: "id")?.expression!), let in = SwiftUICore.Namespace.ID(syntax: syntax.argument(named: "in")?.expression!) {
                 self = .matchedTransitionSourceWithsomeHashableID(id: id, in: in)
-            } else if let expr_id = syntax.argument(named: "id")?.expression, let id = some Hashable(syntax: expr_id), let expr_in = syntax.argument(named: "in")?.expression, let in = SwiftUICore.Namespace.ID(syntax: expr_in) {
-                self = .matchedTransitionSourceWithsomeHashableIDClosuresomeMatchedTransitionSourceConfiguration(id: id, in: in)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "MatchedTransitionSourceModifier", variant: "multiple variants", expectedTypes: "some Hashable, SwiftUICore.Namespace.ID or some Hashable, SwiftUICore.Namespace.ID")
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "MatchedTransitionSourceModifier", expected: [2], found: syntax.arguments.count)
+            if let id = some Hashable(syntax: syntax.argument(named: "id")?.expression!), let in = SwiftUICore.Namespace.ID(syntax: syntax.argument(named: "in")?.expression!) {
+                self = .matchedTransitionSourceWithsomeHashableIDClosuresomeMatchedTransitionSourceConfiguration(id: id, in: in)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .matchedTransitionSourceWithsomeHashableID(let id, let in):

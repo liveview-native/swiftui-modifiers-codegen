@@ -13,15 +13,13 @@ extension TextContentTypeModifier: RuntimeViewModifier {
     public static var baseName: String { "textContentType" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let value0: UIKit.UITextContentType? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { UIKit.UITextContentType(syntax: expr) } else { nil }
-            self = .textContentType(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "TextContentTypeModifier", expected: [1], found: syntax.arguments.count)
+        if syntax.arguments.count == 1 {
+            if let value0 = UIKit.UITextContentType(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .textContentType(value0)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .textContentType(let value0):

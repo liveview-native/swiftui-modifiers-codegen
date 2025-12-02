@@ -13,15 +13,10 @@ extension OnScrollVisibilityChangeModifier: RuntimeViewModifier {
     public static var baseName: String { "onScrollVisibilityChange" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let threshold: Swift.Double = if let expr = syntax.argument(named: "threshold")?.expression, let parsed = Swift.Double(syntax: expr) { parsed } else { 0.5 }
-            self = .onScrollVisibilityChange(threshold: threshold)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "OnScrollVisibilityChangeModifier", expected: [1], found: syntax.arguments.count)
-        }
+        let threshold: Swift.Double = syntax.argument(named: "threshold")?.expression.flatMap { Swift.Double(syntax: $0) } ?? 0.5
+        self = .onScrollVisibilityChange(threshold: threshold)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .onScrollVisibilityChange(let threshold):

@@ -13,18 +13,11 @@ extension BorderModifier: RuntimeViewModifier {
     public static var baseName: String { "border" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = AnyShapeStyle(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "BorderModifier", variant: "border", expectedTypes: "AnyShapeStyle, CoreFoundation.CGFloat")
-            }
-            let width: CoreFoundation.CGFloat = if let expr = syntax.argument(named: "width")?.expression, let parsed = CoreFoundation.CGFloat(syntax: expr) { parsed } else { 1 }
-            self = .border(value0, width: width)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "BorderModifier", expected: [2], found: syntax.arguments.count)
-        }
+        let value0: AnyShapeStyle = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { AnyShapeStyle(syntax: $0) }
+        let width: CoreFoundation.CGFloat = syntax.argument(named: "width")?.expression.flatMap { CoreFoundation.CGFloat(syntax: $0) } ?? 1
+        self = .border(value0, width: width)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .border(let value0, let width):

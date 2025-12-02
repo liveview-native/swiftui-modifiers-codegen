@@ -14,28 +14,17 @@ extension AssistiveAccessNavigationIconModifier: RuntimeViewModifier {
     public static var baseName: String { "assistiveAccessNavigationIcon" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let firstLabel = syntax.arguments.first?.label?.text
-            switch firstLabel {
-            case nil:
-                guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUICore.Image(syntax: expr_value0) else {
-                    throw ModifierParseError.invalidArguments(modifier: "AssistiveAccessNavigationIconModifier", variant: "assistiveAccessNavigationIconWithImage", expectedTypes: "SwiftUICore.Image")
-                }
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUICore.Image(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
                 self = .assistiveAccessNavigationIconWithImage(value0)
-            case "systemImage":
-                guard let expr_systemImage = syntax.argument(named: "systemImage")?.expression, let systemImage = Swift.String(syntax: expr_systemImage) else {
-                    throw ModifierParseError.invalidArguments(modifier: "AssistiveAccessNavigationIconModifier", variant: "assistiveAccessNavigationIconWithString", expectedTypes: "Swift.String")
-                }
-                self = .assistiveAccessNavigationIconWithString(systemImage: systemImage)
-            default:
-                throw ModifierParseError.ambiguousVariant(modifier: "AssistiveAccessNavigationIconModifier", expectedLabels: ["systemImage"])
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "AssistiveAccessNavigationIconModifier", expected: [1], found: syntax.arguments.count)
+            if let systemImage = Swift.String(syntax: syntax.argument(named: "systemImage")?.expression!) {
+                self = .assistiveAccessNavigationIconWithString(systemImage: systemImage)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .assistiveAccessNavigationIconWithImage(let value0):

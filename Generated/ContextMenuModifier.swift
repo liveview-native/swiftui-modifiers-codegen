@@ -16,26 +16,22 @@ extension ContextMenuModifier: RuntimeViewModifier {
     public static var baseName: String { "contextMenu" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
-            self = .contextMenuWithClosureAnyView()
-        case 1:
-            let firstLabel = syntax.arguments.first?.label?.text
-            switch firstLabel {
-            case nil:
-                let value0: SwiftUI.ContextMenu<AnyView>? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUI.ContextMenu<AnyView>(syntax: expr) } else { nil }
-                self = .contextMenuWithContextMenuAnyViewOptional(value0)
-            case "forSelectionType":
-                let forSelectionType: AnyHashable.Type = if let expr = syntax.argument(named: "forSelectionType")?.expression, let parsed = AnyHashable.Type(syntax: expr) { parsed } else { I.self }
-                self = .contextMenuWithTypeClosureAnyViewVoidOptional(forSelectionType: forSelectionType)
-            default:
-                throw ModifierParseError.ambiguousVariant(modifier: "ContextMenuModifier", expectedLabels: ["forSelectionType"])
-            }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ContextMenuModifier", expected: [0, 1], found: syntax.arguments.count)
+        if syntax.arguments.count == 0 {
+            self = .contextMenuWithClosureAnyView
+            return
+            self = .contextMenuWithClosureAnyViewClosureAnyView
+            return
         }
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUI.ContextMenu<AnyView>(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .contextMenuWithContextMenuAnyViewOptional(value0)
+                return
+            }
+        }
+        let forSelectionType: AnyHashable.Type = syntax.argument(named: "forSelectionType")?.expression.flatMap { AnyHashable.Type(syntax: $0) } ?? I.self
+        self = .contextMenuWithTypeClosureAnyViewVoidOptional(forSelectionType: forSelectionType)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .contextMenuWithClosureAnyView:

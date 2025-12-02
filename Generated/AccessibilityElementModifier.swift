@@ -13,15 +13,10 @@ extension AccessibilityElementModifier: RuntimeViewModifier {
     public static var baseName: String { "accessibilityElement" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let children: SwiftUI.AccessibilityChildBehavior = if let expr = syntax.argument(named: "children")?.expression, let parsed = SwiftUI.AccessibilityChildBehavior(syntax: expr) { parsed } else { .ignore }
-            self = .accessibilityElement(children: children)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "AccessibilityElementModifier", expected: [1], found: syntax.arguments.count)
-        }
+        let children: SwiftUI.AccessibilityChildBehavior = syntax.argument(named: "children")?.expression.flatMap { SwiftUI.AccessibilityChildBehavior(syntax: $0) } ?? .ignore
+        self = .accessibilityElement(children: children)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .accessibilityElement(let children):

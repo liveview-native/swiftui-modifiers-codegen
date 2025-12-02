@@ -15,27 +15,23 @@ extension OnChangeModifier: RuntimeViewModifier {
     public static var baseName: String { "onChange" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_of = syntax.argument(named: "of")?.expression, let of = V(syntax: expr_of) else {
-                throw ModifierParseError.invalidArguments(modifier: "OnChangeModifier", variant: "onChangeWithVVoid", expectedTypes: "V")
+        if syntax.arguments.count == 1 {
+            if let of = V(syntax: syntax.argument(named: "of")?.expression!) {
+                self = .onChangeWithVVoid(of: of)
+                return
             }
-            self = .onChangeWithVVoid(of: of)
-        case 2:
-            if let expr_of = syntax.argument(named: "of")?.expression, let of = V(syntax: expr_of) {
-                let initial: Swift.Bool = if let expr = syntax.argument(named: "initial")?.expression, let parsed = Swift.Bool(syntax: expr) { parsed } else { false }
-                self = .onChangeWithVBoolVoid(of: of, initial: initial)
-            } else if let expr_of = syntax.argument(named: "of")?.expression, let of = V(syntax: expr_of) {
-                let initial: Swift.Bool = if let expr = syntax.argument(named: "initial")?.expression, let parsed = Swift.Bool(syntax: expr) { parsed } else { false }
-                self = .onChangeWithVBoolVoid1(of: of, initial: initial)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "OnChangeModifier", variant: "multiple variants", expectedTypes: "V, Swift.Bool or V, Swift.Bool")
-            }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "OnChangeModifier", expected: [1, 2], found: syntax.arguments.count)
         }
+        if syntax.argument(named: "of") != nil || syntax.argument(named: "initial") != nil {
+            let of: V = syntax.argument(named: "of")?.expression.flatMap { V(syntax: $0) }
+            let initial: Swift.Bool = syntax.argument(named: "initial")?.expression.flatMap { Swift.Bool(syntax: $0) } ?? false
+            self = .onChangeWithVBoolVoid(of: of, initial: initial)
+            return
+        }
+        let of: V = syntax.argument(named: "of")?.expression.flatMap { V(syntax: $0) }
+        let initial: Swift.Bool = syntax.argument(named: "initial")?.expression.flatMap { Swift.Bool(syntax: $0) } ?? false
+        self = .onChangeWithVBoolVoid1(of: of, initial: initial)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .onChangeWithVVoid(let of):

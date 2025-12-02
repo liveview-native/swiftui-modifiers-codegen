@@ -13,14 +13,11 @@ extension OnPencilDoubleTapModifier: RuntimeViewModifier {
     public static var baseName: String { "onPencilDoubleTap" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .onPencilDoubleTap
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "OnPencilDoubleTapModifier", expected: [0], found: syntax.arguments.count)
+            return
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .onPencilDoubleTap:

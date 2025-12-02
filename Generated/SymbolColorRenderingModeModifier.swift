@@ -13,15 +13,13 @@ extension SymbolColorRenderingModeModifier: RuntimeViewModifier {
     public static var baseName: String { "symbolColorRenderingMode" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let value0: SwiftUICore.SymbolColorRenderingMode? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUICore.SymbolColorRenderingMode(syntax: expr) } else { nil }
-            self = .symbolColorRenderingMode(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "SymbolColorRenderingModeModifier", expected: [1], found: syntax.arguments.count)
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUICore.SymbolColorRenderingMode(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .symbolColorRenderingMode(value0)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .symbolColorRenderingMode(let value0):

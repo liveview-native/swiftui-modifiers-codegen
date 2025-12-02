@@ -13,17 +13,13 @@ extension NavigationBarHiddenModifier: RuntimeViewModifier {
     public static var baseName: String { "navigationBarHidden" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = Swift.Bool(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "NavigationBarHiddenModifier", variant: "navigationBarHidden", expectedTypes: "Swift.Bool")
+        if syntax.arguments.count == 1 {
+            if let value0 = Swift.Bool(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .navigationBarHidden(value0)
+                return
             }
-            self = .navigationBarHidden(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "NavigationBarHiddenModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .navigationBarHidden(let value0):

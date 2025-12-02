@@ -16,15 +16,25 @@ extension FileDialogMessageModifier: RuntimeViewModifier {
     public static var baseName: String { "fileDialogMessage" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let value0: SwiftUICore.Text? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUICore.Text(syntax: expr) } else { nil }
-            self = .fileDialogMessageWithTextOptional(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "FileDialogMessageModifier", expected: [1], found: syntax.arguments.count)
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUICore.Text(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .fileDialogMessageWithTextOptional(value0)
+                return
+            }
+            if let value0 = SwiftUICore.LocalizedStringKey(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .fileDialogMessageWithLocalizedStringKey(value0)
+                return
+            }
+            if let value0 = Foundation.LocalizedStringResource(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .fileDialogMessageWithLocalizedStringResource(value0)
+                return
+            }
+            if let value0 = String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .fileDialogMessageWithString(value0)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .fileDialogMessageWithTextOptional(let value0):

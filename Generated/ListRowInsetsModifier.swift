@@ -14,19 +14,17 @@ extension ListRowInsetsModifier: RuntimeViewModifier {
     public static var baseName: String { "listRowInsets" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let value0: SwiftUICore.EdgeInsets? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUICore.EdgeInsets(syntax: expr) } else { nil }
-            self = .listRowInsetsWithEdgeInsetsOptional(value0)
-        case 2:
-            let value0: SwiftUICore.Edge.Set = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = SwiftUICore.Edge.Set(syntax: expr) { parsed } else { .all }
-            let value1: CoreFoundation.CGFloat? = if let expr = (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil) { CoreFoundation.CGFloat(syntax: expr) } else { nil }
-            self = .listRowInsetsWithSetCGFloatOptional(value0, value1)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ListRowInsetsModifier", expected: [1, 2], found: syntax.arguments.count)
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUICore.EdgeInsets(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .listRowInsetsWithEdgeInsetsOptional(value0)
+                return
+            }
         }
+        let value0: SwiftUICore.Edge.Set = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { SwiftUICore.Edge.Set(syntax: $0) } ?? .all
+        let value1: CoreFoundation.CGFloat? = (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil).flatMap { CoreFoundation.CGFloat(syntax: $0) } ?? nil
+        self = .listRowInsetsWithSetCGFloatOptional(value0, value1)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .listRowInsetsWithEdgeInsetsOptional(let value0):

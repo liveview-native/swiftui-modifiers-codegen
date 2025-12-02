@@ -14,19 +14,17 @@ extension DigitalCrownAccessoryModifier: RuntimeViewModifier {
     public static var baseName: String { "digitalCrownAccessory" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .digitalCrownAccessoryWithClosureAnyView
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUICore.Visibility(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "DigitalCrownAccessoryModifier", variant: "digitalCrownAccessoryWithVisibility", expectedTypes: "SwiftUICore.Visibility")
+            return
+        }
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUICore.Visibility(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .digitalCrownAccessoryWithVisibility(value0)
+                return
             }
-            self = .digitalCrownAccessoryWithVisibility(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "DigitalCrownAccessoryModifier", expected: [0, 1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .digitalCrownAccessoryWithClosureAnyView:

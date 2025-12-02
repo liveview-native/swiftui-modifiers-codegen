@@ -13,15 +13,13 @@ extension SymbolVariableValueModeModifier: RuntimeViewModifier {
     public static var baseName: String { "symbolVariableValueMode" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let value0: SwiftUICore.SymbolVariableValueMode? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUICore.SymbolVariableValueMode(syntax: expr) } else { nil }
-            self = .symbolVariableValueMode(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "SymbolVariableValueModeModifier", expected: [1], found: syntax.arguments.count)
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUICore.SymbolVariableValueMode(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .symbolVariableValueMode(value0)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .symbolVariableValueMode(let value0):

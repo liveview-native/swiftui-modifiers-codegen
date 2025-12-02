@@ -13,17 +13,13 @@ extension AccessibilityChartDescriptorModifier: RuntimeViewModifier {
     public static var baseName: String { "accessibilityChartDescriptor" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = R(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "AccessibilityChartDescriptorModifier", variant: "accessibilityChartDescriptor", expectedTypes: "R")
+        if syntax.arguments.count == 1 {
+            if let value0 = R(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .accessibilityChartDescriptor(value0)
+                return
             }
-            self = .accessibilityChartDescriptor(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "AccessibilityChartDescriptorModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .accessibilityChartDescriptor(let value0):

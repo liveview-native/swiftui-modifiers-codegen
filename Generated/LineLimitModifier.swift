@@ -17,23 +17,31 @@ extension LineLimitModifier: RuntimeViewModifier {
     public static var baseName: String { "lineLimit" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let value0: Swift.Int? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { Swift.Int(syntax: expr) } else { nil }
-            self = .lineLimitWithIntOptional(value0)
-        case 2:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = Swift.Int(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "LineLimitModifier", variant: "lineLimitWithIntBool", expectedTypes: "Swift.Int, Swift.Bool")
+        if syntax.arguments.count == 1 {
+            if let value0 = Swift.Int(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .lineLimitWithIntOptional(value0)
+                return
             }
-            guard let expr_reservesSpace = syntax.argument(named: "reservesSpace")?.expression, let reservesSpace = Swift.Bool(syntax: expr_reservesSpace) else {
-                throw ModifierParseError.invalidArguments(modifier: "LineLimitModifier", variant: "lineLimitWithIntBool", expectedTypes: "Swift.Int, Swift.Bool")
+            if let value0 = Swift.PartialRangeFrom<Swift.Int>(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .lineLimitWithInt(value0)
+                return
             }
-            self = .lineLimitWithIntBool(value0, reservesSpace: reservesSpace)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "LineLimitModifier", expected: [1, 2], found: syntax.arguments.count)
+            if let value0 = Swift.PartialRangeThrough<Swift.Int>(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .lineLimitWithInt1(value0)
+                return
+            }
+            if let value0 = Swift.ClosedRange<Swift.Int>(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .lineLimitWithInt2(value0)
+                return
+            }
+        }
+        if syntax.arguments.count == 2 {
+            if let value0 = Swift.Int(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let reservesSpace = Swift.Bool(syntax: syntax.argument(named: "reservesSpace")?.expression!) {
+                self = .lineLimitWithIntBool(value0, reservesSpace: reservesSpace)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .lineLimitWithIntOptional(let value0):

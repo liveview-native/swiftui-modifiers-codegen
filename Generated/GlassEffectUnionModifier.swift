@@ -13,18 +13,13 @@ extension GlassEffectUnionModifier: RuntimeViewModifier {
     public static var baseName: String { "glassEffectUnion" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            let id: (some (Hashable & Sendable))? = if let expr = syntax.argument(named: "id")?.expression { (some (Hashable & Sendable))(syntax: expr) } else { nil }
-            guard let expr_namespace = syntax.argument(named: "namespace")?.expression, let namespace = SwiftUICore.Namespace.ID(syntax: expr_namespace) else {
-                throw ModifierParseError.invalidArguments(modifier: "GlassEffectUnionModifier", variant: "glassEffectUnion", expectedTypes: "(some (Hashable & Sendable))?, SwiftUICore.Namespace.ID")
+        if syntax.arguments.count == 2 {
+            if let id = (some (Hashable & Sendable))(syntax: syntax.argument(named: "id")?.expression!), let namespace = SwiftUICore.Namespace.ID(syntax: syntax.argument(named: "namespace")?.expression!) {
+                self = .glassEffectUnion(id: id, namespace: namespace)
+                return
             }
-            self = .glassEffectUnion(id: id, namespace: namespace)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "GlassEffectUnionModifier", expected: [2], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .glassEffectUnion(let id, let namespace):

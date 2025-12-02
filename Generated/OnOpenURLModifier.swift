@@ -14,19 +14,17 @@ extension OnOpenURLModifier: RuntimeViewModifier {
     public static var baseName: String { "onOpenURL" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .onOpenURLWithClosure
-        case 1:
-            guard let expr_prefersInApp = syntax.argument(named: "prefersInApp")?.expression, let prefersInApp = Swift.Bool(syntax: expr_prefersInApp) else {
-                throw ModifierParseError.invalidArguments(modifier: "OnOpenURLModifier", variant: "onOpenURLWithBool", expectedTypes: "Swift.Bool")
+            return
+        }
+        if syntax.arguments.count == 1 {
+            if let prefersInApp = Swift.Bool(syntax: syntax.argument(named: "prefersInApp")?.expression!) {
+                self = .onOpenURLWithBool(prefersInApp: prefersInApp)
+                return
             }
-            self = .onOpenURLWithBool(prefersInApp: prefersInApp)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "OnOpenURLModifier", expected: [0, 1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .onOpenURLWithClosure:

@@ -13,17 +13,13 @@ extension EncodeModifier: RuntimeViewModifier {
     public static var baseName: String { "encode" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_to = syntax.argument(named: "to")?.expression, let to = any Swift.Encoder(syntax: expr_to) else {
-                throw ModifierParseError.invalidArguments(modifier: "EncodeModifier", variant: "encode", expectedTypes: "any Swift.Encoder")
+        if syntax.arguments.count == 1 {
+            if let to = any Swift.Encoder(syntax: syntax.argument(named: "to")?.expression!) {
+                self = .encode(to: to)
+                return
             }
-            self = .encode(to: to)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "EncodeModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .encode(let to):

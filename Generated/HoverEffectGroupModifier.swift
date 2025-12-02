@@ -15,24 +15,22 @@ extension HoverEffectGroupModifier: RuntimeViewModifier {
     public static var baseName: String { "hoverEffectGroup" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .hoverEffectGroup
-        case 1:
-            let value0: SwiftUI.HoverEffectGroup? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUI.HoverEffectGroup(syntax: expr) } else { nil }
-            self = .hoverEffectGroupWithHoverEffectGroupOptional(value0)
-        case 3:
-            let id: Swift.String? = if let expr = syntax.argument(named: "id")?.expression, let parsed = Swift.String(syntax: expr) { parsed } else { nil }
-            guard let expr_in = syntax.argument(named: "in")?.expression, let in = SwiftUICore.Namespace.ID(syntax: expr_in) else {
-                throw ModifierParseError.invalidArguments(modifier: "HoverEffectGroupModifier", variant: "hoverEffectGroupWithStringOptionalIDBehavior", expectedTypes: "Swift.String?, SwiftUICore.Namespace.ID, SwiftUI.HoverEffectGroup.Behavior")
-            }
-            let behavior: SwiftUI.HoverEffectGroup.Behavior = if let expr = syntax.argument(named: "behavior")?.expression, let parsed = SwiftUI.HoverEffectGroup.Behavior(syntax: expr) { parsed } else { .activatesGroup }
-            self = .hoverEffectGroupWithStringOptionalIDBehavior(id: id, in: in, behavior: behavior)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "HoverEffectGroupModifier", expected: [0, 1, 3], found: syntax.arguments.count)
+            return
         }
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUI.HoverEffectGroup(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .hoverEffectGroupWithHoverEffectGroupOptional(value0)
+                return
+            }
+        }
+        let id: Swift.String? = syntax.argument(named: "id")?.expression.flatMap { Swift.String(syntax: $0) } ?? nil
+        let in: SwiftUICore.Namespace.ID = syntax.argument(named: "in")?.expression.flatMap { SwiftUICore.Namespace.ID(syntax: $0) }
+        let behavior: SwiftUI.HoverEffectGroup.Behavior = syntax.argument(named: "behavior")?.expression.flatMap { SwiftUI.HoverEffectGroup.Behavior(syntax: $0) } ?? .activatesGroup
+        self = .hoverEffectGroupWithStringOptionalIDBehavior(id: id, in: in, behavior: behavior)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .hoverEffectGroupWithStringOptionalIDBehavior(let id, let in, let behavior):

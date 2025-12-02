@@ -13,15 +13,10 @@ extension ScrollTargetLayoutModifier: RuntimeViewModifier {
     public static var baseName: String { "scrollTargetLayout" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let isEnabled: Swift.Bool = if let expr = syntax.argument(named: "isEnabled")?.expression, let parsed = Swift.Bool(syntax: expr) { parsed } else { true }
-            self = .scrollTargetLayout(isEnabled: isEnabled)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ScrollTargetLayoutModifier", expected: [1], found: syntax.arguments.count)
-        }
+        let isEnabled: Swift.Bool = syntax.argument(named: "isEnabled")?.expression.flatMap { Swift.Bool(syntax: $0) } ?? true
+        self = .scrollTargetLayout(isEnabled: isEnabled)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .scrollTargetLayout(let isEnabled):

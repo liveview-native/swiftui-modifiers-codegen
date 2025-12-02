@@ -13,14 +13,11 @@ extension DropConfigurationModifier: RuntimeViewModifier {
     public static var baseName: String { "dropConfiguration" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .dropConfiguration
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "DropConfigurationModifier", expected: [0], found: syntax.arguments.count)
+            return
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .dropConfiguration:

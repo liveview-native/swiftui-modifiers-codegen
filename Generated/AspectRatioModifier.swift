@@ -14,21 +14,17 @@ extension AspectRatioModifier: RuntimeViewModifier {
     public static var baseName: String { "aspectRatio" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            if let expr_contentMode = syntax.argument(named: "contentMode")?.expression, let contentMode = SwiftUICore.ContentMode(syntax: expr_contentMode) {
-                let value0: CoreFoundation.CGFloat = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = CoreFoundation.CGFloat(syntax: expr) { parsed } else { nil }
-                self = .aspectRatioWithCGFloatOptionalContentMode(value0, contentMode: contentMode)
-            } else if let value0: CoreFoundation.CGSize = CoreFoundation.CGSize(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_contentMode = syntax.argument(named: "contentMode")?.expression, let contentMode = SwiftUICore.ContentMode(syntax: expr_contentMode) {
+        if syntax.arguments.count == 2 {
+            if let value0 = CoreFoundation.CGSize(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let contentMode = SwiftUICore.ContentMode(syntax: syntax.argument(named: "contentMode")?.expression!) {
                 self = .aspectRatioWithCGSizeContentMode(value0, contentMode: contentMode)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "AspectRatioModifier", variant: "multiple variants", expectedTypes: "CoreFoundation.CGFloat?, SwiftUICore.ContentMode or CoreFoundation.CGSize, SwiftUICore.ContentMode")
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "AspectRatioModifier", expected: [2], found: syntax.arguments.count)
         }
+        let value0: CoreFoundation.CGFloat? = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { CoreFoundation.CGFloat(syntax: $0) } ?? nil
+        let contentMode: SwiftUICore.ContentMode = syntax.argument(named: "contentMode")?.expression.flatMap { SwiftUICore.ContentMode(syntax: $0) }
+        self = .aspectRatioWithCGFloatOptionalContentMode(value0, contentMode: contentMode)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .aspectRatioWithCGFloatOptionalContentMode(let value0, let contentMode):

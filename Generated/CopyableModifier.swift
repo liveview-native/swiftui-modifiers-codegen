@@ -13,14 +13,11 @@ extension CopyableModifier: RuntimeViewModifier {
     public static var baseName: String { "copyable" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .copyable
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "CopyableModifier", expected: [0], found: syntax.arguments.count)
+            return
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .copyable:

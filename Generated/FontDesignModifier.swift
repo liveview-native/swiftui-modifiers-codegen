@@ -13,15 +13,13 @@ extension FontDesignModifier: RuntimeViewModifier {
     public static var baseName: String { "fontDesign" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let value0: SwiftUICore.Font.Design? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUICore.Font.Design(syntax: expr) } else { nil }
-            self = .fontDesign(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "FontDesignModifier", expected: [1], found: syntax.arguments.count)
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUICore.Font.Design(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .fontDesign(value0)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .fontDesign(let value0):

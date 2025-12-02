@@ -14,21 +14,16 @@ extension TaskModifier: RuntimeViewModifier {
     public static var baseName: String { "task" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let priority: _Concurrency.TaskPriority = if let expr = syntax.argument(named: "priority")?.expression, let parsed = _Concurrency.TaskPriority(syntax: expr) { parsed } else { .userInitiated }
+        if syntax.argument(named: "priority") != nil {
+            let priority: _Concurrency.TaskPriority = syntax.argument(named: "priority")?.expression.flatMap { _Concurrency.TaskPriority(syntax: $0) } ?? .userInitiated
             self = .taskWithTaskPriorityVoid(priority: priority)
-        case 2:
-            guard let expr_id = syntax.argument(named: "id")?.expression, let id = T(syntax: expr_id) else {
-                throw ModifierParseError.invalidArguments(modifier: "TaskModifier", variant: "taskWithTTaskPriorityVoid", expectedTypes: "T, _Concurrency.TaskPriority")
-            }
-            let priority: _Concurrency.TaskPriority = if let expr = syntax.argument(named: "priority")?.expression, let parsed = _Concurrency.TaskPriority(syntax: expr) { parsed } else { .userInitiated }
-            self = .taskWithTTaskPriorityVoid(id: id, priority: priority)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "TaskModifier", expected: [1, 2], found: syntax.arguments.count)
+            return
         }
+        let id: T = syntax.argument(named: "id")?.expression.flatMap { T(syntax: $0) }
+        let priority: _Concurrency.TaskPriority = syntax.argument(named: "priority")?.expression.flatMap { _Concurrency.TaskPriority(syntax: $0) } ?? .userInitiated
+        self = .taskWithTTaskPriorityVoid(id: id, priority: priority)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .taskWithTaskPriorityVoid(let priority):

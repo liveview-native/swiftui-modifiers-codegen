@@ -14,21 +14,17 @@ extension OffsetModifier: RuntimeViewModifier {
     public static var baseName: String { "offset" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = CoreFoundation.CGSize(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "OffsetModifier", variant: "offsetWithCGSize", expectedTypes: "CoreFoundation.CGSize")
+        if syntax.arguments.count == 1 {
+            if let value0 = CoreFoundation.CGSize(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .offsetWithCGSize(value0)
+                return
             }
-            self = .offsetWithCGSize(value0)
-        case 2:
-            let x: CoreFoundation.CGFloat = if let expr = syntax.argument(named: "x")?.expression, let parsed = CoreFoundation.CGFloat(syntax: expr) { parsed } else { 0 }
-            let y: CoreFoundation.CGFloat = if let expr = syntax.argument(named: "y")?.expression, let parsed = CoreFoundation.CGFloat(syntax: expr) { parsed } else { 0 }
-            self = .offsetWithCGFloatCGFloat(x: x, y: y)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "OffsetModifier", expected: [1, 2], found: syntax.arguments.count)
         }
+        let x: CoreFoundation.CGFloat = syntax.argument(named: "x")?.expression.flatMap { CoreFoundation.CGFloat(syntax: $0) } ?? 0
+        let y: CoreFoundation.CGFloat = syntax.argument(named: "y")?.expression.flatMap { CoreFoundation.CGFloat(syntax: $0) } ?? 0
+        self = .offsetWithCGFloatCGFloat(x: x, y: y)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .offsetWithCGSize(let value0):

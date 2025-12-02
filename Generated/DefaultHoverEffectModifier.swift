@@ -14,15 +14,17 @@ extension DefaultHoverEffectModifier: RuntimeViewModifier {
     public static var baseName: String { "defaultHoverEffect" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let value0: SwiftUI.HoverEffect? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUI.HoverEffect(syntax: expr) } else { nil }
-            self = .defaultHoverEffectWithHoverEffectOptional(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "DefaultHoverEffectModifier", expected: [1], found: syntax.arguments.count)
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUI.HoverEffect(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .defaultHoverEffectWithHoverEffectOptional(value0)
+                return
+            }
+            if let value0 = some CustomHoverEffect(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .defaultHoverEffectWithsomeCustomHoverEffect(value0)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .defaultHoverEffectWithHoverEffectOptional(let value0):

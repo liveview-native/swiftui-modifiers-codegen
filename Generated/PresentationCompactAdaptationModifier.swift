@@ -14,25 +14,19 @@ extension PresentationCompactAdaptationModifier: RuntimeViewModifier {
     public static var baseName: String { "presentationCompactAdaptation" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUI.PresentationAdaptation(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "PresentationCompactAdaptationModifier", variant: "presentationCompactAdaptationWithPresentationAdaptation", expectedTypes: "SwiftUI.PresentationAdaptation")
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUI.PresentationAdaptation(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .presentationCompactAdaptationWithPresentationAdaptation(value0)
+                return
             }
-            self = .presentationCompactAdaptationWithPresentationAdaptation(value0)
-        case 2:
-            guard let expr_horizontal = syntax.argument(named: "horizontal")?.expression, let horizontal = SwiftUI.PresentationAdaptation(syntax: expr_horizontal) else {
-                throw ModifierParseError.invalidArguments(modifier: "PresentationCompactAdaptationModifier", variant: "presentationCompactAdaptationWithPresentationAdaptationPresentationAdaptation", expectedTypes: "SwiftUI.PresentationAdaptation, SwiftUI.PresentationAdaptation")
+        }
+        if syntax.arguments.count == 2 {
+            if let horizontal = SwiftUI.PresentationAdaptation(syntax: syntax.argument(named: "horizontal")?.expression!), let vertical = SwiftUI.PresentationAdaptation(syntax: syntax.argument(named: "vertical")?.expression!) {
+                self = .presentationCompactAdaptationWithPresentationAdaptationPresentationAdaptation(horizontal: horizontal, vertical: vertical)
+                return
             }
-            guard let expr_vertical = syntax.argument(named: "vertical")?.expression, let vertical = SwiftUI.PresentationAdaptation(syntax: expr_vertical) else {
-                throw ModifierParseError.invalidArguments(modifier: "PresentationCompactAdaptationModifier", variant: "presentationCompactAdaptationWithPresentationAdaptationPresentationAdaptation", expectedTypes: "SwiftUI.PresentationAdaptation, SwiftUI.PresentationAdaptation")
-            }
-            self = .presentationCompactAdaptationWithPresentationAdaptationPresentationAdaptation(horizontal: horizontal, vertical: vertical)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "PresentationCompactAdaptationModifier", expected: [1, 2], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .presentationCompactAdaptationWithPresentationAdaptation(let value0):

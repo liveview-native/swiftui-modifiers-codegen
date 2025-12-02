@@ -13,17 +13,13 @@ extension SetSizeModifier: RuntimeViewModifier {
     public static var baseName: String { "setSize" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = CoreFoundation.CGSize(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "SetSizeModifier", variant: "setSize", expectedTypes: "CoreFoundation.CGSize")
+        if syntax.arguments.count == 1 {
+            if let value0 = CoreFoundation.CGSize(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .setSize(value0)
+                return
             }
-            self = .setSize(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "SetSizeModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .setSize(let value0):

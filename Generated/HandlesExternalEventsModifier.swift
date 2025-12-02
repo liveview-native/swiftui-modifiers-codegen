@@ -13,20 +13,13 @@ extension HandlesExternalEventsModifier: RuntimeViewModifier {
     public static var baseName: String { "handlesExternalEvents" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            guard let expr_preferring = syntax.argument(named: "preferring")?.expression, let preferring = Swift.Set<Swift.String>(syntax: expr_preferring) else {
-                throw ModifierParseError.invalidArguments(modifier: "HandlesExternalEventsModifier", variant: "handlesExternalEvents", expectedTypes: "Swift.Set<Swift.String>, Swift.Set<Swift.String>")
+        if syntax.arguments.count == 2 {
+            if let preferring = Swift.Set<Swift.String>(syntax: syntax.argument(named: "preferring")?.expression!), let allowing = Swift.Set<Swift.String>(syntax: syntax.argument(named: "allowing")?.expression!) {
+                self = .handlesExternalEvents(preferring: preferring, allowing: allowing)
+                return
             }
-            guard let expr_allowing = syntax.argument(named: "allowing")?.expression, let allowing = Swift.Set<Swift.String>(syntax: expr_allowing) else {
-                throw ModifierParseError.invalidArguments(modifier: "HandlesExternalEventsModifier", variant: "handlesExternalEvents", expectedTypes: "Swift.Set<Swift.String>, Swift.Set<Swift.String>")
-            }
-            self = .handlesExternalEvents(preferring: preferring, allowing: allowing)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "HandlesExternalEventsModifier", expected: [2], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .handlesExternalEvents(let preferring, let allowing):

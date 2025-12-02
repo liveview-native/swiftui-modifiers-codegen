@@ -14,23 +14,16 @@ extension AccessibilityRespondsToUserInteractionModifier: RuntimeViewModifier {
     public static var baseName: String { "accessibilityRespondsToUserInteraction" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let value0: Swift.Bool = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = Swift.Bool(syntax: expr) { parsed } else { true }
-            self = .accessibilityRespondsToUserInteractionWithBool(value0)
-        case 2:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = Swift.Bool(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "AccessibilityRespondsToUserInteractionModifier", variant: "accessibilityRespondsToUserInteractionWithBoolBool", expectedTypes: "Swift.Bool, Swift.Bool")
+        if syntax.arguments.count == 2 {
+            if let value0 = Swift.Bool(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let isEnabled = Swift.Bool(syntax: syntax.argument(named: "isEnabled")?.expression!) {
+                self = .accessibilityRespondsToUserInteractionWithBoolBool(value0, isEnabled: isEnabled)
+                return
             }
-            guard let expr_isEnabled = syntax.argument(named: "isEnabled")?.expression, let isEnabled = Swift.Bool(syntax: expr_isEnabled) else {
-                throw ModifierParseError.invalidArguments(modifier: "AccessibilityRespondsToUserInteractionModifier", variant: "accessibilityRespondsToUserInteractionWithBoolBool", expectedTypes: "Swift.Bool, Swift.Bool")
-            }
-            self = .accessibilityRespondsToUserInteractionWithBoolBool(value0, isEnabled: isEnabled)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "AccessibilityRespondsToUserInteractionModifier", expected: [1, 2], found: syntax.arguments.count)
         }
+        let value0: Swift.Bool = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { Swift.Bool(syntax: $0) } ?? true
+        self = .accessibilityRespondsToUserInteractionWithBool(value0)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .accessibilityRespondsToUserInteractionWithBoolBool(let value0, let isEnabled):

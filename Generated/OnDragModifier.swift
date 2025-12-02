@@ -14,14 +14,13 @@ extension OnDragModifier: RuntimeViewModifier {
     public static var baseName: String { "onDrag" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
-            self = .onDragWithNSItemProvider()
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "OnDragModifier", expected: [0], found: syntax.arguments.count)
+        if syntax.arguments.count == 0 {
+            self = .onDragWithNSItemProvider
+            return
+            self = .onDragWithNSItemProviderClosureAnyView
+            return
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .onDragWithNSItemProvider:

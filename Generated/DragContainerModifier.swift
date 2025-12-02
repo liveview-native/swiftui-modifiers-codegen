@@ -16,28 +16,31 @@ extension DragContainerModifier: RuntimeViewModifier {
     public static var baseName: String { "dragContainer" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            let for: Item.Type? = if let expr = syntax.argument(named: "for")?.expression { Item.Type(syntax: expr) } else { nil }
-            let in: SwiftUICore.Namespace.ID? = if let expr = syntax.argument(named: "in")?.expression { SwiftUICore.Namespace.ID(syntax: expr) } else { nil }
-            self = .dragContainerWithTypeIDOptionalClosureData(for: for, in: in)
-        case 3:
-            if let expr_itemID = syntax.argument(named: "itemID")?.expression, let itemID = Swift.KeyPath<Item, ItemID>(syntax: expr_itemID) {
-                let for: Item.Type = if let expr = syntax.argument(named: "for")?.expression, let parsed = Item.Type(syntax: expr) { parsed } else { Item.self }
-                let in: SwiftUICore.Namespace.ID = if let expr = syntax.argument(named: "in")?.expression, let parsed = SwiftUICore.Namespace.ID(syntax: expr) { parsed } else { nil }
-                self = .dragContainerWithTypeKeyPathItemItemIDIDOptionalClosureData(for: for, itemID: itemID, in: in)
-            } else if let expr_itemID = syntax.argument(named: "itemID")?.expression, let itemID = Swift.KeyPath<Item, ItemID>(syntax: expr_itemID) {
-                let for: Item.Type = if let expr = syntax.argument(named: "for")?.expression, let parsed = Item.Type(syntax: expr) { parsed } else { Item.self }
-                let in: SwiftUICore.Namespace.ID = if let expr = syntax.argument(named: "in")?.expression, let parsed = SwiftUICore.Namespace.ID(syntax: expr) { parsed } else { nil }
-                self = .dragContainerWithTypeKeyPathItemItemIDIDOptionalClosureData1(for: for, itemID: itemID, in: in)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "DragContainerModifier", variant: "multiple variants", expectedTypes: "Item.Type, Swift.KeyPath<Item, ItemID>, SwiftUICore.Namespace.ID? or Item.Type, Swift.KeyPath<Item, ItemID>, SwiftUICore.Namespace.ID?")
-            }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "DragContainerModifier", expected: [2, 3], found: syntax.arguments.count)
+        if syntax.argument(named: "for") != nil || syntax.argument(named: "itemID") != nil || syntax.argument(named: "in") != nil {
+            let for: Item.Type = syntax.argument(named: "for")?.expression.flatMap { Item.Type(syntax: $0) } ?? Item.self
+            let itemID: Swift.KeyPath<Item, ItemID> = syntax.argument(named: "itemID")?.expression.flatMap { Swift.KeyPath<Item, ItemID>(syntax: $0) }
+            let in: SwiftUICore.Namespace.ID? = syntax.argument(named: "in")?.expression.flatMap { SwiftUICore.Namespace.ID(syntax: $0) } ?? nil
+            self = .dragContainerWithTypeKeyPathItemItemIDIDOptionalClosureData(for: for, itemID: itemID, in: in)
+            return
         }
+        if syntax.argument(named: "for") != nil || syntax.argument(named: "in") != nil {
+            let for: Item.Type = syntax.argument(named: "for")?.expression.flatMap { Item.Type(syntax: $0) } ?? Item.self
+            let in: SwiftUICore.Namespace.ID? = syntax.argument(named: "in")?.expression.flatMap { SwiftUICore.Namespace.ID(syntax: $0) } ?? nil
+            self = .dragContainerWithTypeIDOptionalClosureData(for: for, in: in)
+            return
+        }
+        if syntax.argument(named: "for") != nil || syntax.argument(named: "in") != nil {
+            let for: Item.Type = syntax.argument(named: "for")?.expression.flatMap { Item.Type(syntax: $0) } ?? Item.self
+            let in: SwiftUICore.Namespace.ID? = syntax.argument(named: "in")?.expression.flatMap { SwiftUICore.Namespace.ID(syntax: $0) } ?? nil
+            self = .dragContainerWithTypeIDOptionalClosureData1(for: for, in: in)
+            return
+        }
+        let for: Item.Type = syntax.argument(named: "for")?.expression.flatMap { Item.Type(syntax: $0) } ?? Item.self
+        let itemID: Swift.KeyPath<Item, ItemID> = syntax.argument(named: "itemID")?.expression.flatMap { Swift.KeyPath<Item, ItemID>(syntax: $0) }
+        let in: SwiftUICore.Namespace.ID? = syntax.argument(named: "in")?.expression.flatMap { SwiftUICore.Namespace.ID(syntax: $0) } ?? nil
+        self = .dragContainerWithTypeKeyPathItemItemIDIDOptionalClosureData1(for: for, itemID: itemID, in: in)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .dragContainerWithTypeKeyPathItemItemIDIDOptionalClosureData(let for, let itemID, let in):

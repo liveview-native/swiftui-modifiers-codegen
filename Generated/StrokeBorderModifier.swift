@@ -14,25 +14,19 @@ extension StrokeBorderModifier: RuntimeViewModifier {
     public static var baseName: String { "strokeBorder" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 3:
-            if let expr_style = syntax.argument(named: "style")?.expression, let style = SwiftUICore.StrokeStyle(syntax: expr_style) {
-                let value0: AnyShapeStyle = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = AnyShapeStyle(syntax: expr) { parsed } else { .foreground }
-                let antialiased: Swift.Bool = if let expr = syntax.argument(named: "antialiased")?.expression, let parsed = Swift.Bool(syntax: expr) { parsed } else { true }
-                self = .strokeBorderWithAnyShapeStyleStrokeStyleBool(value0, style: style, antialiased: antialiased)
-            } else if true {
-                let value0: AnyShapeStyle = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = AnyShapeStyle(syntax: expr) { parsed } else { .foreground }
-                let lineWidth: CoreFoundation.CGFloat = if let expr = syntax.argument(named: "lineWidth")?.expression, let parsed = CoreFoundation.CGFloat(syntax: expr) { parsed } else { 1 }
-                let antialiased: Swift.Bool = if let expr = syntax.argument(named: "antialiased")?.expression, let parsed = Swift.Bool(syntax: expr) { parsed } else { true }
-                self = .strokeBorderWithAnyShapeStyleCGFloatBool(value0, lineWidth: lineWidth, antialiased: antialiased)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "StrokeBorderModifier", variant: "multiple variants", expectedTypes: "AnyShapeStyle, SwiftUICore.StrokeStyle, Swift.Bool or AnyShapeStyle, CoreFoundation.CGFloat, Swift.Bool")
-            }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "StrokeBorderModifier", expected: [3], found: syntax.arguments.count)
+        if syntax.argument(named: "style") != nil || syntax.argument(named: "antialiased") != nil {
+            let value0: AnyShapeStyle = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { AnyShapeStyle(syntax: $0) } ?? .foreground
+            let style: SwiftUICore.StrokeStyle = syntax.argument(named: "style")?.expression.flatMap { SwiftUICore.StrokeStyle(syntax: $0) }
+            let antialiased: Swift.Bool = syntax.argument(named: "antialiased")?.expression.flatMap { Swift.Bool(syntax: $0) } ?? true
+            self = .strokeBorderWithAnyShapeStyleStrokeStyleBool(value0, style: style, antialiased: antialiased)
+            return
         }
+        let value0: AnyShapeStyle = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { AnyShapeStyle(syntax: $0) } ?? .foreground
+        let lineWidth: CoreFoundation.CGFloat = syntax.argument(named: "lineWidth")?.expression.flatMap { CoreFoundation.CGFloat(syntax: $0) } ?? 1
+        let antialiased: Swift.Bool = syntax.argument(named: "antialiased")?.expression.flatMap { Swift.Bool(syntax: $0) } ?? true
+        self = .strokeBorderWithAnyShapeStyleCGFloatBool(value0, lineWidth: lineWidth, antialiased: antialiased)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .strokeBorderWithAnyShapeStyleStrokeStyleBool(let value0, let style, let antialiased):

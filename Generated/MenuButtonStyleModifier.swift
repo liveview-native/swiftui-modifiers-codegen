@@ -13,17 +13,13 @@ extension MenuButtonStyleModifier: RuntimeViewModifier {
     public static var baseName: String { "menuButtonStyle" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = S(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "MenuButtonStyleModifier", variant: "menuButtonStyle", expectedTypes: "S")
+        if syntax.arguments.count == 1 {
+            if let value0 = S(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .menuButtonStyle(value0)
+                return
             }
-            self = .menuButtonStyle(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "MenuButtonStyleModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .menuButtonStyle(let value0):

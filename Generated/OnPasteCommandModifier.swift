@@ -16,24 +16,25 @@ extension OnPasteCommandModifier: RuntimeViewModifier {
     public static var baseName: String { "onPasteCommand" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            if let expr_of = syntax.argument(named: "of")?.expression, let of = [UniformTypeIdentifiers.UTType](syntax: expr_of) {
+        if syntax.arguments.count == 1 {
+            if let of = [UniformTypeIdentifiers.UTType](syntax: syntax.argument(named: "of")?.expression!) {
                 self = .onPasteCommandWithUTTypeVoid(of: of)
-            } else if let expr_of = syntax.argument(named: "of")?.expression, let of = [UniformTypeIdentifiers.UTType](syntax: expr_of) {
-                self = .onPasteCommandWithUTTypeClosurePayloadOptionalVoid(of: of)
-            } else if let expr_of = syntax.argument(named: "of")?.expression, let of = [Swift.String](syntax: expr_of) {
-                self = .onPasteCommandWithStringVoid(of: of)
-            } else if let expr_of = syntax.argument(named: "of")?.expression, let of = [Swift.String](syntax: expr_of) {
-                self = .onPasteCommandWithStringClosurePayloadOptionalVoid(of: of)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "OnPasteCommandModifier", variant: "multiple variants", expectedTypes: "[UniformTypeIdentifiers.UTType] or [UniformTypeIdentifiers.UTType] or [Swift.String] or [Swift.String]")
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "OnPasteCommandModifier", expected: [1], found: syntax.arguments.count)
+            if let of = [UniformTypeIdentifiers.UTType](syntax: syntax.argument(named: "of")?.expression!) {
+                self = .onPasteCommandWithUTTypeClosurePayloadOptionalVoid(of: of)
+                return
+            }
+            if let of = [Swift.String](syntax: syntax.argument(named: "of")?.expression!) {
+                self = .onPasteCommandWithStringVoid(of: of)
+                return
+            }
+            if let of = [Swift.String](syntax: syntax.argument(named: "of")?.expression!) {
+                self = .onPasteCommandWithStringClosurePayloadOptionalVoid(of: of)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .onPasteCommandWithUTTypeVoid(let of):

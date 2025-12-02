@@ -13,17 +13,10 @@ extension AnimateModifier: RuntimeViewModifier {
     public static var baseName: String { "animate" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUICore.Animation(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "AnimateModifier", variant: "animate", expectedTypes: "SwiftUICore.Animation")
-            }
-            self = .animate(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "AnimateModifier", expected: [1], found: syntax.arguments.count)
-        }
+        let value0: SwiftUICore.Animation = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { SwiftUICore.Animation(syntax: $0) }
+        self = .animate(value0)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .animate(let value0):

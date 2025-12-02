@@ -21,38 +21,47 @@ extension AccessibilityLabelModifier: RuntimeViewModifier {
     public static var baseName: String { "accessibilityLabel" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .accessibilityLabelWithClosureAnyView
-        case 1:
-            if let value0: SwiftUICore.Text = SwiftUICore.Text(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+            return
+        }
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUICore.Text(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
                 self = .accessibilityLabelWithText(value0)
-            } else if let value0: SwiftUICore.LocalizedStringKey = SwiftUICore.LocalizedStringKey(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                return
+            }
+            if let value0 = SwiftUICore.LocalizedStringKey(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
                 self = .accessibilityLabelWithLocalizedStringKey(value0)
-            } else if let value0: Foundation.LocalizedStringResource = Foundation.LocalizedStringResource(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                return
+            }
+            if let value0 = Foundation.LocalizedStringResource(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
                 self = .accessibilityLabelWithLocalizedStringResource(value0)
-            } else if let value0: String = String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                return
+            }
+            if let value0 = String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
                 self = .accessibilityLabelWithString(value0)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "AccessibilityLabelModifier", variant: "multiple variants", expectedTypes: "SwiftUICore.Text or SwiftUICore.LocalizedStringKey or Foundation.LocalizedStringResource or String")
+                return
             }
-        case 2:
-            if let value0: SwiftUICore.Text = SwiftUICore.Text(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isEnabled = syntax.argument(named: "isEnabled")?.expression, let isEnabled = Swift.Bool(syntax: expr_isEnabled) {
+        }
+        if syntax.arguments.count == 2 {
+            if let value0 = SwiftUICore.Text(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let isEnabled = Swift.Bool(syntax: syntax.argument(named: "isEnabled")?.expression!) {
                 self = .accessibilityLabelWithTextBool(value0, isEnabled: isEnabled)
-            } else if let value0: SwiftUICore.LocalizedStringKey = SwiftUICore.LocalizedStringKey(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isEnabled = syntax.argument(named: "isEnabled")?.expression, let isEnabled = Swift.Bool(syntax: expr_isEnabled) {
-                self = .accessibilityLabelWithLocalizedStringKeyBool(value0, isEnabled: isEnabled)
-            } else if let value0: Foundation.LocalizedStringResource = Foundation.LocalizedStringResource(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isEnabled = syntax.argument(named: "isEnabled")?.expression, let isEnabled = Swift.Bool(syntax: expr_isEnabled) {
-                self = .accessibilityLabelWithLocalizedStringResourceBool(value0, isEnabled: isEnabled)
-            } else if let value0: String = String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isEnabled = syntax.argument(named: "isEnabled")?.expression, let isEnabled = Swift.Bool(syntax: expr_isEnabled) {
-                self = .accessibilityLabelWithStringBool(value0, isEnabled: isEnabled)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "AccessibilityLabelModifier", variant: "multiple variants", expectedTypes: "SwiftUICore.Text, Swift.Bool or SwiftUICore.LocalizedStringKey, Swift.Bool or Foundation.LocalizedStringResource, Swift.Bool or String, Swift.Bool")
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "AccessibilityLabelModifier", expected: [0, 1, 2], found: syntax.arguments.count)
+            if let value0 = SwiftUICore.LocalizedStringKey(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let isEnabled = Swift.Bool(syntax: syntax.argument(named: "isEnabled")?.expression!) {
+                self = .accessibilityLabelWithLocalizedStringKeyBool(value0, isEnabled: isEnabled)
+                return
+            }
+            if let value0 = Foundation.LocalizedStringResource(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let isEnabled = Swift.Bool(syntax: syntax.argument(named: "isEnabled")?.expression!) {
+                self = .accessibilityLabelWithLocalizedStringResourceBool(value0, isEnabled: isEnabled)
+                return
+            }
+            if let value0 = String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let isEnabled = Swift.Bool(syntax: syntax.argument(named: "isEnabled")?.expression!) {
+                self = .accessibilityLabelWithStringBool(value0, isEnabled: isEnabled)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .accessibilityLabelWithTextBool(let value0, let isEnabled):

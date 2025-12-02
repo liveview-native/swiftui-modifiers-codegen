@@ -16,28 +16,27 @@ extension AccessibilityActivationPointModifier: RuntimeViewModifier {
     public static var baseName: String { "accessibilityActivationPoint" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            if let value0: CoreFoundation.CGPoint = CoreFoundation.CGPoint(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+        if syntax.arguments.count == 1 {
+            if let value0 = CoreFoundation.CGPoint(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
                 self = .accessibilityActivationPointWithCGPoint(value0)
-            } else if let value0: SwiftUICore.UnitPoint = SwiftUICore.UnitPoint(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                return
+            }
+            if let value0 = SwiftUICore.UnitPoint(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
                 self = .accessibilityActivationPointWithUnitPoint(value0)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "AccessibilityActivationPointModifier", variant: "multiple variants", expectedTypes: "CoreFoundation.CGPoint or SwiftUICore.UnitPoint")
+                return
             }
-        case 2:
-            if let value0: CoreFoundation.CGPoint = CoreFoundation.CGPoint(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isEnabled = syntax.argument(named: "isEnabled")?.expression, let isEnabled = Swift.Bool(syntax: expr_isEnabled) {
+        }
+        if syntax.arguments.count == 2 {
+            if let value0 = CoreFoundation.CGPoint(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let isEnabled = Swift.Bool(syntax: syntax.argument(named: "isEnabled")?.expression!) {
                 self = .accessibilityActivationPointWithCGPointBool(value0, isEnabled: isEnabled)
-            } else if let value0: SwiftUICore.UnitPoint = SwiftUICore.UnitPoint(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isEnabled = syntax.argument(named: "isEnabled")?.expression, let isEnabled = Swift.Bool(syntax: expr_isEnabled) {
-                self = .accessibilityActivationPointWithUnitPointBool(value0, isEnabled: isEnabled)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "AccessibilityActivationPointModifier", variant: "multiple variants", expectedTypes: "CoreFoundation.CGPoint, Swift.Bool or SwiftUICore.UnitPoint, Swift.Bool")
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "AccessibilityActivationPointModifier", expected: [1, 2], found: syntax.arguments.count)
+            if let value0 = SwiftUICore.UnitPoint(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let isEnabled = Swift.Bool(syntax: syntax.argument(named: "isEnabled")?.expression!) {
+                self = .accessibilityActivationPointWithUnitPointBool(value0, isEnabled: isEnabled)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .accessibilityActivationPointWithCGPointBool(let value0, let isEnabled):

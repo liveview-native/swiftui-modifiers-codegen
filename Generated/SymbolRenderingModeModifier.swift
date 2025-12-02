@@ -13,15 +13,13 @@ extension SymbolRenderingModeModifier: RuntimeViewModifier {
     public static var baseName: String { "symbolRenderingMode" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let value0: SwiftUICore.SymbolRenderingMode? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUICore.SymbolRenderingMode(syntax: expr) } else { nil }
-            self = .symbolRenderingMode(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "SymbolRenderingModeModifier", expected: [1], found: syntax.arguments.count)
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUICore.SymbolRenderingMode(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .symbolRenderingMode(value0)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .symbolRenderingMode(let value0):

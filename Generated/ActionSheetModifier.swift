@@ -14,28 +14,17 @@ extension ActionSheetModifier: RuntimeViewModifier {
     public static var baseName: String { "actionSheet" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let firstLabel = syntax.arguments.first?.label?.text
-            switch firstLabel {
-            case "isPresented":
-                guard let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) else {
-                    throw ModifierParseError.invalidArguments(modifier: "ActionSheetModifier", variant: "actionSheetWithBoolActionSheet", expectedTypes: "SwiftUICore.Binding<Swift.Bool>")
-                }
-                self = .actionSheetWithBoolActionSheet(isPresented: isPresented)
-            case "item":
-                guard let expr_item = syntax.argument(named: "item")?.expression, let item = SwiftUICore.Binding<T?>(syntax: expr_item) else {
-                    throw ModifierParseError.invalidArguments(modifier: "ActionSheetModifier", variant: "actionSheetWithBindingTOptionalActionSheet", expectedTypes: "SwiftUICore.Binding<T?>")
-                }
+        if syntax.arguments.count == 1 {
+            if let item = SwiftUICore.Binding<T?>(syntax: syntax.argument(named: "item")?.expression!) {
                 self = .actionSheetWithBindingTOptionalActionSheet(item: item)
-            default:
-                throw ModifierParseError.ambiguousVariant(modifier: "ActionSheetModifier", expectedLabels: ["item", "isPresented"])
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ActionSheetModifier", expected: [1], found: syntax.arguments.count)
+            if let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: syntax.argument(named: "isPresented")?.expression!) {
+                self = .actionSheetWithBoolActionSheet(isPresented: isPresented)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .actionSheetWithBindingTOptionalActionSheet(let item):

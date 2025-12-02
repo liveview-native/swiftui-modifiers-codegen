@@ -15,24 +15,23 @@ extension FocusedSceneValueModifier: RuntimeViewModifier {
     public static var baseName: String { "focusedSceneValue" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let value0: T? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { T(syntax: expr) } else { nil }
-            self = .focusedSceneValueWithTOptional(value0)
-        case 2:
-            if let value0: Swift.WritableKeyPath<SwiftUI.FocusedValues, T?> = Swift.WritableKeyPath<SwiftUI.FocusedValues, T?>(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let value1: T = T(syntax: (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil)!) {
-                self = .focusedSceneValueWithFocusedValuesTOptionalT(value0, value1)
-            } else if let value0: Swift.WritableKeyPath<SwiftUI.FocusedValues, T?> = Swift.WritableKeyPath<SwiftUI.FocusedValues, T?>(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
-                let value1: T = if let expr = (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil) { T(syntax: expr) } else { nil }
-                self = .focusedSceneValueWithFocusedValuesTOptionalTOptional(value0, value1)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "FocusedSceneValueModifier", variant: "multiple variants", expectedTypes: "Swift.WritableKeyPath<SwiftUI.FocusedValues, T?>, T or Swift.WritableKeyPath<SwiftUI.FocusedValues, T?>, T?")
+        if syntax.arguments.count == 1 {
+            if let value0 = T(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .focusedSceneValueWithTOptional(value0)
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "FocusedSceneValueModifier", expected: [1, 2], found: syntax.arguments.count)
+        }
+        if syntax.arguments.count == 2 {
+            if let value0 = Swift.WritableKeyPath<SwiftUI.FocusedValues, T?>(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let value1 = T(syntax: (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil)!) {
+                self = .focusedSceneValueWithFocusedValuesTOptionalT(value0, value1)
+                return
+            }
+            if let value0 = Swift.WritableKeyPath<SwiftUI.FocusedValues, T?>(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let value1 = T(syntax: (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil)!) {
+                self = .focusedSceneValueWithFocusedValuesTOptionalTOptional(value0, value1)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .focusedSceneValueWithTOptional(let value0):

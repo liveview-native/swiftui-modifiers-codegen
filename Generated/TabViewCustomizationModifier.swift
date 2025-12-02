@@ -13,15 +13,13 @@ extension TabViewCustomizationModifier: RuntimeViewModifier {
     public static var baseName: String { "tabViewCustomization" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let value0: SwiftUICore.Binding<SwiftUI.TabViewCustomization>? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUICore.Binding<SwiftUI.TabViewCustomization>(syntax: expr) } else { nil }
-            self = .tabViewCustomization(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "TabViewCustomizationModifier", expected: [1], found: syntax.arguments.count)
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUICore.Binding<SwiftUI.TabViewCustomization>(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .tabViewCustomization(value0)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .tabViewCustomization(let value0):

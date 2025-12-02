@@ -13,17 +13,13 @@ extension BadgeProminenceModifier: RuntimeViewModifier {
     public static var baseName: String { "badgeProminence" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUI.BadgeProminence(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "BadgeProminenceModifier", variant: "badgeProminence", expectedTypes: "SwiftUI.BadgeProminence")
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUI.BadgeProminence(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .badgeProminence(value0)
+                return
             }
-            self = .badgeProminence(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "BadgeProminenceModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .badgeProminence(let value0):

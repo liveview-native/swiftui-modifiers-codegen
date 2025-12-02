@@ -13,16 +13,11 @@ extension IgnoresSafeAreaModifier: RuntimeViewModifier {
     public static var baseName: String { "ignoresSafeArea" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            let value0: SwiftUICore.SafeAreaRegions = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = SwiftUICore.SafeAreaRegions(syntax: expr) { parsed } else { .all }
-            let edges: SwiftUICore.Edge.Set = if let expr = syntax.argument(named: "edges")?.expression, let parsed = SwiftUICore.Edge.Set(syntax: expr) { parsed } else { .all }
-            self = .ignoresSafeArea(value0, edges: edges)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "IgnoresSafeAreaModifier", expected: [2], found: syntax.arguments.count)
-        }
+        let value0: SwiftUICore.SafeAreaRegions = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { SwiftUICore.SafeAreaRegions(syntax: $0) } ?? .all
+        let edges: SwiftUICore.Edge.Set = syntax.argument(named: "edges")?.expression.flatMap { SwiftUICore.Edge.Set(syntax: $0) } ?? .all
+        self = .ignoresSafeArea(value0, edges: edges)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .ignoresSafeArea(let value0, let edges):

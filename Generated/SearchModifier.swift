@@ -13,17 +13,13 @@ extension SearchModifier: RuntimeViewModifier {
     public static var baseName: String { "search" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_text = syntax.argument(named: "text")?.expression, let text = Swift.String(syntax: expr_text) else {
-                throw ModifierParseError.invalidArguments(modifier: "SearchModifier", variant: "search", expectedTypes: "Swift.String")
+        if syntax.arguments.count == 1 {
+            if let text = Swift.String(syntax: syntax.argument(named: "text")?.expression!) {
+                self = .search(text: text)
+                return
             }
-            self = .search(text: text)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "SearchModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .search(let text):

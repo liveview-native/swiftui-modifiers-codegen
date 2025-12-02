@@ -13,14 +13,11 @@ extension ImmersiveEnvironmentPickerModifier: RuntimeViewModifier {
     public static var baseName: String { "immersiveEnvironmentPicker" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .immersiveEnvironmentPicker
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ImmersiveEnvironmentPickerModifier", expected: [0], found: syntax.arguments.count)
+            return
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .immersiveEnvironmentPicker:

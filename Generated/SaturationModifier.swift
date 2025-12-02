@@ -13,17 +13,13 @@ extension SaturationModifier: RuntimeViewModifier {
     public static var baseName: String { "saturation" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = Swift.Double(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "SaturationModifier", variant: "saturation", expectedTypes: "Swift.Double")
+        if syntax.arguments.count == 1 {
+            if let value0 = Swift.Double(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .saturation(value0)
+                return
             }
-            self = .saturation(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "SaturationModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .saturation(let value0):

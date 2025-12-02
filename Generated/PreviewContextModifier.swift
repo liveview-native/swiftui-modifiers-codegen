@@ -13,17 +13,13 @@ extension PreviewContextModifier: RuntimeViewModifier {
     public static var baseName: String { "previewContext" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = C(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "PreviewContextModifier", variant: "previewContext", expectedTypes: "C")
+        if syntax.arguments.count == 1 {
+            if let value0 = C(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .previewContext(value0)
+                return
             }
-            self = .previewContext(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "PreviewContextModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .previewContext(let value0):

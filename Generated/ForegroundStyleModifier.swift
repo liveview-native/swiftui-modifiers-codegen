@@ -15,36 +15,25 @@ extension ForegroundStyleModifier: RuntimeViewModifier {
     public static var baseName: String { "foregroundStyle" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = AnyShapeStyle(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "ForegroundStyleModifier", variant: "foregroundStyleWithAnyShapeStyle", expectedTypes: "AnyShapeStyle")
+        if syntax.arguments.count == 1 {
+            if let value0 = AnyShapeStyle(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .foregroundStyleWithAnyShapeStyle(value0)
+                return
             }
-            self = .foregroundStyleWithAnyShapeStyle(value0)
-        case 2:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = AnyShapeStyle(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "ForegroundStyleModifier", variant: "foregroundStyleWithAnyShapeStyleAnyShapeStyle", expectedTypes: "AnyShapeStyle, AnyShapeStyle")
+        }
+        if syntax.arguments.count == 2 {
+            if let value0 = AnyShapeStyle(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let value1 = AnyShapeStyle(syntax: (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil)!) {
+                self = .foregroundStyleWithAnyShapeStyleAnyShapeStyle(value0, value1)
+                return
             }
-            guard let expr_value1 = (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil), let value1 = AnyShapeStyle(syntax: expr_value1) else {
-                throw ModifierParseError.invalidArguments(modifier: "ForegroundStyleModifier", variant: "foregroundStyleWithAnyShapeStyleAnyShapeStyle", expectedTypes: "AnyShapeStyle, AnyShapeStyle")
+        }
+        if syntax.arguments.count == 3 {
+            if let value0 = AnyShapeStyle(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let value1 = AnyShapeStyle(syntax: (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil)!), let value2 = AnyShapeStyle(syntax: (syntax.arguments.count > 2 ? syntax.arguments[2].expression : nil)!) {
+                self = .foregroundStyleWithAnyShapeStyleAnyShapeStyleAnyShapeStyle(value0, value1, value2)
+                return
             }
-            self = .foregroundStyleWithAnyShapeStyleAnyShapeStyle(value0, value1)
-        case 3:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = AnyShapeStyle(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "ForegroundStyleModifier", variant: "foregroundStyleWithAnyShapeStyleAnyShapeStyleAnyShapeStyle", expectedTypes: "AnyShapeStyle, AnyShapeStyle, AnyShapeStyle")
-            }
-            guard let expr_value1 = (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil), let value1 = AnyShapeStyle(syntax: expr_value1) else {
-                throw ModifierParseError.invalidArguments(modifier: "ForegroundStyleModifier", variant: "foregroundStyleWithAnyShapeStyleAnyShapeStyleAnyShapeStyle", expectedTypes: "AnyShapeStyle, AnyShapeStyle, AnyShapeStyle")
-            }
-            guard let expr_value2 = (syntax.arguments.count > 2 ? syntax.arguments[2].expression : nil), let value2 = AnyShapeStyle(syntax: expr_value2) else {
-                throw ModifierParseError.invalidArguments(modifier: "ForegroundStyleModifier", variant: "foregroundStyleWithAnyShapeStyleAnyShapeStyleAnyShapeStyle", expectedTypes: "AnyShapeStyle, AnyShapeStyle, AnyShapeStyle")
-            }
-            self = .foregroundStyleWithAnyShapeStyleAnyShapeStyleAnyShapeStyle(value0, value1, value2)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ForegroundStyleModifier", expected: [1, 2, 3], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .foregroundStyleWithAnyShapeStyle(let value0):

@@ -14,20 +14,17 @@ extension SizeThatFitsModifier: RuntimeViewModifier {
     public static var baseName: String { "sizeThatFits" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 3:
-            if let value0: SwiftUICore.ProposedViewSize = SwiftUICore.ProposedViewSize(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_uiViewController = syntax.argument(named: "uiViewController")?.expression, let uiViewController = Self.UIViewControllerType(syntax: expr_uiViewController), let expr_context = syntax.argument(named: "context")?.expression, let context = Self.Context(syntax: expr_context) {
+        if syntax.arguments.count == 3 {
+            if let value0 = SwiftUICore.ProposedViewSize(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let uiViewController = Self.UIViewControllerType(syntax: syntax.argument(named: "uiViewController")?.expression!), let context = Self.Context(syntax: syntax.argument(named: "context")?.expression!) {
                 self = .sizeThatFitsWithProposedViewSizeUIViewControllerTypeContext(value0, uiViewController: uiViewController, context: context)
-            } else if let value0: SwiftUICore.ProposedViewSize = SwiftUICore.ProposedViewSize(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_uiView = syntax.argument(named: "uiView")?.expression, let uiView = Self.UIViewType(syntax: expr_uiView), let expr_context = syntax.argument(named: "context")?.expression, let context = Self.Context(syntax: expr_context) {
-                self = .sizeThatFitsWithProposedViewSizeUIViewTypeContext(value0, uiView: uiView, context: context)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "SizeThatFitsModifier", variant: "multiple variants", expectedTypes: "SwiftUICore.ProposedViewSize, Self.UIViewControllerType, Self.Context or SwiftUICore.ProposedViewSize, Self.UIViewType, Self.Context")
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "SizeThatFitsModifier", expected: [3], found: syntax.arguments.count)
+            if let value0 = SwiftUICore.ProposedViewSize(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let uiView = Self.UIViewType(syntax: syntax.argument(named: "uiView")?.expression!), let context = Self.Context(syntax: syntax.argument(named: "context")?.expression!) {
+                self = .sizeThatFitsWithProposedViewSizeUIViewTypeContext(value0, uiView: uiView, context: context)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .sizeThatFitsWithProposedViewSizeUIViewControllerTypeContext(let value0, let uiViewController, let context):

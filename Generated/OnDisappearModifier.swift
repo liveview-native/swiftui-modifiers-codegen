@@ -13,14 +13,9 @@ extension OnDisappearModifier: RuntimeViewModifier {
     public static var baseName: String { "onDisappear" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
-            self = .onDisappear
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "OnDisappearModifier", expected: [0], found: syntax.arguments.count)
-        }
+        self = .onDisappear()
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .onDisappear:

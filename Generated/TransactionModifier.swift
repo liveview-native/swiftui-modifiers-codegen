@@ -15,19 +15,19 @@ extension TransactionModifier: RuntimeViewModifier {
     public static var baseName: String { "transaction" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
-            self = .transactionWithVoid()
-        case 1:
-            guard let expr_value = syntax.argument(named: "value")?.expression, let value = some Equatable(syntax: expr_value) else {
-                throw ModifierParseError.invalidArguments(modifier: "TransactionModifier", variant: "transactionWithsomeEquatableVoid", expectedTypes: "some Equatable")
+        if syntax.arguments.count == 0 {
+            self = .transactionWithVoid
+            return
+            self = .transactionWithVoidClosureAnyView
+            return
+        }
+        if syntax.arguments.count == 1 {
+            if let value = some Equatable(syntax: syntax.argument(named: "value")?.expression!) {
+                self = .transactionWithsomeEquatableVoid(value: value)
+                return
             }
-            self = .transactionWithsomeEquatableVoid(value: value)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "TransactionModifier", expected: [0, 1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .transactionWithVoid:

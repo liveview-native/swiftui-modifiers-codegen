@@ -13,15 +13,10 @@ extension RenderRecursivelyModifier: RuntimeViewModifier {
     public static var baseName: String { "renderRecursively" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let seconds: Swift.Double = if let expr = syntax.argument(named: "seconds")?.expression, let parsed = Swift.Double(syntax: expr) { parsed } else { 1.0 / 60.0 }
-            self = .renderRecursively(seconds: seconds)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "RenderRecursivelyModifier", expected: [1], found: syntax.arguments.count)
-        }
+        let seconds: Swift.Double = syntax.argument(named: "seconds")?.expression.flatMap { Swift.Double(syntax: $0) } ?? 1.0 / 60.0
+        self = .renderRecursively(seconds: seconds)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .renderRecursively(let seconds):

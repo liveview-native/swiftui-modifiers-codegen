@@ -13,16 +13,11 @@ extension DrawingGroupModifier: RuntimeViewModifier {
     public static var baseName: String { "drawingGroup" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            let opaque: Swift.Bool = if let expr = syntax.argument(named: "opaque")?.expression, let parsed = Swift.Bool(syntax: expr) { parsed } else { false }
-            let colorMode: SwiftUICore.ColorRenderingMode = if let expr = syntax.argument(named: "colorMode")?.expression, let parsed = SwiftUICore.ColorRenderingMode(syntax: expr) { parsed } else { .nonLinear }
-            self = .drawingGroup(opaque: opaque, colorMode: colorMode)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "DrawingGroupModifier", expected: [2], found: syntax.arguments.count)
-        }
+        let opaque: Swift.Bool = syntax.argument(named: "opaque")?.expression.flatMap { Swift.Bool(syntax: $0) } ?? false
+        let colorMode: SwiftUICore.ColorRenderingMode = syntax.argument(named: "colorMode")?.expression.flatMap { SwiftUICore.ColorRenderingMode(syntax: $0) } ?? .nonLinear
+        self = .drawingGroup(opaque: opaque, colorMode: colorMode)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .drawingGroup(let opaque, let colorMode):

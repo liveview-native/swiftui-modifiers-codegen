@@ -15,27 +15,23 @@ extension TextInputSuggestionsModifier: RuntimeViewModifier {
     public static var baseName: String { "textInputSuggestions" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .textInputSuggestionsWithClosureAnyView
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = Data(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "TextInputSuggestionsModifier", variant: "textInputSuggestionsWithDataClosureAnyView", expectedTypes: "Data")
+            return
+        }
+        if syntax.arguments.count == 1 {
+            if let value0 = Data(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .textInputSuggestionsWithDataClosureAnyView(value0)
+                return
             }
-            self = .textInputSuggestionsWithDataClosureAnyView(value0)
-        case 2:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = Data(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "TextInputSuggestionsModifier", variant: "textInputSuggestionsWithDataElementAnyHashableClosureAnyView", expectedTypes: "Data, Swift.KeyPath<Data.Element, AnyHashable>")
+        }
+        if syntax.arguments.count == 2 {
+            if let value0 = Data(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let id = Swift.KeyPath<Data.Element, AnyHashable>(syntax: syntax.argument(named: "id")?.expression!) {
+                self = .textInputSuggestionsWithDataElementAnyHashableClosureAnyView(value0, id: id)
+                return
             }
-            guard let expr_id = syntax.argument(named: "id")?.expression, let id = Swift.KeyPath<Data.Element, AnyHashable>(syntax: expr_id) else {
-                throw ModifierParseError.invalidArguments(modifier: "TextInputSuggestionsModifier", variant: "textInputSuggestionsWithDataElementAnyHashableClosureAnyView", expectedTypes: "Data, Swift.KeyPath<Data.Element, AnyHashable>")
-            }
-            self = .textInputSuggestionsWithDataElementAnyHashableClosureAnyView(value0, id: id)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "TextInputSuggestionsModifier", expected: [0, 1, 2], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .textInputSuggestionsWithClosureAnyView:

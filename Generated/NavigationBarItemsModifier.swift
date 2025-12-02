@@ -15,36 +15,23 @@ extension NavigationBarItemsModifier: RuntimeViewModifier {
     public static var baseName: String { "navigationBarItems" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let firstLabel = syntax.arguments.first?.label?.text
-            switch firstLabel {
-            case "leading":
-                guard let expr_leading = syntax.argument(named: "leading")?.expression, let leading = AnyView(syntax: expr_leading) else {
-                    throw ModifierParseError.invalidArguments(modifier: "NavigationBarItemsModifier", variant: "navigationBarItemsWithAnyView", expectedTypes: "AnyView")
-                }
+        if syntax.arguments.count == 1 {
+            if let leading = AnyView(syntax: syntax.argument(named: "leading")?.expression!) {
                 self = .navigationBarItemsWithAnyView(leading: leading)
-            case "trailing":
-                guard let expr_trailing = syntax.argument(named: "trailing")?.expression, let trailing = AnyView(syntax: expr_trailing) else {
-                    throw ModifierParseError.invalidArguments(modifier: "NavigationBarItemsModifier", variant: "navigationBarItemsWithAnyView1", expectedTypes: "AnyView")
-                }
+                return
+            }
+            if let trailing = AnyView(syntax: syntax.argument(named: "trailing")?.expression!) {
                 self = .navigationBarItemsWithAnyView1(trailing: trailing)
-            default:
-                throw ModifierParseError.ambiguousVariant(modifier: "NavigationBarItemsModifier", expectedLabels: ["trailing", "leading"])
+                return
             }
-        case 2:
-            guard let expr_leading = syntax.argument(named: "leading")?.expression, let leading = AnyView(syntax: expr_leading) else {
-                throw ModifierParseError.invalidArguments(modifier: "NavigationBarItemsModifier", variant: "navigationBarItemsWithAnyViewAnyView", expectedTypes: "AnyView, AnyView")
+        }
+        if syntax.arguments.count == 2 {
+            if let leading = AnyView(syntax: syntax.argument(named: "leading")?.expression!), let trailing = AnyView(syntax: syntax.argument(named: "trailing")?.expression!) {
+                self = .navigationBarItemsWithAnyViewAnyView(leading: leading, trailing: trailing)
+                return
             }
-            guard let expr_trailing = syntax.argument(named: "trailing")?.expression, let trailing = AnyView(syntax: expr_trailing) else {
-                throw ModifierParseError.invalidArguments(modifier: "NavigationBarItemsModifier", variant: "navigationBarItemsWithAnyViewAnyView", expectedTypes: "AnyView, AnyView")
-            }
-            self = .navigationBarItemsWithAnyViewAnyView(leading: leading, trailing: trailing)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "NavigationBarItemsModifier", expected: [1, 2], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .navigationBarItemsWithAnyViewAnyView(let leading, let trailing):

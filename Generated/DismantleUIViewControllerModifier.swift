@@ -13,20 +13,13 @@ extension DismantleUIViewControllerModifier: RuntimeViewModifier {
     public static var baseName: String { "dismantleUIViewController" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = Self.UIViewControllerType(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "DismantleUIViewControllerModifier", variant: "dismantleUIViewController", expectedTypes: "Self.UIViewControllerType, Self.Coordinator")
+        if syntax.arguments.count == 2 {
+            if let value0 = Self.UIViewControllerType(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let coordinator = Self.Coordinator(syntax: syntax.argument(named: "coordinator")?.expression!) {
+                self = .dismantleUIViewController(value0, coordinator: coordinator)
+                return
             }
-            guard let expr_coordinator = syntax.argument(named: "coordinator")?.expression, let coordinator = Self.Coordinator(syntax: expr_coordinator) else {
-                throw ModifierParseError.invalidArguments(modifier: "DismantleUIViewControllerModifier", variant: "dismantleUIViewController", expectedTypes: "Self.UIViewControllerType, Self.Coordinator")
-            }
-            self = .dismantleUIViewController(value0, coordinator: coordinator)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "DismantleUIViewControllerModifier", expected: [2], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .dismantleUIViewController(let value0, let coordinator):

@@ -13,15 +13,10 @@ extension InvalidatableContentModifier: RuntimeViewModifier {
     public static var baseName: String { "invalidatableContent" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let value0: Swift.Bool = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = Swift.Bool(syntax: expr) { parsed } else { true }
-            self = .invalidatableContent(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "InvalidatableContentModifier", expected: [1], found: syntax.arguments.count)
-        }
+        let value0: Swift.Bool = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { Swift.Bool(syntax: $0) } ?? true
+        self = .invalidatableContent(value0)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .invalidatableContent(let value0):

@@ -13,17 +13,13 @@ extension RedactedModifier: RuntimeViewModifier {
     public static var baseName: String { "redacted" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_reason = syntax.argument(named: "reason")?.expression, let reason = SwiftUICore.RedactionReasons(syntax: expr_reason) else {
-                throw ModifierParseError.invalidArguments(modifier: "RedactedModifier", variant: "redacted", expectedTypes: "SwiftUICore.RedactionReasons")
+        if syntax.arguments.count == 1 {
+            if let reason = SwiftUICore.RedactionReasons(syntax: syntax.argument(named: "reason")?.expression!) {
+                self = .redacted(reason: reason)
+                return
             }
-            self = .redacted(reason: reason)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "RedactedModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .redacted(let reason):

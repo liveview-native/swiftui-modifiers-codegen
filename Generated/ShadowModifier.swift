@@ -13,20 +13,13 @@ extension ShadowModifier: RuntimeViewModifier {
     public static var baseName: String { "shadow" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 4:
-            let color: SwiftUICore.Color = if let expr = syntax.argument(named: "color")?.expression, let parsed = SwiftUICore.Color(syntax: expr) { parsed } else { Color(.sRGBLinear, white: 0, opacity: 0.33) }
-            guard let expr_radius = syntax.argument(named: "radius")?.expression, let radius = CoreFoundation.CGFloat(syntax: expr_radius) else {
-                throw ModifierParseError.invalidArguments(modifier: "ShadowModifier", variant: "shadow", expectedTypes: "SwiftUICore.Color, CoreFoundation.CGFloat, CoreFoundation.CGFloat, CoreFoundation.CGFloat")
-            }
-            let x: CoreFoundation.CGFloat = if let expr = syntax.argument(named: "x")?.expression, let parsed = CoreFoundation.CGFloat(syntax: expr) { parsed } else { 0 }
-            let y: CoreFoundation.CGFloat = if let expr = syntax.argument(named: "y")?.expression, let parsed = CoreFoundation.CGFloat(syntax: expr) { parsed } else { 0 }
-            self = .shadow(color: color, radius: radius, x: x, y: y)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ShadowModifier", expected: [4], found: syntax.arguments.count)
-        }
+        let color: SwiftUICore.Color = syntax.argument(named: "color")?.expression.flatMap { SwiftUICore.Color(syntax: $0) } ?? Color(.sRGBLinear, white: 0, opacity: 0.33)
+        let radius: CoreFoundation.CGFloat = syntax.argument(named: "radius")?.expression.flatMap { CoreFoundation.CGFloat(syntax: $0) }
+        let x: CoreFoundation.CGFloat = syntax.argument(named: "x")?.expression.flatMap { CoreFoundation.CGFloat(syntax: $0) } ?? 0
+        let y: CoreFoundation.CGFloat = syntax.argument(named: "y")?.expression.flatMap { CoreFoundation.CGFloat(syntax: $0) } ?? 0
+        self = .shadow(color: color, radius: radius, x: x, y: y)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .shadow(let color, let radius, let x, let y):

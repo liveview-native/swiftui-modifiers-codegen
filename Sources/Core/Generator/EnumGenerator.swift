@@ -352,34 +352,52 @@ public struct EnumGenerator: Sendable {
         
         // Init from FunctionCallExprSyntax
         lines.append("    public init(syntax: FunctionCallExprSyntax) throws {")
-        lines.append("        switch syntax.arguments.count {")
         
-        // Group modifiers by argument count
-        var modifiersByArgCount: [Int: [(ModifierInfo, String)]] = [:]
-        for (modifier, caseName) in zip(modifiers, caseNames) {
-            let argCount = modifier.parameters.filter { !isClosure($0.type) }.count
-            modifiersByArgCount[argCount, default: []].append((modifier, caseName))
-        }
+        // 1. Classification: Strict (no defaults) vs Flexible (has defaults)
+        let zipped = zip(modifiers, caseNames).map { ($0.0, $0.1) }
+        let strictVariants = zipped.filter { mod, _ in !mod.parameters.contains { $0.hasDefaultValue } }
+        let flexibleVariants = zipped.filter { mod, _ in mod.parameters.contains { $0.hasDefaultValue } }
+
+        // 2. Phase 1: Strict Matches
+        // We group by argument count to check specific signatures efficiently
+        let strictByCount = Dictionary(grouping: strictVariants, by: { $0.0.parameters.filter { !isClosure($0.type) }.count })
         
-        // Generate switch cases for each argument count
-        for argCount in modifiersByArgCount.keys.sorted() {
-            let variants = modifiersByArgCount[argCount]!
-            lines.append("        case \(argCount):")
+        for count in strictByCount.keys.sorted() {
+            let variants = strictByCount[count]!
+            lines.append("        if syntax.arguments.count == \(count) {")
             
-            if variants.count == 1 {
-                let (modifier, caseName) = variants[0]
-                lines.append(contentsOf: generateInitCase(for: modifier, caseName: caseName, enumName: enumName, indent: "            "))
+            for (modifier, caseName) in variants {
+                lines.append(contentsOf: generateStrictMatch(modifier, caseName: caseName, indent: "            "))
+            }
+            lines.append("        }")
+        }
+
+        // 3. Phase 2: Flexible Matches (Fallback)
+        // These handle cases with default values (e.g. padding() -> padding(.all, nil))
+        for (index, (modifier, caseName)) in flexibleVariants.enumerated() {
+            let isLast = index == flexibleVariants.count - 1
+            
+            // Disambiguation: Check if specific labels exist to confirm this variant
+            let labels = modifier.parameters
+                .compactMap { $0.label }
+                .filter { !isClosure($0) }
+            
+            // Create condition: if syntax.argument(named: "x") != nil ...
+            let conditions = labels.map { "syntax.argument(named: \"\($0)\") != nil" }
+            let conditionStr = conditions.joined(separator: " || ")
+            
+            if !conditions.isEmpty && !isLast {
+                lines.append("        if \(conditionStr) {")
+                lines.append(contentsOf: generateFlexibleMatch(modifier, caseName: caseName, indent: "            "))
+                lines.append("            return")
+                lines.append("        }")
             } else {
-                // Multiple variants with same arg count - disambiguate by argument labels
-                lines.append(contentsOf: generateDisambiguatedInitCases(for: variants, enumName: enumName, indent: "            "))
+                // Catch-all for the last flexible variant or one with no labels
+                lines.append(contentsOf: generateFlexibleMatch(modifier, caseName: caseName, indent: "        "))
+                lines.append("        return")
             }
         }
-        
-        lines.append("        default:")
-        lines.append("            throw ModifierParseError.unexpectedArgumentCount(modifier: \"\(enumName)\", expected: [\(modifiersByArgCount.keys.sorted().map { String($0) }.joined(separator: ", "))], found: syntax.arguments.count)")
-        lines.append("        }")
         lines.append("    }")
-        lines.append("")
         
         // Body method (ViewModifier conformance)
         lines.append("    public func body(content: Content) -> some View {")
@@ -395,6 +413,100 @@ public struct EnumGenerator: Sendable {
         lines.append("}")
         
         return lines.joined(separator: "\n")
+    }
+
+    /// Generates strict matching logic (e.g. "if let x = Int(syntax: ...)")
+    private func generateStrictMatch(_ modifier: ModifierInfo, caseName: String, indent: String) -> [String] {
+        var lines: [String] = []
+        let params = modifier.parameters.filter { !isClosure($0.type) }
+        var conditions: [String] = []
+        
+        for (index, param) in params.enumerated() {
+            let varName = param.label ?? "value\(index)"
+            let fullType = cleanTypeForEnumCase(param.type)
+            
+            // Handle Optionals: Strip '?' to parse the base type
+            // e.g. SwiftUICore.Font? -> SwiftUICore.Font
+            let isOptional = fullType.hasSuffix("?")
+            let parseType = isOptional ? String(fullType.dropLast()) : fullType
+            
+            // Determine accessor (labeled or positional)
+            let accessor: String
+            if let label = param.label {
+                accessor = "syntax.argument(named: \"\(label)\")?.expression"
+            } else {
+                accessor = "(syntax.arguments.count > \(index) ? syntax.arguments[\(index)].expression : nil)"
+            }
+            
+            // Build condition
+            if isOptional {
+                // For optionals in strict mode, we parse if present. 
+                // Note: This assumes Type(syntax:) returns nil on failure. 
+                // If the argument is "nil", BaseType(syntax: "nil") should ideally return nil (or handle it).
+                conditions.append("let \(varName) = \(parseType)(syntax: \(accessor)!)") 
+            } else {
+                conditions.append("let \(varName) = \(parseType)(syntax: \(accessor)!)")
+            }
+        }
+        
+        let conditionStr = conditions.joined(separator: ", ")
+        
+        if conditions.isEmpty {
+            lines.append("\(indent)self = .\(caseName)")
+            lines.append("\(indent)return")
+        } else {
+            // If parsing succeeds, return this case
+            lines.append("\(indent)if \(conditionStr) {")
+            
+            let assignParams = params.enumerated().map { i, p in 
+                let name = p.label ?? "value\(i)"
+                return p.label != nil ? "\(p.label!): \(name)" : name 
+            }.joined(separator: ", ")
+            
+            lines.append("\(indent)    self = .\(caseName)(\(assignParams))")
+            lines.append("\(indent)    return")
+            lines.append("\(indent)}")
+        }
+        
+        return lines
+    }
+
+    /// Generates flexible matching logic with defaults (e.g. "let x = ... ?? default")
+    private func generateFlexibleMatch(_ modifier: ModifierInfo, caseName: String, indent: String) -> [String] {
+        var lines: [String] = []
+        let params = modifier.parameters.filter { !isClosure($0.type) }
+        
+        for (index, param) in params.enumerated() {
+            let varName = param.label ?? "value\(index)"
+            let fullType = cleanTypeForEnumCase(param.type)
+            let isOptional = fullType.hasSuffix("?")
+            let parseType = isOptional ? String(fullType.dropLast()) : fullType
+            
+            // Accessor
+            let namedAccess = param.label.map { "syntax.argument(named: \"\($0)\")?.expression" }
+            let positionalAccess = "(syntax.arguments.count > \(index) ? syntax.arguments[\(index)].expression : nil)"
+            let primaryAccess = namedAccess ?? positionalAccess
+            
+            // Default Value
+            let defaultVal = param.defaultValue ?? (isOptional ? "nil" : nil)
+            
+            var extraction = "\(primaryAccess).flatMap { \(parseType)(syntax: $0) }"
+            
+            if let def = defaultVal {
+                extraction += " ?? \(def)"
+            }
+            
+            lines.append("\(indent)let \(varName): \(fullType) = \(extraction)")
+        }
+        
+        let assignParams = params.enumerated().map { i, p in 
+            let name = p.label ?? "value\(i)"
+            return p.label != nil ? "\(p.label!): \(name)" : name 
+        }.joined(separator: ", ")
+        
+        lines.append("\(indent)self = .\(caseName)(\(assignParams))")
+        
+        return lines
     }
     
     /// Generates the init case parsing code for a modifier variant using guard statements.

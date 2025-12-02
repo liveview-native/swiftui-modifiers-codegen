@@ -13,17 +13,13 @@ extension FileDialogBrowserOptionsModifier: RuntimeViewModifier {
     public static var baseName: String { "fileDialogBrowserOptions" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUI.FileDialogBrowserOptions(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "FileDialogBrowserOptionsModifier", variant: "fileDialogBrowserOptions", expectedTypes: "SwiftUI.FileDialogBrowserOptions")
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUI.FileDialogBrowserOptions(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .fileDialogBrowserOptions(value0)
+                return
             }
-            self = .fileDialogBrowserOptions(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "FileDialogBrowserOptionsModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .fileDialogBrowserOptions(let value0):

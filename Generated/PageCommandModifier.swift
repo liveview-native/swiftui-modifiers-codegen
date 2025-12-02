@@ -13,21 +13,12 @@ extension PageCommandModifier: RuntimeViewModifier {
     public static var baseName: String { "pageCommand" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 3:
-            guard let expr_value = syntax.argument(named: "value")?.expression, let value = SwiftUICore.Binding<V>(syntax: expr_value) else {
-                throw ModifierParseError.invalidArguments(modifier: "PageCommandModifier", variant: "pageCommand", expectedTypes: "SwiftUICore.Binding<V>, Swift.ClosedRange<V>, V")
-            }
-            guard let expr_in = syntax.argument(named: "in")?.expression, let in = Swift.ClosedRange<V>(syntax: expr_in) else {
-                throw ModifierParseError.invalidArguments(modifier: "PageCommandModifier", variant: "pageCommand", expectedTypes: "SwiftUICore.Binding<V>, Swift.ClosedRange<V>, V")
-            }
-            let step: V = if let expr = syntax.argument(named: "step")?.expression, let parsed = V(syntax: expr) { parsed } else { 1 }
-            self = .pageCommand(value: value, in: in, step: step)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "PageCommandModifier", expected: [3], found: syntax.arguments.count)
-        }
+        let value: SwiftUICore.Binding<V> = syntax.argument(named: "value")?.expression.flatMap { SwiftUICore.Binding<V>(syntax: $0) }
+        let in: Swift.ClosedRange<V> = syntax.argument(named: "in")?.expression.flatMap { Swift.ClosedRange<V>(syntax: $0) }
+        let step: V = syntax.argument(named: "step")?.expression.flatMap { V(syntax: $0) } ?? 1
+        self = .pageCommand(value: value, in: in, step: step)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .pageCommand(let value, let in, let step):

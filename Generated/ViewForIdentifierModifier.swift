@@ -13,18 +13,11 @@ extension ViewForIdentifierModifier: RuntimeViewModifier {
     public static var baseName: String { "viewForIdentifier" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = AnyHashable(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "ViewForIdentifierModifier", variant: "viewForIdentifier", expectedTypes: "AnyHashable, AnyView.Type")
-            }
-            let value1: AnyView.Type = if let expr = (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil), let parsed = AnyView.Type(syntax: expr) { parsed } else { V.self }
-            self = .viewForIdentifier(value0, value1)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ViewForIdentifierModifier", expected: [2], found: syntax.arguments.count)
-        }
+        let value0: AnyHashable = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { AnyHashable(syntax: $0) }
+        let value1: AnyView.Type = (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil).flatMap { AnyView.Type(syntax: $0) } ?? V.self
+        self = .viewForIdentifier(value0, value1)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .viewForIdentifier(let value0, let value1):

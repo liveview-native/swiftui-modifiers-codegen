@@ -15,30 +15,23 @@ extension BackgroundPreferenceValueModifier: RuntimeViewModifier {
     public static var baseName: String { "backgroundPreferenceValue" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let value0: Key.Type = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = Key.Type(syntax: expr) { parsed } else { Key.self }
-            self = .backgroundPreferenceValueWithTypeClosureAnyView(value0)
-        case 2:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = K.Type(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "BackgroundPreferenceValueModifier", variant: "backgroundPreferenceValueWithTypeAlignmentClosureAnyView", expectedTypes: "K.Type, SwiftUICore.Alignment")
-            }
-            let alignment: SwiftUICore.Alignment = if let expr = syntax.argument(named: "alignment")?.expression, let parsed = SwiftUICore.Alignment(syntax: expr) { parsed } else { .center }
+        if syntax.argument(named: "alignment") != nil {
+            let value0: K.Type = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { K.Type(syntax: $0) }
+            let alignment: SwiftUICore.Alignment = syntax.argument(named: "alignment")?.expression.flatMap { SwiftUICore.Alignment(syntax: $0) } ?? .center
             self = .backgroundPreferenceValueWithTypeAlignmentClosureAnyView(value0, alignment: alignment)
-        case 3:
-            let _v0: Swift.Void = if let expr = syntax.argument(named: "_v0")?.expression, let parsed = Swift.Void(syntax: expr) { parsed } else { () }
-            guard let expr_value1 = (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil), let value1 = K.Type(syntax: expr_value1) else {
-                throw ModifierParseError.invalidArguments(modifier: "BackgroundPreferenceValueModifier", variant: "backgroundPreferenceValueWithVoidTypeAlignmentClosureAnyView", expectedTypes: "Swift.Void, K.Type, SwiftUICore.Alignment")
-            }
-            guard let expr_alignment = syntax.argument(named: "alignment")?.expression, let alignment = SwiftUICore.Alignment(syntax: expr_alignment) else {
-                throw ModifierParseError.invalidArguments(modifier: "BackgroundPreferenceValueModifier", variant: "backgroundPreferenceValueWithVoidTypeAlignmentClosureAnyView", expectedTypes: "Swift.Void, K.Type, SwiftUICore.Alignment")
-            }
-            self = .backgroundPreferenceValueWithVoidTypeAlignmentClosureAnyView(_v0: _v0, value1, alignment: alignment)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "BackgroundPreferenceValueModifier", expected: [1, 2, 3], found: syntax.arguments.count)
+            return
         }
+        if syntax.argument(named: "_v0") != nil || syntax.argument(named: "alignment") != nil {
+            let _v0: Swift.Void = syntax.argument(named: "_v0")?.expression.flatMap { Swift.Void(syntax: $0) } ?? ()
+            let value1: K.Type = (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil).flatMap { K.Type(syntax: $0) }
+            let alignment: SwiftUICore.Alignment = syntax.argument(named: "alignment")?.expression.flatMap { SwiftUICore.Alignment(syntax: $0) }
+            self = .backgroundPreferenceValueWithVoidTypeAlignmentClosureAnyView(_v0: _v0, value1, alignment: alignment)
+            return
+        }
+        let value0: Key.Type = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { Key.Type(syntax: $0) } ?? Key.self
+        self = .backgroundPreferenceValueWithTypeClosureAnyView(value0)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .backgroundPreferenceValueWithTypeAlignmentClosureAnyView(let value0, let alignment):

@@ -14,14 +14,13 @@ extension ExportableToServicesModifier: RuntimeViewModifier {
     public static var baseName: String { "exportableToServices" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
-            self = .exportableToServicesWithClosureArrayT()
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ExportableToServicesModifier", expected: [0], found: syntax.arguments.count)
+        if syntax.arguments.count == 0 {
+            self = .exportableToServicesWithClosureArrayT
+            return
+            self = .exportableToServicesWithClosureArrayTBool
+            return
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .exportableToServicesWithClosureArrayT:

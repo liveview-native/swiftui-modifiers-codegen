@@ -16,21 +16,27 @@ extension AnimationModifier: RuntimeViewModifier {
     public static var baseName: String { "animation" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let value0: SwiftUICore.Animation? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUICore.Animation(syntax: expr) } else { nil }
-            self = .animationWithAnimationOptional(value0)
-        case 2:
-            let value0: SwiftUICore.Animation? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUICore.Animation(syntax: expr) } else { nil }
-            guard let expr_value = syntax.argument(named: "value")?.expression, let value = V(syntax: expr_value) else {
-                throw ModifierParseError.invalidArguments(modifier: "AnimationModifier", variant: "animationWithAnimationOptionalV", expectedTypes: "SwiftUICore.Animation?, V")
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUICore.Animation(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .animationWithAnimationOptional(value0)
+                return
             }
-            self = .animationWithAnimationOptionalV(value0, value: value)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "AnimationModifier", expected: [1, 2], found: syntax.arguments.count)
+            if let value0 = SwiftUICore.Animation(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .animationWithAnimationOptional1(value0)
+                return
+            }
+            if let value0 = SwiftUICore.Animation(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .animationWithAnimationOptionalClosureAnyView(value0)
+                return
+            }
+        }
+        if syntax.arguments.count == 2 {
+            if let value0 = SwiftUICore.Animation(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let value = V(syntax: syntax.argument(named: "value")?.expression!) {
+                self = .animationWithAnimationOptionalV(value0, value: value)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .animationWithAnimationOptionalV(let value0, let value):

@@ -13,17 +13,13 @@ extension SendTouchSequenceModifier: RuntimeViewModifier {
     public static var baseName: String { "sendTouchSequence" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = [Self.Touch](syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "SendTouchSequenceModifier", variant: "sendTouchSequence", expectedTypes: "[Self.Touch]")
+        if syntax.arguments.count == 1 {
+            if let value0 = [Self.Touch](syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .sendTouchSequence(value0)
+                return
             }
-            self = .sendTouchSequence(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "SendTouchSequenceModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .sendTouchSequence(let value0):

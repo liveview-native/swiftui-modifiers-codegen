@@ -13,15 +13,10 @@ extension OnPreferenceChangeModifier: RuntimeViewModifier {
     public static var baseName: String { "onPreferenceChange" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let value0: K.Type = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = K.Type(syntax: expr) { parsed } else { K.self }
-            self = .onPreferenceChange(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "OnPreferenceChangeModifier", expected: [1], found: syntax.arguments.count)
-        }
+        let value0: K.Type = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { K.Type(syntax: $0) } ?? K.self
+        self = .onPreferenceChange(value0)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .onPreferenceChange(let value0):

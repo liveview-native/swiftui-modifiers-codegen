@@ -14,32 +14,17 @@ extension ContainerBackgroundModifier: RuntimeViewModifier {
     public static var baseName: String { "containerBackground" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            let firstLabel = syntax.arguments.first?.label?.text
-            switch firstLabel {
-            case nil:
-                guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = AnyShapeStyle(syntax: expr_value0) else {
-                    throw ModifierParseError.invalidArguments(modifier: "ContainerBackgroundModifier", variant: "containerBackgroundWithAnyShapeStyleContainerBackgroundPlacement", expectedTypes: "AnyShapeStyle, SwiftUI.ContainerBackgroundPlacement")
-                }
-                guard let expr_for = syntax.argument(named: "for")?.expression, let for = SwiftUI.ContainerBackgroundPlacement(syntax: expr_for) else {
-                    throw ModifierParseError.invalidArguments(modifier: "ContainerBackgroundModifier", variant: "containerBackgroundWithAnyShapeStyleContainerBackgroundPlacement", expectedTypes: "AnyShapeStyle, SwiftUI.ContainerBackgroundPlacement")
-                }
+        if syntax.arguments.count == 2 {
+            if let value0 = AnyShapeStyle(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let for = SwiftUI.ContainerBackgroundPlacement(syntax: syntax.argument(named: "for")?.expression!) {
                 self = .containerBackgroundWithAnyShapeStyleContainerBackgroundPlacement(value0, for: for)
-            case "for":
-                guard let expr_for = syntax.argument(named: "for")?.expression, let for = SwiftUI.ContainerBackgroundPlacement(syntax: expr_for) else {
-                    throw ModifierParseError.invalidArguments(modifier: "ContainerBackgroundModifier", variant: "containerBackgroundWithContainerBackgroundPlacementAlignmentClosureAnyView", expectedTypes: "SwiftUI.ContainerBackgroundPlacement, SwiftUICore.Alignment")
-                }
-                let alignment: SwiftUICore.Alignment = if let expr = syntax.argument(named: "alignment")?.expression, let parsed = SwiftUICore.Alignment(syntax: expr) { parsed } else { .center }
-                self = .containerBackgroundWithContainerBackgroundPlacementAlignmentClosureAnyView(for: for, alignment: alignment)
-            default:
-                throw ModifierParseError.ambiguousVariant(modifier: "ContainerBackgroundModifier", expectedLabels: ["for"])
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ContainerBackgroundModifier", expected: [2], found: syntax.arguments.count)
         }
+        let for: SwiftUI.ContainerBackgroundPlacement = syntax.argument(named: "for")?.expression.flatMap { SwiftUI.ContainerBackgroundPlacement(syntax: $0) }
+        let alignment: SwiftUICore.Alignment = syntax.argument(named: "alignment")?.expression.flatMap { SwiftUICore.Alignment(syntax: $0) } ?? .center
+        self = .containerBackgroundWithContainerBackgroundPlacementAlignmentClosureAnyView(for: for, alignment: alignment)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .containerBackgroundWithAnyShapeStyleContainerBackgroundPlacement(let value0, let for):

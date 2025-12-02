@@ -13,14 +13,11 @@ extension RefreshableModifier: RuntimeViewModifier {
     public static var baseName: String { "refreshable" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .refreshable
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "RefreshableModifier", expected: [0], found: syntax.arguments.count)
+            return
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .refreshable:

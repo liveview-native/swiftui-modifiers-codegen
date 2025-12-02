@@ -13,17 +13,13 @@ extension DisclosureGroupStyleModifier: RuntimeViewModifier {
     public static var baseName: String { "disclosureGroupStyle" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = AnyDisclosureGroupStyle(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "DisclosureGroupStyleModifier", variant: "disclosureGroupStyle", expectedTypes: "AnyDisclosureGroupStyle")
+        if syntax.arguments.count == 1 {
+            if let value0 = AnyDisclosureGroupStyle(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .disclosureGroupStyle(value0)
+                return
             }
-            self = .disclosureGroupStyle(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "DisclosureGroupStyleModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .disclosureGroupStyle(let value0):

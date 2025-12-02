@@ -13,20 +13,13 @@ extension AccessibilityDefaultFocusModifier: RuntimeViewModifier {
     public static var baseName: String { "accessibilityDefaultFocus" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUI.AccessibilityFocusState<AnyHashable>.Binding(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "AccessibilityDefaultFocusModifier", variant: "accessibilityDefaultFocus", expectedTypes: "SwiftUI.AccessibilityFocusState<AnyHashable>.Binding, AnyHashable")
+        if syntax.arguments.count == 2 {
+            if let value0 = SwiftUI.AccessibilityFocusState<AnyHashable>.Binding(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let value1 = AnyHashable(syntax: (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil)!) {
+                self = .accessibilityDefaultFocus(value0, value1)
+                return
             }
-            guard let expr_value1 = (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil), let value1 = AnyHashable(syntax: expr_value1) else {
-                throw ModifierParseError.invalidArguments(modifier: "AccessibilityDefaultFocusModifier", variant: "accessibilityDefaultFocus", expectedTypes: "SwiftUI.AccessibilityFocusState<AnyHashable>.Binding, AnyHashable")
-            }
-            self = .accessibilityDefaultFocus(value0, value1)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "AccessibilityDefaultFocusModifier", expected: [2], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .accessibilityDefaultFocus(let value0, let value1):

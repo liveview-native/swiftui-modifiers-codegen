@@ -13,17 +13,13 @@ extension VerticalPageModifier: RuntimeViewModifier {
     public static var baseName: String { "verticalPage" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_transitionStyle = syntax.argument(named: "transitionStyle")?.expression, let transitionStyle = SwiftUI.VerticalPageTabViewStyle.TransitionStyle(syntax: expr_transitionStyle) else {
-                throw ModifierParseError.invalidArguments(modifier: "VerticalPageModifier", variant: "verticalPage", expectedTypes: "SwiftUI.VerticalPageTabViewStyle.TransitionStyle")
+        if syntax.arguments.count == 1 {
+            if let transitionStyle = SwiftUI.VerticalPageTabViewStyle.TransitionStyle(syntax: syntax.argument(named: "transitionStyle")?.expression!) {
+                self = .verticalPage(transitionStyle: transitionStyle)
+                return
             }
-            self = .verticalPage(transitionStyle: transitionStyle)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "VerticalPageModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .verticalPage(let transitionStyle):

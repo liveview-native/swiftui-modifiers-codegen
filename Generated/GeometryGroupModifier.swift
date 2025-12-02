@@ -13,14 +13,11 @@ extension GeometryGroupModifier: RuntimeViewModifier {
     public static var baseName: String { "geometryGroup" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .geometryGroup
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "GeometryGroupModifier", expected: [0], found: syntax.arguments.count)
+            return
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .geometryGroup:

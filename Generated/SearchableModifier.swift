@@ -47,142 +47,298 @@ extension SearchableModifier: RuntimeViewModifier {
     public static var baseName: String { "searchable" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 3:
-            if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                let prompt: SwiftUICore.Text = if let expr = syntax.argument(named: "prompt")?.expression, let parsed = SwiftUICore.Text(syntax: expr) { parsed } else { nil }
-                self = .searchableWithStringSearchFieldPlacementTextOptional(text: text, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_prompt = syntax.argument(named: "prompt")?.expression, let prompt = SwiftUICore.LocalizedStringKey(syntax: expr_prompt) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                self = .searchableWithStringSearchFieldPlacementLocalizedStringKey(text: text, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_prompt = syntax.argument(named: "prompt")?.expression, let prompt = Foundation.LocalizedStringResource(syntax: expr_prompt) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                self = .searchableWithStringSearchFieldPlacementLocalizedStringResource(text: text, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_prompt = syntax.argument(named: "prompt")?.expression, let prompt = String(syntax: expr_prompt) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                self = .searchableWithStringSearchFieldPlacementString(text: text, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                let prompt: SwiftUICore.Text = if let expr = syntax.argument(named: "prompt")?.expression, let parsed = SwiftUICore.Text(syntax: expr) { parsed } else { nil }
-                self = .searchableWithStringSearchFieldPlacementTextOptionalClosureAnyView(text: text, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_prompt = syntax.argument(named: "prompt")?.expression, let prompt = SwiftUICore.LocalizedStringKey(syntax: expr_prompt) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                self = .searchableWithStringSearchFieldPlacementLocalizedStringKeyClosureAnyView(text: text, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_prompt = syntax.argument(named: "prompt")?.expression, let prompt = String(syntax: expr_prompt) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                self = .searchableWithStringSearchFieldPlacementStringClosureAnyView(text: text, placement: placement, prompt: prompt)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "SearchableModifier", variant: "multiple variants", expectedTypes: "SwiftUICore.Binding<Swift.String>, SwiftUI.SearchFieldPlacement, SwiftUICore.Text? or SwiftUICore.Binding<Swift.String>, SwiftUI.SearchFieldPlacement, SwiftUICore.LocalizedStringKey or SwiftUICore.Binding<Swift.String>, SwiftUI.SearchFieldPlacement, Foundation.LocalizedStringResource or SwiftUICore.Binding<Swift.String>, SwiftUI.SearchFieldPlacement, String or SwiftUICore.Binding<Swift.String>, SwiftUI.SearchFieldPlacement, SwiftUICore.Text? or SwiftUICore.Binding<Swift.String>, SwiftUI.SearchFieldPlacement, SwiftUICore.LocalizedStringKey or SwiftUICore.Binding<Swift.String>, SwiftUI.SearchFieldPlacement, String")
-            }
-        case 4:
-            if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                let prompt: SwiftUICore.Text = if let expr = syntax.argument(named: "prompt")?.expression, let parsed = SwiftUICore.Text(syntax: expr) { parsed } else { nil }
-                self = .searchableWithStringBoolSearchFieldPlacementTextOptional(text: text, isPresented: isPresented, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented), let expr_prompt = syntax.argument(named: "prompt")?.expression, let prompt = SwiftUICore.LocalizedStringKey(syntax: expr_prompt) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                self = .searchableWithStringBoolSearchFieldPlacementLocalizedStringKey(text: text, isPresented: isPresented, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented), let expr_prompt = syntax.argument(named: "prompt")?.expression, let prompt = Foundation.LocalizedStringResource(syntax: expr_prompt) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                self = .searchableWithStringBoolSearchFieldPlacementLocalizedStringResource(text: text, isPresented: isPresented, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented), let expr_prompt = syntax.argument(named: "prompt")?.expression, let prompt = String(syntax: expr_prompt) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                self = .searchableWithStringBoolSearchFieldPlacementString(text: text, isPresented: isPresented, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_tokens = syntax.argument(named: "tokens")?.expression, let tokens = SwiftUICore.Binding<C>(syntax: expr_tokens) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                let prompt: SwiftUICore.Text = if let expr = syntax.argument(named: "prompt")?.expression, let parsed = SwiftUICore.Text(syntax: expr) { parsed } else { nil }
-                self = .searchableWithStringBindingCSearchFieldPlacementTextOptionalClosureAnyView(text: text, tokens: tokens, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_editableTokens = syntax.argument(named: "editableTokens")?.expression, let editableTokens = SwiftUICore.Binding<C>(syntax: expr_editableTokens) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                let prompt: SwiftUICore.Text = if let expr = syntax.argument(named: "prompt")?.expression, let parsed = SwiftUICore.Text(syntax: expr) { parsed } else { nil }
-                self = .searchableWithStringBindingCSearchFieldPlacementTextOptionalClosuresomeView(text: text, editableTokens: editableTokens, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_tokens = syntax.argument(named: "tokens")?.expression, let tokens = SwiftUICore.Binding<C>(syntax: expr_tokens), let expr_prompt = syntax.argument(named: "prompt")?.expression, let prompt = SwiftUICore.LocalizedStringKey(syntax: expr_prompt) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                self = .searchableWithStringBindingCSearchFieldPlacementLocalizedStringKeyClosureAnyView(text: text, tokens: tokens, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_tokens = syntax.argument(named: "tokens")?.expression, let tokens = SwiftUICore.Binding<C>(syntax: expr_tokens), let expr_prompt = syntax.argument(named: "prompt")?.expression, let prompt = Foundation.LocalizedStringResource(syntax: expr_prompt) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                self = .searchableWithStringBindingCSearchFieldPlacementLocalizedStringResourceClosureAnyView(text: text, tokens: tokens, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_editableTokens = syntax.argument(named: "editableTokens")?.expression, let editableTokens = SwiftUICore.Binding<C>(syntax: expr_editableTokens), let expr_prompt = syntax.argument(named: "prompt")?.expression, let prompt = SwiftUICore.LocalizedStringKey(syntax: expr_prompt) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                self = .searchableWithStringBindingCSearchFieldPlacementLocalizedStringKeyClosuresomeView(text: text, editableTokens: editableTokens, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_editableTokens = syntax.argument(named: "editableTokens")?.expression, let editableTokens = SwiftUICore.Binding<C>(syntax: expr_editableTokens), let expr_prompt = syntax.argument(named: "prompt")?.expression, let prompt = Foundation.LocalizedStringResource(syntax: expr_prompt) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                self = .searchableWithStringBindingCSearchFieldPlacementLocalizedStringResourceClosuresomeView(text: text, editableTokens: editableTokens, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_tokens = syntax.argument(named: "tokens")?.expression, let tokens = SwiftUICore.Binding<C>(syntax: expr_tokens), let expr_prompt = syntax.argument(named: "prompt")?.expression, let prompt = String(syntax: expr_prompt) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                self = .searchableWithStringBindingCSearchFieldPlacementStringClosureAnyView(text: text, tokens: tokens, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_editableTokens = syntax.argument(named: "editableTokens")?.expression, let editableTokens = SwiftUICore.Binding<C>(syntax: expr_editableTokens), let expr_prompt = syntax.argument(named: "prompt")?.expression, let prompt = some StringProtocol(syntax: expr_prompt) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                self = .searchableWithStringBindingCSearchFieldPlacementsomeStringProtocolClosuresomeView(text: text, editableTokens: editableTokens, placement: placement, prompt: prompt)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "SearchableModifier", variant: "multiple variants", expectedTypes: "SwiftUICore.Binding<Swift.String>, SwiftUICore.Binding<Swift.Bool>, SwiftUI.SearchFieldPlacement, SwiftUICore.Text? or SwiftUICore.Binding<Swift.String>, SwiftUICore.Binding<Swift.Bool>, SwiftUI.SearchFieldPlacement, SwiftUICore.LocalizedStringKey or SwiftUICore.Binding<Swift.String>, SwiftUICore.Binding<Swift.Bool>, SwiftUI.SearchFieldPlacement, Foundation.LocalizedStringResource or SwiftUICore.Binding<Swift.String>, SwiftUICore.Binding<Swift.Bool>, SwiftUI.SearchFieldPlacement, String or SwiftUICore.Binding<Swift.String>, SwiftUICore.Binding<C>, SwiftUI.SearchFieldPlacement, SwiftUICore.Text? or SwiftUICore.Binding<Swift.String>, SwiftUICore.Binding<C>, SwiftUI.SearchFieldPlacement, SwiftUICore.Text? or SwiftUICore.Binding<Swift.String>, SwiftUICore.Binding<C>, SwiftUI.SearchFieldPlacement, SwiftUICore.LocalizedStringKey or SwiftUICore.Binding<Swift.String>, SwiftUICore.Binding<C>, SwiftUI.SearchFieldPlacement, Foundation.LocalizedStringResource or SwiftUICore.Binding<Swift.String>, SwiftUICore.Binding<C>, SwiftUI.SearchFieldPlacement, SwiftUICore.LocalizedStringKey or SwiftUICore.Binding<Swift.String>, SwiftUICore.Binding<C>, SwiftUI.SearchFieldPlacement, Foundation.LocalizedStringResource or SwiftUICore.Binding<Swift.String>, SwiftUICore.Binding<C>, SwiftUI.SearchFieldPlacement, String or SwiftUICore.Binding<Swift.String>, SwiftUICore.Binding<C>, SwiftUI.SearchFieldPlacement, some StringProtocol")
-            }
-        case 5:
-            if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_tokens = syntax.argument(named: "tokens")?.expression, let tokens = SwiftUICore.Binding<C>(syntax: expr_tokens), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                let prompt: SwiftUICore.Text = if let expr = syntax.argument(named: "prompt")?.expression, let parsed = SwiftUICore.Text(syntax: expr) { parsed } else { nil }
-                self = .searchableWithStringBindingCBoolSearchFieldPlacementTextOptionalClosureAnyView(text: text, tokens: tokens, isPresented: isPresented, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_editableTokens = syntax.argument(named: "editableTokens")?.expression, let editableTokens = SwiftUICore.Binding<C>(syntax: expr_editableTokens), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                let prompt: SwiftUICore.Text = if let expr = syntax.argument(named: "prompt")?.expression, let parsed = SwiftUICore.Text(syntax: expr) { parsed } else { nil }
-                self = .searchableWithStringBindingCBoolSearchFieldPlacementTextOptionalClosuresomeView(text: text, editableTokens: editableTokens, isPresented: isPresented, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_tokens = syntax.argument(named: "tokens")?.expression, let tokens = SwiftUICore.Binding<C>(syntax: expr_tokens), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented), let expr_prompt = syntax.argument(named: "prompt")?.expression, let prompt = SwiftUICore.LocalizedStringKey(syntax: expr_prompt) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                self = .searchableWithStringBindingCBoolSearchFieldPlacementLocalizedStringKeyClosureAnyView(text: text, tokens: tokens, isPresented: isPresented, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_tokens = syntax.argument(named: "tokens")?.expression, let tokens = SwiftUICore.Binding<C>(syntax: expr_tokens), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented), let expr_prompt = syntax.argument(named: "prompt")?.expression, let prompt = Foundation.LocalizedStringResource(syntax: expr_prompt) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                self = .searchableWithStringBindingCBoolSearchFieldPlacementLocalizedStringResourceClosureAnyView(text: text, tokens: tokens, isPresented: isPresented, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_editableTokens = syntax.argument(named: "editableTokens")?.expression, let editableTokens = SwiftUICore.Binding<C>(syntax: expr_editableTokens), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented), let expr_prompt = syntax.argument(named: "prompt")?.expression, let prompt = SwiftUICore.LocalizedStringKey(syntax: expr_prompt) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                self = .searchableWithStringBindingCBoolSearchFieldPlacementLocalizedStringKeyClosuresomeView(text: text, editableTokens: editableTokens, isPresented: isPresented, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_editableTokens = syntax.argument(named: "editableTokens")?.expression, let editableTokens = SwiftUICore.Binding<C>(syntax: expr_editableTokens), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented), let expr_prompt = syntax.argument(named: "prompt")?.expression, let prompt = Foundation.LocalizedStringResource(syntax: expr_prompt) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                self = .searchableWithStringBindingCBoolSearchFieldPlacementLocalizedStringResourceClosuresomeView(text: text, editableTokens: editableTokens, isPresented: isPresented, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_tokens = syntax.argument(named: "tokens")?.expression, let tokens = SwiftUICore.Binding<C>(syntax: expr_tokens), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented), let expr_prompt = syntax.argument(named: "prompt")?.expression, let prompt = String(syntax: expr_prompt) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                self = .searchableWithStringBindingCBoolSearchFieldPlacementStringClosureAnyView(text: text, tokens: tokens, isPresented: isPresented, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_editableTokens = syntax.argument(named: "editableTokens")?.expression, let editableTokens = SwiftUICore.Binding<C>(syntax: expr_editableTokens), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented), let expr_prompt = syntax.argument(named: "prompt")?.expression, let prompt = some StringProtocol(syntax: expr_prompt) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                self = .searchableWithStringBindingCBoolSearchFieldPlacementsomeStringProtocolClosuresomeView(text: text, editableTokens: editableTokens, isPresented: isPresented, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_tokens = syntax.argument(named: "tokens")?.expression, let tokens = SwiftUICore.Binding<C>(syntax: expr_tokens), let expr_suggestedTokens = syntax.argument(named: "suggestedTokens")?.expression, let suggestedTokens = SwiftUICore.Binding<C>(syntax: expr_suggestedTokens) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                let prompt: SwiftUICore.Text = if let expr = syntax.argument(named: "prompt")?.expression, let parsed = SwiftUICore.Text(syntax: expr) { parsed } else { nil }
-                self = .searchableWithStringBindingCBindingCSearchFieldPlacementTextOptionalClosureAnyView(text: text, tokens: tokens, suggestedTokens: suggestedTokens, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_tokens = syntax.argument(named: "tokens")?.expression, let tokens = SwiftUICore.Binding<C>(syntax: expr_tokens), let expr_suggestedTokens = syntax.argument(named: "suggestedTokens")?.expression, let suggestedTokens = SwiftUICore.Binding<C>(syntax: expr_suggestedTokens), let expr_prompt = syntax.argument(named: "prompt")?.expression, let prompt = SwiftUICore.LocalizedStringKey(syntax: expr_prompt) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                self = .searchableWithStringBindingCBindingCSearchFieldPlacementLocalizedStringKeyClosureAnyView(text: text, tokens: tokens, suggestedTokens: suggestedTokens, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_tokens = syntax.argument(named: "tokens")?.expression, let tokens = SwiftUICore.Binding<C>(syntax: expr_tokens), let expr_suggestedTokens = syntax.argument(named: "suggestedTokens")?.expression, let suggestedTokens = SwiftUICore.Binding<C>(syntax: expr_suggestedTokens), let expr_prompt = syntax.argument(named: "prompt")?.expression, let prompt = Foundation.LocalizedStringResource(syntax: expr_prompt) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                self = .searchableWithStringBindingCBindingCSearchFieldPlacementLocalizedStringResourceClosureAnyView(text: text, tokens: tokens, suggestedTokens: suggestedTokens, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_tokens = syntax.argument(named: "tokens")?.expression, let tokens = SwiftUICore.Binding<C>(syntax: expr_tokens), let expr_suggestedTokens = syntax.argument(named: "suggestedTokens")?.expression, let suggestedTokens = SwiftUICore.Binding<C>(syntax: expr_suggestedTokens), let expr_prompt = syntax.argument(named: "prompt")?.expression, let prompt = String(syntax: expr_prompt) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                self = .searchableWithStringBindingCBindingCSearchFieldPlacementStringClosureAnyView(text: text, tokens: tokens, suggestedTokens: suggestedTokens, placement: placement, prompt: prompt)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "SearchableModifier", variant: "multiple variants", expectedTypes: "SwiftUICore.Binding<Swift.String>, SwiftUICore.Binding<C>, SwiftUICore.Binding<Swift.Bool>, SwiftUI.SearchFieldPlacement, SwiftUICore.Text? or SwiftUICore.Binding<Swift.String>, SwiftUICore.Binding<C>, SwiftUICore.Binding<Swift.Bool>, SwiftUI.SearchFieldPlacement, SwiftUICore.Text? or SwiftUICore.Binding<Swift.String>, SwiftUICore.Binding<C>, SwiftUICore.Binding<Swift.Bool>, SwiftUI.SearchFieldPlacement, SwiftUICore.LocalizedStringKey or SwiftUICore.Binding<Swift.String>, SwiftUICore.Binding<C>, SwiftUICore.Binding<Swift.Bool>, SwiftUI.SearchFieldPlacement, Foundation.LocalizedStringResource or SwiftUICore.Binding<Swift.String>, SwiftUICore.Binding<C>, SwiftUICore.Binding<Swift.Bool>, SwiftUI.SearchFieldPlacement, SwiftUICore.LocalizedStringKey or SwiftUICore.Binding<Swift.String>, SwiftUICore.Binding<C>, SwiftUICore.Binding<Swift.Bool>, SwiftUI.SearchFieldPlacement, Foundation.LocalizedStringResource or SwiftUICore.Binding<Swift.String>, SwiftUICore.Binding<C>, SwiftUICore.Binding<Swift.Bool>, SwiftUI.SearchFieldPlacement, String or SwiftUICore.Binding<Swift.String>, SwiftUICore.Binding<C>, SwiftUICore.Binding<Swift.Bool>, SwiftUI.SearchFieldPlacement, some StringProtocol or SwiftUICore.Binding<Swift.String>, SwiftUICore.Binding<C>, SwiftUICore.Binding<C>, SwiftUI.SearchFieldPlacement, SwiftUICore.Text? or SwiftUICore.Binding<Swift.String>, SwiftUICore.Binding<C>, SwiftUICore.Binding<C>, SwiftUI.SearchFieldPlacement, SwiftUICore.LocalizedStringKey or SwiftUICore.Binding<Swift.String>, SwiftUICore.Binding<C>, SwiftUICore.Binding<C>, SwiftUI.SearchFieldPlacement, Foundation.LocalizedStringResource or SwiftUICore.Binding<Swift.String>, SwiftUICore.Binding<C>, SwiftUICore.Binding<C>, SwiftUI.SearchFieldPlacement, String")
-            }
-        case 6:
-            if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_tokens = syntax.argument(named: "tokens")?.expression, let tokens = SwiftUICore.Binding<C>(syntax: expr_tokens), let expr_suggestedTokens = syntax.argument(named: "suggestedTokens")?.expression, let suggestedTokens = SwiftUICore.Binding<C>(syntax: expr_suggestedTokens), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                let prompt: SwiftUICore.Text = if let expr = syntax.argument(named: "prompt")?.expression, let parsed = SwiftUICore.Text(syntax: expr) { parsed } else { nil }
-                self = .searchableWithStringBindingCBindingCBoolSearchFieldPlacementTextOptionalClosureAnyView(text: text, tokens: tokens, suggestedTokens: suggestedTokens, isPresented: isPresented, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_tokens = syntax.argument(named: "tokens")?.expression, let tokens = SwiftUICore.Binding<C>(syntax: expr_tokens), let expr_suggestedTokens = syntax.argument(named: "suggestedTokens")?.expression, let suggestedTokens = SwiftUICore.Binding<C>(syntax: expr_suggestedTokens), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented), let expr_prompt = syntax.argument(named: "prompt")?.expression, let prompt = SwiftUICore.LocalizedStringKey(syntax: expr_prompt) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                self = .searchableWithStringBindingCBindingCBoolSearchFieldPlacementLocalizedStringKeyClosureAnyView(text: text, tokens: tokens, suggestedTokens: suggestedTokens, isPresented: isPresented, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_tokens = syntax.argument(named: "tokens")?.expression, let tokens = SwiftUICore.Binding<C>(syntax: expr_tokens), let expr_suggestedTokens = syntax.argument(named: "suggestedTokens")?.expression, let suggestedTokens = SwiftUICore.Binding<C>(syntax: expr_suggestedTokens), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented), let expr_prompt = syntax.argument(named: "prompt")?.expression, let prompt = Foundation.LocalizedStringResource(syntax: expr_prompt) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                self = .searchableWithStringBindingCBindingCBoolSearchFieldPlacementLocalizedStringResourceClosureAnyView(text: text, tokens: tokens, suggestedTokens: suggestedTokens, isPresented: isPresented, placement: placement, prompt: prompt)
-            } else if let expr_text = syntax.argument(named: "text")?.expression, let text = SwiftUICore.Binding<Swift.String>(syntax: expr_text), let expr_tokens = syntax.argument(named: "tokens")?.expression, let tokens = SwiftUICore.Binding<C>(syntax: expr_tokens), let expr_suggestedTokens = syntax.argument(named: "suggestedTokens")?.expression, let suggestedTokens = SwiftUICore.Binding<C>(syntax: expr_suggestedTokens), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented), let expr_prompt = syntax.argument(named: "prompt")?.expression, let prompt = String(syntax: expr_prompt) {
-                let placement: SwiftUI.SearchFieldPlacement = if let expr = syntax.argument(named: "placement")?.expression, let parsed = SwiftUI.SearchFieldPlacement(syntax: expr) { parsed } else { .automatic }
-                self = .searchableWithStringBindingCBindingCBoolSearchFieldPlacementStringClosureAnyView(text: text, tokens: tokens, suggestedTokens: suggestedTokens, isPresented: isPresented, placement: placement, prompt: prompt)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "SearchableModifier", variant: "multiple variants", expectedTypes: "SwiftUICore.Binding<Swift.String>, SwiftUICore.Binding<C>, SwiftUICore.Binding<C>, SwiftUICore.Binding<Swift.Bool>, SwiftUI.SearchFieldPlacement, SwiftUICore.Text? or SwiftUICore.Binding<Swift.String>, SwiftUICore.Binding<C>, SwiftUICore.Binding<C>, SwiftUICore.Binding<Swift.Bool>, SwiftUI.SearchFieldPlacement, SwiftUICore.LocalizedStringKey or SwiftUICore.Binding<Swift.String>, SwiftUICore.Binding<C>, SwiftUICore.Binding<C>, SwiftUICore.Binding<Swift.Bool>, SwiftUI.SearchFieldPlacement, Foundation.LocalizedStringResource or SwiftUICore.Binding<Swift.String>, SwiftUICore.Binding<C>, SwiftUICore.Binding<C>, SwiftUICore.Binding<Swift.Bool>, SwiftUI.SearchFieldPlacement, String")
-            }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "SearchableModifier", expected: [3, 4, 5, 6], found: syntax.arguments.count)
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: SwiftUICore.Text? = syntax.argument(named: "prompt")?.expression.flatMap { SwiftUICore.Text(syntax: $0) } ?? nil
+            self = .searchableWithStringSearchFieldPlacementTextOptional(text: text, placement: placement, prompt: prompt)
+            return
         }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: SwiftUICore.LocalizedStringKey = syntax.argument(named: "prompt")?.expression.flatMap { SwiftUICore.LocalizedStringKey(syntax: $0) }
+            self = .searchableWithStringSearchFieldPlacementLocalizedStringKey(text: text, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: Foundation.LocalizedStringResource = syntax.argument(named: "prompt")?.expression.flatMap { Foundation.LocalizedStringResource(syntax: $0) }
+            self = .searchableWithStringSearchFieldPlacementLocalizedStringResource(text: text, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: String = syntax.argument(named: "prompt")?.expression.flatMap { String(syntax: $0) }
+            self = .searchableWithStringSearchFieldPlacementString(text: text, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "isPresented") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: SwiftUICore.Text? = syntax.argument(named: "prompt")?.expression.flatMap { SwiftUICore.Text(syntax: $0) } ?? nil
+            self = .searchableWithStringBoolSearchFieldPlacementTextOptional(text: text, isPresented: isPresented, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "isPresented") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: SwiftUICore.LocalizedStringKey = syntax.argument(named: "prompt")?.expression.flatMap { SwiftUICore.LocalizedStringKey(syntax: $0) }
+            self = .searchableWithStringBoolSearchFieldPlacementLocalizedStringKey(text: text, isPresented: isPresented, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "isPresented") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: Foundation.LocalizedStringResource = syntax.argument(named: "prompt")?.expression.flatMap { Foundation.LocalizedStringResource(syntax: $0) }
+            self = .searchableWithStringBoolSearchFieldPlacementLocalizedStringResource(text: text, isPresented: isPresented, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "isPresented") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: String = syntax.argument(named: "prompt")?.expression.flatMap { String(syntax: $0) }
+            self = .searchableWithStringBoolSearchFieldPlacementString(text: text, isPresented: isPresented, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil || syntax.argument(named: "suggestions") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: SwiftUICore.Text? = syntax.argument(named: "prompt")?.expression.flatMap { SwiftUICore.Text(syntax: $0) } ?? nil
+            self = .searchableWithStringSearchFieldPlacementTextOptionalClosureAnyView(text: text, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil || syntax.argument(named: "suggestions") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: SwiftUICore.LocalizedStringKey = syntax.argument(named: "prompt")?.expression.flatMap { SwiftUICore.LocalizedStringKey(syntax: $0) }
+            self = .searchableWithStringSearchFieldPlacementLocalizedStringKeyClosureAnyView(text: text, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil || syntax.argument(named: "suggestions") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: String = syntax.argument(named: "prompt")?.expression.flatMap { String(syntax: $0) }
+            self = .searchableWithStringSearchFieldPlacementStringClosureAnyView(text: text, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "tokens") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil || syntax.argument(named: "token") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let tokens: SwiftUICore.Binding<C> = syntax.argument(named: "tokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: SwiftUICore.Text? = syntax.argument(named: "prompt")?.expression.flatMap { SwiftUICore.Text(syntax: $0) } ?? nil
+            self = .searchableWithStringBindingCSearchFieldPlacementTextOptionalClosureAnyView(text: text, tokens: tokens, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "editableTokens") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil || syntax.argument(named: "token") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let editableTokens: SwiftUICore.Binding<C> = syntax.argument(named: "editableTokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: SwiftUICore.Text? = syntax.argument(named: "prompt")?.expression.flatMap { SwiftUICore.Text(syntax: $0) } ?? nil
+            self = .searchableWithStringBindingCSearchFieldPlacementTextOptionalClosuresomeView(text: text, editableTokens: editableTokens, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "tokens") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil || syntax.argument(named: "token") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let tokens: SwiftUICore.Binding<C> = syntax.argument(named: "tokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: SwiftUICore.LocalizedStringKey = syntax.argument(named: "prompt")?.expression.flatMap { SwiftUICore.LocalizedStringKey(syntax: $0) }
+            self = .searchableWithStringBindingCSearchFieldPlacementLocalizedStringKeyClosureAnyView(text: text, tokens: tokens, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "tokens") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil || syntax.argument(named: "token") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let tokens: SwiftUICore.Binding<C> = syntax.argument(named: "tokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: Foundation.LocalizedStringResource = syntax.argument(named: "prompt")?.expression.flatMap { Foundation.LocalizedStringResource(syntax: $0) }
+            self = .searchableWithStringBindingCSearchFieldPlacementLocalizedStringResourceClosureAnyView(text: text, tokens: tokens, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "editableTokens") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil || syntax.argument(named: "token") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let editableTokens: SwiftUICore.Binding<C> = syntax.argument(named: "editableTokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: SwiftUICore.LocalizedStringKey = syntax.argument(named: "prompt")?.expression.flatMap { SwiftUICore.LocalizedStringKey(syntax: $0) }
+            self = .searchableWithStringBindingCSearchFieldPlacementLocalizedStringKeyClosuresomeView(text: text, editableTokens: editableTokens, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "editableTokens") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil || syntax.argument(named: "token") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let editableTokens: SwiftUICore.Binding<C> = syntax.argument(named: "editableTokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: Foundation.LocalizedStringResource = syntax.argument(named: "prompt")?.expression.flatMap { Foundation.LocalizedStringResource(syntax: $0) }
+            self = .searchableWithStringBindingCSearchFieldPlacementLocalizedStringResourceClosuresomeView(text: text, editableTokens: editableTokens, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "tokens") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil || syntax.argument(named: "token") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let tokens: SwiftUICore.Binding<C> = syntax.argument(named: "tokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: String = syntax.argument(named: "prompt")?.expression.flatMap { String(syntax: $0) }
+            self = .searchableWithStringBindingCSearchFieldPlacementStringClosureAnyView(text: text, tokens: tokens, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "editableTokens") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil || syntax.argument(named: "token") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let editableTokens: SwiftUICore.Binding<C> = syntax.argument(named: "editableTokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: some StringProtocol = syntax.argument(named: "prompt")?.expression.flatMap { some StringProtocol(syntax: $0) }
+            self = .searchableWithStringBindingCSearchFieldPlacementsomeStringProtocolClosuresomeView(text: text, editableTokens: editableTokens, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "tokens") != nil || syntax.argument(named: "isPresented") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil || syntax.argument(named: "token") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let tokens: SwiftUICore.Binding<C> = syntax.argument(named: "tokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: SwiftUICore.Text? = syntax.argument(named: "prompt")?.expression.flatMap { SwiftUICore.Text(syntax: $0) } ?? nil
+            self = .searchableWithStringBindingCBoolSearchFieldPlacementTextOptionalClosureAnyView(text: text, tokens: tokens, isPresented: isPresented, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "editableTokens") != nil || syntax.argument(named: "isPresented") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil || syntax.argument(named: "token") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let editableTokens: SwiftUICore.Binding<C> = syntax.argument(named: "editableTokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: SwiftUICore.Text? = syntax.argument(named: "prompt")?.expression.flatMap { SwiftUICore.Text(syntax: $0) } ?? nil
+            self = .searchableWithStringBindingCBoolSearchFieldPlacementTextOptionalClosuresomeView(text: text, editableTokens: editableTokens, isPresented: isPresented, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "tokens") != nil || syntax.argument(named: "isPresented") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil || syntax.argument(named: "token") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let tokens: SwiftUICore.Binding<C> = syntax.argument(named: "tokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: SwiftUICore.LocalizedStringKey = syntax.argument(named: "prompt")?.expression.flatMap { SwiftUICore.LocalizedStringKey(syntax: $0) }
+            self = .searchableWithStringBindingCBoolSearchFieldPlacementLocalizedStringKeyClosureAnyView(text: text, tokens: tokens, isPresented: isPresented, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "tokens") != nil || syntax.argument(named: "isPresented") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil || syntax.argument(named: "token") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let tokens: SwiftUICore.Binding<C> = syntax.argument(named: "tokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: Foundation.LocalizedStringResource = syntax.argument(named: "prompt")?.expression.flatMap { Foundation.LocalizedStringResource(syntax: $0) }
+            self = .searchableWithStringBindingCBoolSearchFieldPlacementLocalizedStringResourceClosureAnyView(text: text, tokens: tokens, isPresented: isPresented, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "editableTokens") != nil || syntax.argument(named: "isPresented") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil || syntax.argument(named: "token") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let editableTokens: SwiftUICore.Binding<C> = syntax.argument(named: "editableTokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: SwiftUICore.LocalizedStringKey = syntax.argument(named: "prompt")?.expression.flatMap { SwiftUICore.LocalizedStringKey(syntax: $0) }
+            self = .searchableWithStringBindingCBoolSearchFieldPlacementLocalizedStringKeyClosuresomeView(text: text, editableTokens: editableTokens, isPresented: isPresented, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "editableTokens") != nil || syntax.argument(named: "isPresented") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil || syntax.argument(named: "token") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let editableTokens: SwiftUICore.Binding<C> = syntax.argument(named: "editableTokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: Foundation.LocalizedStringResource = syntax.argument(named: "prompt")?.expression.flatMap { Foundation.LocalizedStringResource(syntax: $0) }
+            self = .searchableWithStringBindingCBoolSearchFieldPlacementLocalizedStringResourceClosuresomeView(text: text, editableTokens: editableTokens, isPresented: isPresented, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "tokens") != nil || syntax.argument(named: "isPresented") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil || syntax.argument(named: "token") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let tokens: SwiftUICore.Binding<C> = syntax.argument(named: "tokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: String = syntax.argument(named: "prompt")?.expression.flatMap { String(syntax: $0) }
+            self = .searchableWithStringBindingCBoolSearchFieldPlacementStringClosureAnyView(text: text, tokens: tokens, isPresented: isPresented, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "editableTokens") != nil || syntax.argument(named: "isPresented") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil || syntax.argument(named: "token") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let editableTokens: SwiftUICore.Binding<C> = syntax.argument(named: "editableTokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: some StringProtocol = syntax.argument(named: "prompt")?.expression.flatMap { some StringProtocol(syntax: $0) }
+            self = .searchableWithStringBindingCBoolSearchFieldPlacementsomeStringProtocolClosuresomeView(text: text, editableTokens: editableTokens, isPresented: isPresented, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "tokens") != nil || syntax.argument(named: "suggestedTokens") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil || syntax.argument(named: "token") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let tokens: SwiftUICore.Binding<C> = syntax.argument(named: "tokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let suggestedTokens: SwiftUICore.Binding<C> = syntax.argument(named: "suggestedTokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: SwiftUICore.Text? = syntax.argument(named: "prompt")?.expression.flatMap { SwiftUICore.Text(syntax: $0) } ?? nil
+            self = .searchableWithStringBindingCBindingCSearchFieldPlacementTextOptionalClosureAnyView(text: text, tokens: tokens, suggestedTokens: suggestedTokens, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "tokens") != nil || syntax.argument(named: "suggestedTokens") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil || syntax.argument(named: "token") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let tokens: SwiftUICore.Binding<C> = syntax.argument(named: "tokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let suggestedTokens: SwiftUICore.Binding<C> = syntax.argument(named: "suggestedTokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: SwiftUICore.LocalizedStringKey = syntax.argument(named: "prompt")?.expression.flatMap { SwiftUICore.LocalizedStringKey(syntax: $0) }
+            self = .searchableWithStringBindingCBindingCSearchFieldPlacementLocalizedStringKeyClosureAnyView(text: text, tokens: tokens, suggestedTokens: suggestedTokens, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "tokens") != nil || syntax.argument(named: "suggestedTokens") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil || syntax.argument(named: "token") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let tokens: SwiftUICore.Binding<C> = syntax.argument(named: "tokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let suggestedTokens: SwiftUICore.Binding<C> = syntax.argument(named: "suggestedTokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: Foundation.LocalizedStringResource = syntax.argument(named: "prompt")?.expression.flatMap { Foundation.LocalizedStringResource(syntax: $0) }
+            self = .searchableWithStringBindingCBindingCSearchFieldPlacementLocalizedStringResourceClosureAnyView(text: text, tokens: tokens, suggestedTokens: suggestedTokens, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "tokens") != nil || syntax.argument(named: "suggestedTokens") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil || syntax.argument(named: "token") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let tokens: SwiftUICore.Binding<C> = syntax.argument(named: "tokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let suggestedTokens: SwiftUICore.Binding<C> = syntax.argument(named: "suggestedTokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: String = syntax.argument(named: "prompt")?.expression.flatMap { String(syntax: $0) }
+            self = .searchableWithStringBindingCBindingCSearchFieldPlacementStringClosureAnyView(text: text, tokens: tokens, suggestedTokens: suggestedTokens, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "tokens") != nil || syntax.argument(named: "suggestedTokens") != nil || syntax.argument(named: "isPresented") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil || syntax.argument(named: "token") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let tokens: SwiftUICore.Binding<C> = syntax.argument(named: "tokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let suggestedTokens: SwiftUICore.Binding<C> = syntax.argument(named: "suggestedTokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: SwiftUICore.Text? = syntax.argument(named: "prompt")?.expression.flatMap { SwiftUICore.Text(syntax: $0) } ?? nil
+            self = .searchableWithStringBindingCBindingCBoolSearchFieldPlacementTextOptionalClosureAnyView(text: text, tokens: tokens, suggestedTokens: suggestedTokens, isPresented: isPresented, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "tokens") != nil || syntax.argument(named: "suggestedTokens") != nil || syntax.argument(named: "isPresented") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil || syntax.argument(named: "token") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let tokens: SwiftUICore.Binding<C> = syntax.argument(named: "tokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let suggestedTokens: SwiftUICore.Binding<C> = syntax.argument(named: "suggestedTokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: SwiftUICore.LocalizedStringKey = syntax.argument(named: "prompt")?.expression.flatMap { SwiftUICore.LocalizedStringKey(syntax: $0) }
+            self = .searchableWithStringBindingCBindingCBoolSearchFieldPlacementLocalizedStringKeyClosureAnyView(text: text, tokens: tokens, suggestedTokens: suggestedTokens, isPresented: isPresented, placement: placement, prompt: prompt)
+            return
+        }
+        if syntax.argument(named: "text") != nil || syntax.argument(named: "tokens") != nil || syntax.argument(named: "suggestedTokens") != nil || syntax.argument(named: "isPresented") != nil || syntax.argument(named: "placement") != nil || syntax.argument(named: "prompt") != nil || syntax.argument(named: "token") != nil {
+            let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+            let tokens: SwiftUICore.Binding<C> = syntax.argument(named: "tokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let suggestedTokens: SwiftUICore.Binding<C> = syntax.argument(named: "suggestedTokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+            let prompt: Foundation.LocalizedStringResource = syntax.argument(named: "prompt")?.expression.flatMap { Foundation.LocalizedStringResource(syntax: $0) }
+            self = .searchableWithStringBindingCBindingCBoolSearchFieldPlacementLocalizedStringResourceClosureAnyView(text: text, tokens: tokens, suggestedTokens: suggestedTokens, isPresented: isPresented, placement: placement, prompt: prompt)
+            return
+        }
+        let text: SwiftUICore.Binding<Swift.String> = syntax.argument(named: "text")?.expression.flatMap { SwiftUICore.Binding<Swift.String>(syntax: $0) }
+        let tokens: SwiftUICore.Binding<C> = syntax.argument(named: "tokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+        let suggestedTokens: SwiftUICore.Binding<C> = syntax.argument(named: "suggestedTokens")?.expression.flatMap { SwiftUICore.Binding<C>(syntax: $0) }
+        let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+        let placement: SwiftUI.SearchFieldPlacement = syntax.argument(named: "placement")?.expression.flatMap { SwiftUI.SearchFieldPlacement(syntax: $0) } ?? .automatic
+        let prompt: String = syntax.argument(named: "prompt")?.expression.flatMap { String(syntax: $0) }
+        self = .searchableWithStringBindingCBindingCBoolSearchFieldPlacementStringClosureAnyView(text: text, tokens: tokens, suggestedTokens: suggestedTokens, isPresented: isPresented, placement: placement, prompt: prompt)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .searchableWithStringSearchFieldPlacementTextOptional(let text, let placement, let prompt):

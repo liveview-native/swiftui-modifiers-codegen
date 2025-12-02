@@ -13,19 +13,12 @@ extension StateForIdentifierModifier: RuntimeViewModifier {
     public static var baseName: String { "stateForIdentifier" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 3:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = AnyHashable(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "StateForIdentifierModifier", variant: "stateForIdentifier", expectedTypes: "AnyHashable, S.Type, AnyView.Type")
-            }
-            let type: S.Type = if let expr = syntax.argument(named: "type")?.expression, let parsed = S.Type(syntax: expr) { parsed } else { S.self }
-            let in: AnyView.Type = if let expr = syntax.argument(named: "in")?.expression, let parsed = AnyView.Type(syntax: expr) { parsed } else { V.self }
-            self = .stateForIdentifier(value0, type: type, in: in)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "StateForIdentifierModifier", expected: [3], found: syntax.arguments.count)
-        }
+        let value0: AnyHashable = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { AnyHashable(syntax: $0) }
+        let type: S.Type = syntax.argument(named: "type")?.expression.flatMap { S.Type(syntax: $0) } ?? S.self
+        let in: AnyView.Type = syntax.argument(named: "in")?.expression.flatMap { AnyView.Type(syntax: $0) } ?? V.self
+        self = .stateForIdentifier(value0, type: type, in: in)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .stateForIdentifier(let value0, let type, let in):

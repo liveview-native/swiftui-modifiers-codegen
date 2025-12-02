@@ -13,15 +13,10 @@ extension TurnRunloopModifier: RuntimeViewModifier {
     public static var baseName: String { "turnRunloop" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let times: Swift.Int = if let expr = syntax.argument(named: "times")?.expression, let parsed = Swift.Int(syntax: expr) { parsed } else { 1 }
-            self = .turnRunloop(times: times)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "TurnRunloopModifier", expected: [1], found: syntax.arguments.count)
-        }
+        let times: Swift.Int = syntax.argument(named: "times")?.expression.flatMap { Swift.Int(syntax: $0) } ?? 1
+        self = .turnRunloop(times: times)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .turnRunloop(let times):

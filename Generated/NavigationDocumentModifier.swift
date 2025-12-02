@@ -18,32 +18,35 @@ extension NavigationDocumentModifier: RuntimeViewModifier {
     public static var baseName: String { "navigationDocument" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            if let value0: D = D(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+        if syntax.arguments.count == 1 {
+            if let value0 = D(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
                 self = .navigationDocumentWithD(value0)
-            } else if let value0: Foundation.URL = Foundation.URL(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                return
+            }
+            if let value0 = Foundation.URL(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
                 self = .navigationDocumentWithURL(value0)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "NavigationDocumentModifier", variant: "multiple variants", expectedTypes: "D or Foundation.URL")
+                return
             }
-        case 2:
-            if let value0: D = D(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_preview = syntax.argument(named: "preview")?.expression, let preview = SwiftUI.SharePreview<Swift.Never, Swift.Never>(syntax: expr_preview) {
+        }
+        if syntax.arguments.count == 2 {
+            if let value0 = D(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let preview = SwiftUI.SharePreview<Swift.Never, Swift.Never>(syntax: syntax.argument(named: "preview")?.expression!) {
                 self = .navigationDocumentWithDNever(value0, preview: preview)
-            } else if let value0: D = D(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_preview = syntax.argument(named: "preview")?.expression, let preview = SwiftUI.SharePreview<Swift.Never, I>(syntax: expr_preview) {
-                self = .navigationDocumentWithDNeverI(value0, preview: preview)
-            } else if let value0: D = D(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_preview = syntax.argument(named: "preview")?.expression, let preview = SwiftUI.SharePreview<I, Swift.Never>(syntax: expr_preview) {
-                self = .navigationDocumentWithDNever1(value0, preview: preview)
-            } else if let value0: D = D(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_preview = syntax.argument(named: "preview")?.expression, let preview = SwiftUI.SharePreview<I1, I2>(syntax: expr_preview) {
-                self = .navigationDocumentWithDSharePreviewI1I2(value0, preview: preview)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "NavigationDocumentModifier", variant: "multiple variants", expectedTypes: "D, SwiftUI.SharePreview<Swift.Never, Swift.Never> or D, SwiftUI.SharePreview<Swift.Never, I> or D, SwiftUI.SharePreview<I, Swift.Never> or D, SwiftUI.SharePreview<I1, I2>")
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "NavigationDocumentModifier", expected: [1, 2], found: syntax.arguments.count)
+            if let value0 = D(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let preview = SwiftUI.SharePreview<Swift.Never, I>(syntax: syntax.argument(named: "preview")?.expression!) {
+                self = .navigationDocumentWithDNeverI(value0, preview: preview)
+                return
+            }
+            if let value0 = D(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let preview = SwiftUI.SharePreview<I, Swift.Never>(syntax: syntax.argument(named: "preview")?.expression!) {
+                self = .navigationDocumentWithDNever1(value0, preview: preview)
+                return
+            }
+            if let value0 = D(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let preview = SwiftUI.SharePreview<I1, I2>(syntax: syntax.argument(named: "preview")?.expression!) {
+                self = .navigationDocumentWithDSharePreviewI1I2(value0, preview: preview)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .navigationDocumentWithD(let value0):

@@ -13,20 +13,13 @@ extension SetModifier: RuntimeViewModifier {
     public static var baseName: String { "set" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = Swift.WritableKeyPath<Self.RootStateType, V>(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "SetModifier", variant: "set", expectedTypes: "Swift.WritableKeyPath<Self.RootStateType, V>, V")
+        if syntax.arguments.count == 2 {
+            if let value0 = Swift.WritableKeyPath<Self.RootStateType, V>(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let to = V(syntax: syntax.argument(named: "to")?.expression!) {
+                self = .set(value0, to: to)
+                return
             }
-            guard let expr_to = syntax.argument(named: "to")?.expression, let to = V(syntax: expr_to) else {
-                throw ModifierParseError.invalidArguments(modifier: "SetModifier", variant: "set", expectedTypes: "Swift.WritableKeyPath<Self.RootStateType, V>, V")
-            }
-            self = .set(value0, to: to)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "SetModifier", expected: [2], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .set(let value0, let to):

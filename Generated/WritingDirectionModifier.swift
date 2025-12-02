@@ -13,17 +13,13 @@ extension WritingDirectionModifier: RuntimeViewModifier {
     public static var baseName: String { "writingDirection" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_strategy = syntax.argument(named: "strategy")?.expression, let strategy = SwiftUICore.Text.WritingDirectionStrategy(syntax: expr_strategy) else {
-                throw ModifierParseError.invalidArguments(modifier: "WritingDirectionModifier", variant: "writingDirection", expectedTypes: "SwiftUICore.Text.WritingDirectionStrategy")
+        if syntax.arguments.count == 1 {
+            if let strategy = SwiftUICore.Text.WritingDirectionStrategy(syntax: syntax.argument(named: "strategy")?.expression!) {
+                self = .writingDirection(strategy: strategy)
+                return
             }
-            self = .writingDirection(strategy: strategy)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "WritingDirectionModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .writingDirection(let strategy):

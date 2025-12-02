@@ -14,21 +14,14 @@ extension ScenePaddingModifier: RuntimeViewModifier {
     public static var baseName: String { "scenePadding" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let value0: SwiftUICore.Edge.Set = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = SwiftUICore.Edge.Set(syntax: expr) { parsed } else { .all }
-            self = .scenePaddingWithSet(value0)
-        case 2:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUI.ScenePadding(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "ScenePaddingModifier", variant: "scenePaddingWithScenePaddingSet", expectedTypes: "SwiftUI.ScenePadding, SwiftUICore.Edge.Set")
-            }
-            let edges: SwiftUICore.Edge.Set = if let expr = syntax.argument(named: "edges")?.expression, let parsed = SwiftUICore.Edge.Set(syntax: expr) { parsed } else { .all }
-            self = .scenePaddingWithScenePaddingSet(value0, edges: edges)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ScenePaddingModifier", expected: [1, 2], found: syntax.arguments.count)
-        }
+        let value0: SwiftUICore.Edge.Set = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { SwiftUICore.Edge.Set(syntax: $0) } ?? .all
+        self = .scenePaddingWithSet(value0)
+        return
+        let value0: SwiftUI.ScenePadding = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { SwiftUI.ScenePadding(syntax: $0) }
+        let edges: SwiftUICore.Edge.Set = syntax.argument(named: "edges")?.expression.flatMap { SwiftUICore.Edge.Set(syntax: $0) } ?? .all
+        self = .scenePaddingWithScenePaddingSet(value0, edges: edges)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .scenePaddingWithSet(let value0):

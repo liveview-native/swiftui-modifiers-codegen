@@ -14,27 +14,18 @@ extension ContentShapeModifier: RuntimeViewModifier {
     public static var baseName: String { "contentShape" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = AnyShape(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "ContentShapeModifier", variant: "contentShapeWithAnyShapeBool", expectedTypes: "AnyShape, Swift.Bool")
-            }
-            let eoFill: Swift.Bool = if let expr = syntax.argument(named: "eoFill")?.expression, let parsed = Swift.Bool(syntax: expr) { parsed } else { false }
+        if syntax.argument(named: "eoFill") != nil {
+            let value0: AnyShape = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { AnyShape(syntax: $0) }
+            let eoFill: Swift.Bool = syntax.argument(named: "eoFill")?.expression.flatMap { Swift.Bool(syntax: $0) } ?? false
             self = .contentShapeWithAnyShapeBool(value0, eoFill: eoFill)
-        case 3:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUICore.ContentShapeKinds(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "ContentShapeModifier", variant: "contentShapeWithContentShapeKindsAnyShapeBool", expectedTypes: "SwiftUICore.ContentShapeKinds, AnyShape, Swift.Bool")
-            }
-            guard let expr_value1 = (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil), let value1 = AnyShape(syntax: expr_value1) else {
-                throw ModifierParseError.invalidArguments(modifier: "ContentShapeModifier", variant: "contentShapeWithContentShapeKindsAnyShapeBool", expectedTypes: "SwiftUICore.ContentShapeKinds, AnyShape, Swift.Bool")
-            }
-            let eoFill: Swift.Bool = if let expr = syntax.argument(named: "eoFill")?.expression, let parsed = Swift.Bool(syntax: expr) { parsed } else { false }
-            self = .contentShapeWithContentShapeKindsAnyShapeBool(value0, value1, eoFill: eoFill)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ContentShapeModifier", expected: [2, 3], found: syntax.arguments.count)
+            return
         }
+        let value0: SwiftUICore.ContentShapeKinds = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { SwiftUICore.ContentShapeKinds(syntax: $0) }
+        let value1: AnyShape = (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil).flatMap { AnyShape(syntax: $0) }
+        let eoFill: Swift.Bool = syntax.argument(named: "eoFill")?.expression.flatMap { Swift.Bool(syntax: $0) } ?? false
+        self = .contentShapeWithContentShapeKindsAnyShapeBool(value0, value1, eoFill: eoFill)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .contentShapeWithAnyShapeBool(let value0, let eoFill):

@@ -13,17 +13,13 @@ extension SearchSelectionModifier: RuntimeViewModifier {
     public static var baseName: String { "searchSelection" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUICore.Binding<SwiftUI.TextSelection?>(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "SearchSelectionModifier", variant: "searchSelection", expectedTypes: "SwiftUICore.Binding<SwiftUI.TextSelection?>")
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUICore.Binding<SwiftUI.TextSelection?>(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .searchSelection(value0)
+                return
             }
-            self = .searchSelection(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "SearchSelectionModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .searchSelection(let value0):

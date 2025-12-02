@@ -13,18 +13,13 @@ extension ToolbarColorSchemeModifier: RuntimeViewModifier {
     public static var baseName: String { "toolbarColorScheme" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            let value0: SwiftUICore.ColorScheme? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUICore.ColorScheme(syntax: expr) } else { nil }
-            guard let expr_for = syntax.argument(named: "for")?.expression, let for = SwiftUI.ToolbarPlacement(syntax: expr_for) else {
-                throw ModifierParseError.invalidArguments(modifier: "ToolbarColorSchemeModifier", variant: "toolbarColorScheme", expectedTypes: "SwiftUICore.ColorScheme?, SwiftUI.ToolbarPlacement")
+        if syntax.arguments.count == 2 {
+            if let value0 = SwiftUICore.ColorScheme(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let for = SwiftUI.ToolbarPlacement(syntax: syntax.argument(named: "for")?.expression!) {
+                self = .toolbarColorScheme(value0, for: for)
+                return
             }
-            self = .toolbarColorScheme(value0, for: for)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ToolbarColorSchemeModifier", expected: [2], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .toolbarColorScheme(let value0, let for):

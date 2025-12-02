@@ -14,25 +14,16 @@ extension PhaseAnimatorModifier: RuntimeViewModifier {
     public static var baseName: String { "phaseAnimator" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = some Sequence<Phase>(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "PhaseAnimatorModifier", variant: "phaseAnimatorWithsomeSequencePhaseClosuresomeViewAnimationOptional", expectedTypes: "some Sequence<Phase>")
-            }
-            self = .phaseAnimatorWithsomeSequencePhaseClosuresomeViewAnimationOptional(value0)
-        case 2:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = some Sequence<Phase>(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "PhaseAnimatorModifier", variant: "phaseAnimatorWithsomeSequencePhasesomeEquatableClosuresomeViewAnimationOptional", expectedTypes: "some Sequence<Phase>, some Equatable")
-            }
-            guard let expr_trigger = syntax.argument(named: "trigger")?.expression, let trigger = some Equatable(syntax: expr_trigger) else {
-                throw ModifierParseError.invalidArguments(modifier: "PhaseAnimatorModifier", variant: "phaseAnimatorWithsomeSequencePhasesomeEquatableClosuresomeViewAnimationOptional", expectedTypes: "some Sequence<Phase>, some Equatable")
-            }
+        if syntax.argument(named: "trigger") != nil || syntax.argument(named: "content") != nil || syntax.argument(named: "animation") != nil {
+            let value0: some Sequence<Phase> = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { some Sequence<Phase>(syntax: $0) }
+            let trigger: some Equatable = syntax.argument(named: "trigger")?.expression.flatMap { some Equatable(syntax: $0) }
             self = .phaseAnimatorWithsomeSequencePhasesomeEquatableClosuresomeViewAnimationOptional(value0, trigger: trigger)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "PhaseAnimatorModifier", expected: [1, 2], found: syntax.arguments.count)
+            return
         }
+        let value0: some Sequence<Phase> = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { some Sequence<Phase>(syntax: $0) }
+        self = .phaseAnimatorWithsomeSequencePhaseClosuresomeViewAnimationOptional(value0)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .phaseAnimatorWithsomeSequencePhasesomeEquatableClosuresomeViewAnimationOptional(let value0, let trigger):

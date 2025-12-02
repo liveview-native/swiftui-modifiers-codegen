@@ -13,17 +13,13 @@ extension AccessibilityAddTraitsModifier: RuntimeViewModifier {
     public static var baseName: String { "accessibilityAddTraits" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUICore.AccessibilityTraits(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "AccessibilityAddTraitsModifier", variant: "accessibilityAddTraits", expectedTypes: "SwiftUICore.AccessibilityTraits")
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUICore.AccessibilityTraits(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .accessibilityAddTraits(value0)
+                return
             }
-            self = .accessibilityAddTraits(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "AccessibilityAddTraitsModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .accessibilityAddTraits(let value0):

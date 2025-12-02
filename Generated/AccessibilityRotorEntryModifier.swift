@@ -13,20 +13,13 @@ extension AccessibilityRotorEntryModifier: RuntimeViewModifier {
     public static var baseName: String { "accessibilityRotorEntry" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            guard let expr_id = syntax.argument(named: "id")?.expression, let id = AnyHashable(syntax: expr_id) else {
-                throw ModifierParseError.invalidArguments(modifier: "AccessibilityRotorEntryModifier", variant: "accessibilityRotorEntry", expectedTypes: "AnyHashable, SwiftUICore.Namespace.AnyHashable")
+        if syntax.arguments.count == 2 {
+            if let id = AnyHashable(syntax: syntax.argument(named: "id")?.expression!), let in = SwiftUICore.Namespace.AnyHashable(syntax: syntax.argument(named: "in")?.expression!) {
+                self = .accessibilityRotorEntry(id: id, in: in)
+                return
             }
-            guard let expr_in = syntax.argument(named: "in")?.expression, let in = SwiftUICore.Namespace.AnyHashable(syntax: expr_in) else {
-                throw ModifierParseError.invalidArguments(modifier: "AccessibilityRotorEntryModifier", variant: "accessibilityRotorEntry", expectedTypes: "AnyHashable, SwiftUICore.Namespace.AnyHashable")
-            }
-            self = .accessibilityRotorEntry(id: id, in: in)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "AccessibilityRotorEntryModifier", expected: [2], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .accessibilityRotorEntry(let id, let in):

@@ -13,14 +13,11 @@ extension FocusSectionModifier: RuntimeViewModifier {
     public static var baseName: String { "focusSection" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .focusSection
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "FocusSectionModifier", expected: [0], found: syntax.arguments.count)
+            return
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .focusSection:

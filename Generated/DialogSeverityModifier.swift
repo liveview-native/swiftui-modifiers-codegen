@@ -13,17 +13,13 @@ extension DialogSeverityModifier: RuntimeViewModifier {
     public static var baseName: String { "dialogSeverity" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUI.DialogSeverity(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "DialogSeverityModifier", variant: "dialogSeverity", expectedTypes: "SwiftUI.DialogSeverity")
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUI.DialogSeverity(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .dialogSeverity(value0)
+                return
             }
-            self = .dialogSeverity(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "DialogSeverityModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .dialogSeverity(let value0):

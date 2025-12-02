@@ -13,17 +13,13 @@ extension SearchPresentationToolbarBehaviorModifier: RuntimeViewModifier {
     public static var baseName: String { "searchPresentationToolbarBehavior" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUI.SearchPresentationToolbarBehavior(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "SearchPresentationToolbarBehaviorModifier", variant: "searchPresentationToolbarBehavior", expectedTypes: "SwiftUI.SearchPresentationToolbarBehavior")
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUI.SearchPresentationToolbarBehavior(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .searchPresentationToolbarBehavior(value0)
+                return
             }
-            self = .searchPresentationToolbarBehavior(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "SearchPresentationToolbarBehaviorModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .searchPresentationToolbarBehavior(let value0):

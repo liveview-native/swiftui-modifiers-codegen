@@ -14,24 +14,18 @@ extension NavigationSplitViewColumnWidthModifier: RuntimeViewModifier {
     public static var baseName: String { "navigationSplitViewColumnWidth" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = CoreFoundation.CGFloat(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "NavigationSplitViewColumnWidthModifier", variant: "navigationSplitViewColumnWidthWithCGFloat", expectedTypes: "CoreFoundation.CGFloat")
+        if syntax.arguments.count == 1 {
+            if let value0 = CoreFoundation.CGFloat(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .navigationSplitViewColumnWidthWithCGFloat(value0)
+                return
             }
-            self = .navigationSplitViewColumnWidthWithCGFloat(value0)
-        case 3:
-            let min: CoreFoundation.CGFloat? = if let expr = syntax.argument(named: "min")?.expression, let parsed = CoreFoundation.CGFloat(syntax: expr) { parsed } else { nil }
-            guard let expr_ideal = syntax.argument(named: "ideal")?.expression, let ideal = CoreFoundation.CGFloat(syntax: expr_ideal) else {
-                throw ModifierParseError.invalidArguments(modifier: "NavigationSplitViewColumnWidthModifier", variant: "navigationSplitViewColumnWidthWithCGFloatOptionalCGFloatCGFloatOptional", expectedTypes: "CoreFoundation.CGFloat?, CoreFoundation.CGFloat, CoreFoundation.CGFloat?")
-            }
-            let max: CoreFoundation.CGFloat? = if let expr = syntax.argument(named: "max")?.expression, let parsed = CoreFoundation.CGFloat(syntax: expr) { parsed } else { nil }
-            self = .navigationSplitViewColumnWidthWithCGFloatOptionalCGFloatCGFloatOptional(min: min, ideal: ideal, max: max)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "NavigationSplitViewColumnWidthModifier", expected: [1, 3], found: syntax.arguments.count)
         }
+        let min: CoreFoundation.CGFloat? = syntax.argument(named: "min")?.expression.flatMap { CoreFoundation.CGFloat(syntax: $0) } ?? nil
+        let ideal: CoreFoundation.CGFloat = syntax.argument(named: "ideal")?.expression.flatMap { CoreFoundation.CGFloat(syntax: $0) }
+        let max: CoreFoundation.CGFloat? = syntax.argument(named: "max")?.expression.flatMap { CoreFoundation.CGFloat(syntax: $0) } ?? nil
+        self = .navigationSplitViewColumnWidthWithCGFloatOptionalCGFloatCGFloatOptional(min: min, ideal: ideal, max: max)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .navigationSplitViewColumnWidthWithCGFloat(let value0):

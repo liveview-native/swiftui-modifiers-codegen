@@ -14,25 +14,19 @@ extension AccessibilityQuickActionModifier: RuntimeViewModifier {
     public static var baseName: String { "accessibilityQuickAction" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_style = syntax.argument(named: "style")?.expression, let style = Style(syntax: expr_style) else {
-                throw ModifierParseError.invalidArguments(modifier: "AccessibilityQuickActionModifier", variant: "accessibilityQuickActionWithStyleClosureAnyView", expectedTypes: "Style")
+        if syntax.arguments.count == 1 {
+            if let style = Style(syntax: syntax.argument(named: "style")?.expression!) {
+                self = .accessibilityQuickActionWithStyleClosureAnyView(style: style)
+                return
             }
-            self = .accessibilityQuickActionWithStyleClosureAnyView(style: style)
-        case 2:
-            guard let expr_style = syntax.argument(named: "style")?.expression, let style = Style(syntax: expr_style) else {
-                throw ModifierParseError.invalidArguments(modifier: "AccessibilityQuickActionModifier", variant: "accessibilityQuickActionWithStyleBoolClosureAnyView", expectedTypes: "Style, SwiftUICore.Binding<Swift.Bool>")
+        }
+        if syntax.arguments.count == 2 {
+            if let style = Style(syntax: syntax.argument(named: "style")?.expression!), let isActive = SwiftUICore.Binding<Swift.Bool>(syntax: syntax.argument(named: "isActive")?.expression!) {
+                self = .accessibilityQuickActionWithStyleBoolClosureAnyView(style: style, isActive: isActive)
+                return
             }
-            guard let expr_isActive = syntax.argument(named: "isActive")?.expression, let isActive = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isActive) else {
-                throw ModifierParseError.invalidArguments(modifier: "AccessibilityQuickActionModifier", variant: "accessibilityQuickActionWithStyleBoolClosureAnyView", expectedTypes: "Style, SwiftUICore.Binding<Swift.Bool>")
-            }
-            self = .accessibilityQuickActionWithStyleBoolClosureAnyView(style: style, isActive: isActive)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "AccessibilityQuickActionModifier", expected: [1, 2], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .accessibilityQuickActionWithStyleClosureAnyView(let style):

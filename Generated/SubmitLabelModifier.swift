@@ -13,17 +13,13 @@ extension SubmitLabelModifier: RuntimeViewModifier {
     public static var baseName: String { "submitLabel" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUI.SubmitLabel(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "SubmitLabelModifier", variant: "submitLabel", expectedTypes: "SwiftUI.SubmitLabel")
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUI.SubmitLabel(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .submitLabel(value0)
+                return
             }
-            self = .submitLabel(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "SubmitLabelModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .submitLabel(let value0):

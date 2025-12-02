@@ -15,28 +15,27 @@ extension FrameModifier: RuntimeViewModifier {
     public static var baseName: String { "frame" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .frame
-        case 3:
-            let width: CoreFoundation.CGFloat? = if let expr = syntax.argument(named: "width")?.expression, let parsed = CoreFoundation.CGFloat(syntax: expr) { parsed } else { nil }
-            let height: CoreFoundation.CGFloat? = if let expr = syntax.argument(named: "height")?.expression, let parsed = CoreFoundation.CGFloat(syntax: expr) { parsed } else { nil }
-            let alignment: SwiftUICore.Alignment = if let expr = syntax.argument(named: "alignment")?.expression, let parsed = SwiftUICore.Alignment(syntax: expr) { parsed } else { .center }
-            self = .frameWithCGFloatOptionalCGFloatOptionalAlignment(width: width, height: height, alignment: alignment)
-        case 7:
-            let minWidth: CoreFoundation.CGFloat? = if let expr = syntax.argument(named: "minWidth")?.expression, let parsed = CoreFoundation.CGFloat(syntax: expr) { parsed } else { nil }
-            let idealWidth: CoreFoundation.CGFloat? = if let expr = syntax.argument(named: "idealWidth")?.expression, let parsed = CoreFoundation.CGFloat(syntax: expr) { parsed } else { nil }
-            let maxWidth: CoreFoundation.CGFloat? = if let expr = syntax.argument(named: "maxWidth")?.expression, let parsed = CoreFoundation.CGFloat(syntax: expr) { parsed } else { nil }
-            let minHeight: CoreFoundation.CGFloat? = if let expr = syntax.argument(named: "minHeight")?.expression, let parsed = CoreFoundation.CGFloat(syntax: expr) { parsed } else { nil }
-            let idealHeight: CoreFoundation.CGFloat? = if let expr = syntax.argument(named: "idealHeight")?.expression, let parsed = CoreFoundation.CGFloat(syntax: expr) { parsed } else { nil }
-            let maxHeight: CoreFoundation.CGFloat? = if let expr = syntax.argument(named: "maxHeight")?.expression, let parsed = CoreFoundation.CGFloat(syntax: expr) { parsed } else { nil }
-            let alignment: SwiftUICore.Alignment = if let expr = syntax.argument(named: "alignment")?.expression, let parsed = SwiftUICore.Alignment(syntax: expr) { parsed } else { .center }
-            self = .frameWithCGFloatOptionalCGFloatOptionalCGFloatOptionalCGFloatOptionalCGFloatOptionalCGFloatOptionalAlignment(minWidth: minWidth, idealWidth: idealWidth, maxWidth: maxWidth, minHeight: minHeight, idealHeight: idealHeight, maxHeight: maxHeight, alignment: alignment)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "FrameModifier", expected: [0, 3, 7], found: syntax.arguments.count)
+            return
         }
+        if syntax.argument(named: "width") != nil || syntax.argument(named: "height") != nil || syntax.argument(named: "alignment") != nil {
+            let width: CoreFoundation.CGFloat? = syntax.argument(named: "width")?.expression.flatMap { CoreFoundation.CGFloat(syntax: $0) } ?? nil
+            let height: CoreFoundation.CGFloat? = syntax.argument(named: "height")?.expression.flatMap { CoreFoundation.CGFloat(syntax: $0) } ?? nil
+            let alignment: SwiftUICore.Alignment = syntax.argument(named: "alignment")?.expression.flatMap { SwiftUICore.Alignment(syntax: $0) } ?? .center
+            self = .frameWithCGFloatOptionalCGFloatOptionalAlignment(width: width, height: height, alignment: alignment)
+            return
+        }
+        let minWidth: CoreFoundation.CGFloat? = syntax.argument(named: "minWidth")?.expression.flatMap { CoreFoundation.CGFloat(syntax: $0) } ?? nil
+        let idealWidth: CoreFoundation.CGFloat? = syntax.argument(named: "idealWidth")?.expression.flatMap { CoreFoundation.CGFloat(syntax: $0) } ?? nil
+        let maxWidth: CoreFoundation.CGFloat? = syntax.argument(named: "maxWidth")?.expression.flatMap { CoreFoundation.CGFloat(syntax: $0) } ?? nil
+        let minHeight: CoreFoundation.CGFloat? = syntax.argument(named: "minHeight")?.expression.flatMap { CoreFoundation.CGFloat(syntax: $0) } ?? nil
+        let idealHeight: CoreFoundation.CGFloat? = syntax.argument(named: "idealHeight")?.expression.flatMap { CoreFoundation.CGFloat(syntax: $0) } ?? nil
+        let maxHeight: CoreFoundation.CGFloat? = syntax.argument(named: "maxHeight")?.expression.flatMap { CoreFoundation.CGFloat(syntax: $0) } ?? nil
+        let alignment: SwiftUICore.Alignment = syntax.argument(named: "alignment")?.expression.flatMap { SwiftUICore.Alignment(syntax: $0) } ?? .center
+        self = .frameWithCGFloatOptionalCGFloatOptionalCGFloatOptionalCGFloatOptionalCGFloatOptionalCGFloatOptionalAlignment(minWidth: minWidth, idealWidth: idealWidth, maxWidth: maxWidth, minHeight: minHeight, idealHeight: idealHeight, maxHeight: maxHeight, alignment: alignment)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .frameWithCGFloatOptionalCGFloatOptionalAlignment(let width, let height, let alignment):

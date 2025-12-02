@@ -14,20 +14,17 @@ extension ExportsItemProvidersModifier: RuntimeViewModifier {
     public static var baseName: String { "exportsItemProviders" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            if let value0: [UniformTypeIdentifiers.UTType] = [UniformTypeIdentifiers.UTType](syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+        if syntax.arguments.count == 1 {
+            if let value0 = [UniformTypeIdentifiers.UTType](syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
                 self = .exportsItemProvidersWithUTTypeNSItemProvider(value0)
-            } else if let value0: [UniformTypeIdentifiers.UTType] = [UniformTypeIdentifiers.UTType](syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
-                self = .exportsItemProvidersWithUTTypeNSItemProviderBool(value0)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "ExportsItemProvidersModifier", variant: "multiple variants", expectedTypes: "[UniformTypeIdentifiers.UTType] or [UniformTypeIdentifiers.UTType]")
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ExportsItemProvidersModifier", expected: [1], found: syntax.arguments.count)
+            if let value0 = [UniformTypeIdentifiers.UTType](syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .exportsItemProvidersWithUTTypeNSItemProviderBool(value0)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .exportsItemProvidersWithUTTypeNSItemProvider(let value0):

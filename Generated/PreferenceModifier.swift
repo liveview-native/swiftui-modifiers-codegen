@@ -13,18 +13,11 @@ extension PreferenceModifier: RuntimeViewModifier {
     public static var baseName: String { "preference" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            let key: K.Type = if let expr = syntax.argument(named: "key")?.expression, let parsed = K.Type(syntax: expr) { parsed } else { K.self }
-            guard let expr_value = syntax.argument(named: "value")?.expression, let value = K.Value(syntax: expr_value) else {
-                throw ModifierParseError.invalidArguments(modifier: "PreferenceModifier", variant: "preference", expectedTypes: "K.Type, K.Value")
-            }
-            self = .preference(key: key, value: value)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "PreferenceModifier", expected: [2], found: syntax.arguments.count)
-        }
+        let key: K.Type = syntax.argument(named: "key")?.expression.flatMap { K.Type(syntax: $0) } ?? K.self
+        let value: K.Value = syntax.argument(named: "value")?.expression.flatMap { K.Value(syntax: $0) }
+        self = .preference(key: key, value: value)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .preference(let key, let value):

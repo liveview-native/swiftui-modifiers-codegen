@@ -16,26 +16,25 @@ extension FileMoverModifier: RuntimeViewModifier {
     public static var baseName: String { "fileMover" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            if let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let file: Foundation.URL = if let expr = syntax.argument(named: "file")?.expression { Foundation.URL(syntax: expr) } else { nil }
+        if syntax.arguments.count == 2 {
+            if let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: syntax.argument(named: "isPresented")?.expression!), let file = Foundation.URL(syntax: syntax.argument(named: "file")?.expression!) {
                 self = .fileMoverWithBoolURLOptionalVoid(isPresented: isPresented, file: file)
-            } else if let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented), let expr_files = syntax.argument(named: "files")?.expression, let files = C(syntax: expr_files) {
-                self = .fileMoverWithBoolCVoid(isPresented: isPresented, files: files)
-            } else if let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let file: Foundation.URL = if let expr = syntax.argument(named: "file")?.expression { Foundation.URL(syntax: expr) } else { nil }
-                self = .fileMoverWithBoolURLOptionalVoidVoid(isPresented: isPresented, file: file)
-            } else if let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented), let expr_files = syntax.argument(named: "files")?.expression, let files = C(syntax: expr_files) {
-                self = .fileMoverWithBoolCVoidVoid(isPresented: isPresented, files: files)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "FileMoverModifier", variant: "multiple variants", expectedTypes: "SwiftUICore.Binding<Swift.Bool>, Foundation.URL? or SwiftUICore.Binding<Swift.Bool>, C or SwiftUICore.Binding<Swift.Bool>, Foundation.URL? or SwiftUICore.Binding<Swift.Bool>, C")
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "FileMoverModifier", expected: [2], found: syntax.arguments.count)
+            if let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: syntax.argument(named: "isPresented")?.expression!), let files = C(syntax: syntax.argument(named: "files")?.expression!) {
+                self = .fileMoverWithBoolCVoid(isPresented: isPresented, files: files)
+                return
+            }
+            if let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: syntax.argument(named: "isPresented")?.expression!), let file = Foundation.URL(syntax: syntax.argument(named: "file")?.expression!) {
+                self = .fileMoverWithBoolURLOptionalVoidVoid(isPresented: isPresented, file: file)
+                return
+            }
+            if let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: syntax.argument(named: "isPresented")?.expression!), let files = C(syntax: syntax.argument(named: "files")?.expression!) {
+                self = .fileMoverWithBoolCVoidVoid(isPresented: isPresented, files: files)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .fileMoverWithBoolURLOptionalVoid(let isPresented, let file):

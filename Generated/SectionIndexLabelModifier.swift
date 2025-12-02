@@ -14,15 +14,17 @@ extension SectionIndexLabelModifier: RuntimeViewModifier {
     public static var baseName: String { "sectionIndexLabel" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let value0: SwiftUICore.Text? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUICore.Text(syntax: expr) } else { nil }
-            self = .sectionIndexLabelWithTextOptional(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "SectionIndexLabelModifier", expected: [1], found: syntax.arguments.count)
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUICore.Text(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .sectionIndexLabelWithTextOptional(value0)
+                return
+            }
+            if let value0 = String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .sectionIndexLabelWithStringOptional(value0)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .sectionIndexLabelWithTextOptional(let value0):

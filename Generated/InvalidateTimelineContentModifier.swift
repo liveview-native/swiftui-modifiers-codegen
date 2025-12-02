@@ -13,14 +13,11 @@ extension InvalidateTimelineContentModifier: RuntimeViewModifier {
     public static var baseName: String { "invalidateTimelineContent" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .invalidateTimelineContent
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "InvalidateTimelineContentModifier", expected: [0], found: syntax.arguments.count)
+            return
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .invalidateTimelineContent:

@@ -13,21 +13,12 @@ extension DistortionEffectModifier: RuntimeViewModifier {
     public static var baseName: String { "distortionEffect" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 3:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUICore.Shader(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "DistortionEffectModifier", variant: "distortionEffect", expectedTypes: "SwiftUICore.Shader, CoreFoundation.CGSize, Swift.Bool")
-            }
-            guard let expr_maxSampleOffset = syntax.argument(named: "maxSampleOffset")?.expression, let maxSampleOffset = CoreFoundation.CGSize(syntax: expr_maxSampleOffset) else {
-                throw ModifierParseError.invalidArguments(modifier: "DistortionEffectModifier", variant: "distortionEffect", expectedTypes: "SwiftUICore.Shader, CoreFoundation.CGSize, Swift.Bool")
-            }
-            let isEnabled: Swift.Bool = if let expr = syntax.argument(named: "isEnabled")?.expression, let parsed = Swift.Bool(syntax: expr) { parsed } else { true }
-            self = .distortionEffect(value0, maxSampleOffset: maxSampleOffset, isEnabled: isEnabled)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "DistortionEffectModifier", expected: [3], found: syntax.arguments.count)
-        }
+        let value0: SwiftUICore.Shader = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { SwiftUICore.Shader(syntax: $0) }
+        let maxSampleOffset: CoreFoundation.CGSize = syntax.argument(named: "maxSampleOffset")?.expression.flatMap { CoreFoundation.CGSize(syntax: $0) }
+        let isEnabled: Swift.Bool = syntax.argument(named: "isEnabled")?.expression.flatMap { Swift.Bool(syntax: $0) } ?? true
+        self = .distortionEffect(value0, maxSampleOffset: maxSampleOffset, isEnabled: isEnabled)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .distortionEffect(let value0, let maxSampleOffset, let isEnabled):

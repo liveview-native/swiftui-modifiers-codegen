@@ -15,33 +15,21 @@ extension NavigationDestinationModifier: RuntimeViewModifier {
     public static var baseName: String { "navigationDestination" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let firstLabel = syntax.arguments.first?.label?.text
-            switch firstLabel {
-            case "for":
-                guard let expr_for = syntax.argument(named: "for")?.expression, let for = AnyHashable.Type(syntax: expr_for) else {
-                    throw ModifierParseError.invalidArguments(modifier: "NavigationDestinationModifier", variant: "navigationDestinationWithTypeClosureAnyView", expectedTypes: "AnyHashable.Type")
-                }
+        if syntax.arguments.count == 1 {
+            if let for = AnyHashable.Type(syntax: syntax.argument(named: "for")?.expression!) {
                 self = .navigationDestinationWithTypeClosureAnyView(for: for)
-            case "isPresented":
-                guard let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) else {
-                    throw ModifierParseError.invalidArguments(modifier: "NavigationDestinationModifier", variant: "navigationDestinationWithBoolClosureAnyView", expectedTypes: "SwiftUICore.Binding<Swift.Bool>")
-                }
-                self = .navigationDestinationWithBoolClosureAnyView(isPresented: isPresented)
-            case "item":
-                guard let expr_item = syntax.argument(named: "item")?.expression, let item = SwiftUICore.Binding<Swift.Optional<AnyHashable>>(syntax: expr_item) else {
-                    throw ModifierParseError.invalidArguments(modifier: "NavigationDestinationModifier", variant: "navigationDestinationWithOptionalAnyHashableClosureAnyView", expectedTypes: "SwiftUICore.Binding<Swift.Optional<AnyHashable>>")
-                }
-                self = .navigationDestinationWithOptionalAnyHashableClosureAnyView(item: item)
-            default:
-                throw ModifierParseError.ambiguousVariant(modifier: "NavigationDestinationModifier", expectedLabels: ["item", "isPresented", "for"])
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "NavigationDestinationModifier", expected: [1], found: syntax.arguments.count)
+            if let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: syntax.argument(named: "isPresented")?.expression!) {
+                self = .navigationDestinationWithBoolClosureAnyView(isPresented: isPresented)
+                return
+            }
+            if let item = SwiftUICore.Binding<Swift.Optional<AnyHashable>>(syntax: syntax.argument(named: "item")?.expression!) {
+                self = .navigationDestinationWithOptionalAnyHashableClosureAnyView(item: item)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .navigationDestinationWithTypeClosureAnyView(let for):

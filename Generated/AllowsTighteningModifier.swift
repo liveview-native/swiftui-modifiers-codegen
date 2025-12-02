@@ -13,17 +13,13 @@ extension AllowsTighteningModifier: RuntimeViewModifier {
     public static var baseName: String { "allowsTightening" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = Swift.Bool(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "AllowsTighteningModifier", variant: "allowsTightening", expectedTypes: "Swift.Bool")
+        if syntax.arguments.count == 1 {
+            if let value0 = Swift.Bool(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .allowsTightening(value0)
+                return
             }
-            self = .allowsTightening(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "AllowsTighteningModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .allowsTightening(let value0):

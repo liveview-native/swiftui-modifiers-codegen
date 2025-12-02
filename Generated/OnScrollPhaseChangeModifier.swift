@@ -14,14 +14,13 @@ extension OnScrollPhaseChangeModifier: RuntimeViewModifier {
     public static var baseName: String { "onScrollPhaseChange" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
-            self = .onScrollPhaseChangeWithVoid()
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "OnScrollPhaseChangeModifier", expected: [0], found: syntax.arguments.count)
+        if syntax.arguments.count == 0 {
+            self = .onScrollPhaseChangeWithVoid
+            return
+            self = .onScrollPhaseChangeWithVoid1
+            return
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .onScrollPhaseChangeWithVoid:

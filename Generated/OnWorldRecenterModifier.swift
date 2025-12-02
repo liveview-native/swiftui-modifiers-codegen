@@ -14,14 +14,13 @@ extension OnWorldRecenterModifier: RuntimeViewModifier {
     public static var baseName: String { "onWorldRecenter" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
-            self = .onWorldRecenterWithVoid()
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "OnWorldRecenterModifier", expected: [0], found: syntax.arguments.count)
+        if syntax.arguments.count == 0 {
+            self = .onWorldRecenterWithVoid
+            return
+            self = .onWorldRecenterWithVoid1
+            return
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .onWorldRecenterWithVoid:

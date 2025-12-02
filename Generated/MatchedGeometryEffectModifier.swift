@@ -13,23 +13,14 @@ extension MatchedGeometryEffectModifier: RuntimeViewModifier {
     public static var baseName: String { "matchedGeometryEffect" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 5:
-            guard let expr_id = syntax.argument(named: "id")?.expression, let id = AnyHashable(syntax: expr_id) else {
-                throw ModifierParseError.invalidArguments(modifier: "MatchedGeometryEffectModifier", variant: "matchedGeometryEffect", expectedTypes: "AnyHashable, SwiftUICore.Namespace.AnyHashable, SwiftUICore.MatchedGeometryProperties, SwiftUICore.UnitPoint, Swift.Bool")
-            }
-            guard let expr_in = syntax.argument(named: "in")?.expression, let in = SwiftUICore.Namespace.AnyHashable(syntax: expr_in) else {
-                throw ModifierParseError.invalidArguments(modifier: "MatchedGeometryEffectModifier", variant: "matchedGeometryEffect", expectedTypes: "AnyHashable, SwiftUICore.Namespace.AnyHashable, SwiftUICore.MatchedGeometryProperties, SwiftUICore.UnitPoint, Swift.Bool")
-            }
-            let properties: SwiftUICore.MatchedGeometryProperties = if let expr = syntax.argument(named: "properties")?.expression, let parsed = SwiftUICore.MatchedGeometryProperties(syntax: expr) { parsed } else { .frame }
-            let anchor: SwiftUICore.UnitPoint = if let expr = syntax.argument(named: "anchor")?.expression, let parsed = SwiftUICore.UnitPoint(syntax: expr) { parsed } else { .center }
-            let isSource: Swift.Bool = if let expr = syntax.argument(named: "isSource")?.expression, let parsed = Swift.Bool(syntax: expr) { parsed } else { true }
-            self = .matchedGeometryEffect(id: id, in: in, properties: properties, anchor: anchor, isSource: isSource)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "MatchedGeometryEffectModifier", expected: [5], found: syntax.arguments.count)
-        }
+        let id: AnyHashable = syntax.argument(named: "id")?.expression.flatMap { AnyHashable(syntax: $0) }
+        let in: SwiftUICore.Namespace.AnyHashable = syntax.argument(named: "in")?.expression.flatMap { SwiftUICore.Namespace.AnyHashable(syntax: $0) }
+        let properties: SwiftUICore.MatchedGeometryProperties = syntax.argument(named: "properties")?.expression.flatMap { SwiftUICore.MatchedGeometryProperties(syntax: $0) } ?? .frame
+        let anchor: SwiftUICore.UnitPoint = syntax.argument(named: "anchor")?.expression.flatMap { SwiftUICore.UnitPoint(syntax: $0) } ?? .center
+        let isSource: Swift.Bool = syntax.argument(named: "isSource")?.expression.flatMap { Swift.Bool(syntax: $0) } ?? true
+        self = .matchedGeometryEffect(id: id, in: in, properties: properties, anchor: anchor, isSource: isSource)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .matchedGeometryEffect(let id, let in, let properties, let anchor, let isSource):

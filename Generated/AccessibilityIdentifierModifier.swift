@@ -14,25 +14,19 @@ extension AccessibilityIdentifierModifier: RuntimeViewModifier {
     public static var baseName: String { "accessibilityIdentifier" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = Swift.String(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "AccessibilityIdentifierModifier", variant: "accessibilityIdentifierWithString", expectedTypes: "Swift.String")
+        if syntax.arguments.count == 1 {
+            if let value0 = Swift.String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .accessibilityIdentifierWithString(value0)
+                return
             }
-            self = .accessibilityIdentifierWithString(value0)
-        case 2:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = Swift.String(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "AccessibilityIdentifierModifier", variant: "accessibilityIdentifierWithStringBool", expectedTypes: "Swift.String, Swift.Bool")
+        }
+        if syntax.arguments.count == 2 {
+            if let value0 = Swift.String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let isEnabled = Swift.Bool(syntax: syntax.argument(named: "isEnabled")?.expression!) {
+                self = .accessibilityIdentifierWithStringBool(value0, isEnabled: isEnabled)
+                return
             }
-            guard let expr_isEnabled = syntax.argument(named: "isEnabled")?.expression, let isEnabled = Swift.Bool(syntax: expr_isEnabled) else {
-                throw ModifierParseError.invalidArguments(modifier: "AccessibilityIdentifierModifier", variant: "accessibilityIdentifierWithStringBool", expectedTypes: "Swift.String, Swift.Bool")
-            }
-            self = .accessibilityIdentifierWithStringBool(value0, isEnabled: isEnabled)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "AccessibilityIdentifierModifier", expected: [1, 2], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .accessibilityIdentifierWithStringBool(let value0, let isEnabled):

@@ -16,34 +16,29 @@ extension OverlayModifier: RuntimeViewModifier {
     public static var baseName: String { "overlay" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let alignment: SwiftUICore.Alignment = if let expr = syntax.argument(named: "alignment")?.expression, let parsed = SwiftUICore.Alignment(syntax: expr) { parsed } else { .center }
-            self = .overlayWithAlignmentClosureAnyView(alignment: alignment)
-        case 2:
-            if let value0: AnyView = AnyView(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
-                let alignment: SwiftUICore.Alignment = if let expr = syntax.argument(named: "alignment")?.expression, let parsed = SwiftUICore.Alignment(syntax: expr) { parsed } else { .center }
-                self = .overlayWithAnyViewAlignment(value0, alignment: alignment)
-            } else if let value0: AnyShapeStyle = AnyShapeStyle(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
-                let ignoresSafeAreaEdges: SwiftUICore.Edge.Set = if let expr = syntax.argument(named: "ignoresSafeAreaEdges")?.expression, let parsed = SwiftUICore.Edge.Set(syntax: expr) { parsed } else { .all }
-                self = .overlayWithAnyShapeStyleSet(value0, ignoresSafeAreaEdges: ignoresSafeAreaEdges)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "OverlayModifier", variant: "multiple variants", expectedTypes: "AnyView, SwiftUICore.Alignment or AnyShapeStyle, SwiftUICore.Edge.Set")
-            }
-        case 3:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = AnyShapeStyle(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "OverlayModifier", variant: "overlayWithAnyShapeStyleAnyShapeFillStyle", expectedTypes: "AnyShapeStyle, AnyShape, SwiftUICore.FillStyle")
-            }
-            guard let expr_in = syntax.argument(named: "in")?.expression, let in = AnyShape(syntax: expr_in) else {
-                throw ModifierParseError.invalidArguments(modifier: "OverlayModifier", variant: "overlayWithAnyShapeStyleAnyShapeFillStyle", expectedTypes: "AnyShapeStyle, AnyShape, SwiftUICore.FillStyle")
-            }
-            let fillStyle: SwiftUICore.FillStyle = if let expr = syntax.argument(named: "fillStyle")?.expression, let parsed = SwiftUICore.FillStyle(syntax: expr) { parsed } else { FillStyle() }
-            self = .overlayWithAnyShapeStyleAnyShapeFillStyle(value0, in: in, fillStyle: fillStyle)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "OverlayModifier", expected: [1, 2, 3], found: syntax.arguments.count)
+        if syntax.argument(named: "alignment") != nil {
+            let value0: AnyView = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { AnyView(syntax: $0) }
+            let alignment: SwiftUICore.Alignment = syntax.argument(named: "alignment")?.expression.flatMap { SwiftUICore.Alignment(syntax: $0) } ?? .center
+            self = .overlayWithAnyViewAlignment(value0, alignment: alignment)
+            return
         }
+        if syntax.argument(named: "alignment") != nil || syntax.argument(named: "content") != nil {
+            let alignment: SwiftUICore.Alignment = syntax.argument(named: "alignment")?.expression.flatMap { SwiftUICore.Alignment(syntax: $0) } ?? .center
+            self = .overlayWithAlignmentClosureAnyView(alignment: alignment)
+            return
+        }
+        if syntax.argument(named: "ignoresSafeAreaEdges") != nil {
+            let value0: AnyShapeStyle = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { AnyShapeStyle(syntax: $0) }
+            let ignoresSafeAreaEdges: SwiftUICore.Edge.Set = syntax.argument(named: "ignoresSafeAreaEdges")?.expression.flatMap { SwiftUICore.Edge.Set(syntax: $0) } ?? .all
+            self = .overlayWithAnyShapeStyleSet(value0, ignoresSafeAreaEdges: ignoresSafeAreaEdges)
+            return
+        }
+        let value0: AnyShapeStyle = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { AnyShapeStyle(syntax: $0) }
+        let in: AnyShape = syntax.argument(named: "in")?.expression.flatMap { AnyShape(syntax: $0) }
+        let fillStyle: SwiftUICore.FillStyle = syntax.argument(named: "fillStyle")?.expression.flatMap { SwiftUICore.FillStyle(syntax: $0) } ?? FillStyle()
+        self = .overlayWithAnyShapeStyleAnyShapeFillStyle(value0, in: in, fillStyle: fillStyle)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .overlayWithAnyViewAlignment(let value0, let alignment):

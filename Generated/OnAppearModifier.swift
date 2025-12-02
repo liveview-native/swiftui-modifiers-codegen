@@ -13,14 +13,9 @@ extension OnAppearModifier: RuntimeViewModifier {
     public static var baseName: String { "onAppear" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
-            self = .onAppear
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "OnAppearModifier", expected: [0], found: syntax.arguments.count)
-        }
+        self = .onAppear()
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .onAppear:

@@ -20,36 +20,43 @@ extension AccessibilityValueModifier: RuntimeViewModifier {
     public static var baseName: String { "accessibilityValue" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            if let value0: SwiftUICore.Text = SwiftUICore.Text(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUICore.Text(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
                 self = .accessibilityValueWithText(value0)
-            } else if let value0: SwiftUICore.LocalizedStringKey = SwiftUICore.LocalizedStringKey(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                return
+            }
+            if let value0 = SwiftUICore.LocalizedStringKey(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
                 self = .accessibilityValueWithLocalizedStringKey(value0)
-            } else if let value0: Foundation.LocalizedStringResource = Foundation.LocalizedStringResource(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                return
+            }
+            if let value0 = Foundation.LocalizedStringResource(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
                 self = .accessibilityValueWithLocalizedStringResource(value0)
-            } else if let value0: String = String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                return
+            }
+            if let value0 = String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
                 self = .accessibilityValueWithString(value0)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "AccessibilityValueModifier", variant: "multiple variants", expectedTypes: "SwiftUICore.Text or SwiftUICore.LocalizedStringKey or Foundation.LocalizedStringResource or String")
+                return
             }
-        case 2:
-            if let value0: SwiftUICore.Text = SwiftUICore.Text(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isEnabled = syntax.argument(named: "isEnabled")?.expression, let isEnabled = Swift.Bool(syntax: expr_isEnabled) {
+        }
+        if syntax.arguments.count == 2 {
+            if let value0 = SwiftUICore.Text(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let isEnabled = Swift.Bool(syntax: syntax.argument(named: "isEnabled")?.expression!) {
                 self = .accessibilityValueWithTextBool(value0, isEnabled: isEnabled)
-            } else if let value0: SwiftUICore.LocalizedStringKey = SwiftUICore.LocalizedStringKey(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isEnabled = syntax.argument(named: "isEnabled")?.expression, let isEnabled = Swift.Bool(syntax: expr_isEnabled) {
-                self = .accessibilityValueWithLocalizedStringKeyBool(value0, isEnabled: isEnabled)
-            } else if let value0: Foundation.LocalizedStringResource = Foundation.LocalizedStringResource(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isEnabled = syntax.argument(named: "isEnabled")?.expression, let isEnabled = Swift.Bool(syntax: expr_isEnabled) {
-                self = .accessibilityValueWithLocalizedStringResourceBool(value0, isEnabled: isEnabled)
-            } else if let value0: String = String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isEnabled = syntax.argument(named: "isEnabled")?.expression, let isEnabled = Swift.Bool(syntax: expr_isEnabled) {
-                self = .accessibilityValueWithStringBool(value0, isEnabled: isEnabled)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "AccessibilityValueModifier", variant: "multiple variants", expectedTypes: "SwiftUICore.Text, Swift.Bool or SwiftUICore.LocalizedStringKey, Swift.Bool or Foundation.LocalizedStringResource, Swift.Bool or String, Swift.Bool")
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "AccessibilityValueModifier", expected: [1, 2], found: syntax.arguments.count)
+            if let value0 = SwiftUICore.LocalizedStringKey(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let isEnabled = Swift.Bool(syntax: syntax.argument(named: "isEnabled")?.expression!) {
+                self = .accessibilityValueWithLocalizedStringKeyBool(value0, isEnabled: isEnabled)
+                return
+            }
+            if let value0 = Foundation.LocalizedStringResource(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let isEnabled = Swift.Bool(syntax: syntax.argument(named: "isEnabled")?.expression!) {
+                self = .accessibilityValueWithLocalizedStringResourceBool(value0, isEnabled: isEnabled)
+                return
+            }
+            if let value0 = String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let isEnabled = Swift.Bool(syntax: syntax.argument(named: "isEnabled")?.expression!) {
+                self = .accessibilityValueWithStringBool(value0, isEnabled: isEnabled)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .accessibilityValueWithTextBool(let value0, let isEnabled):

@@ -13,17 +13,13 @@ extension OnReceiveModifier: RuntimeViewModifier {
     public static var baseName: String { "onReceive" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = P(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "OnReceiveModifier", variant: "onReceive", expectedTypes: "P")
+        if syntax.arguments.count == 1 {
+            if let value0 = P(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .onReceive(value0)
+                return
             }
-            self = .onReceive(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "OnReceiveModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .onReceive(let value0):

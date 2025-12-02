@@ -13,14 +13,11 @@ extension LoopModifier: RuntimeViewModifier {
     public static var baseName: String { "loop" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .loop
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "LoopModifier", expected: [0], found: syntax.arguments.count)
+            return
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .loop:

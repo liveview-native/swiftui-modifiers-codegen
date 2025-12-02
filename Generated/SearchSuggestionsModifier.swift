@@ -14,22 +14,17 @@ extension SearchSuggestionsModifier: RuntimeViewModifier {
     public static var baseName: String { "searchSuggestions" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .searchSuggestionsWithClosureAnyView
-        case 2:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUICore.Visibility(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "SearchSuggestionsModifier", variant: "searchSuggestionsWithVisibilitySet", expectedTypes: "SwiftUICore.Visibility, SwiftUI.SearchSuggestionsPlacement.Set")
+            return
+        }
+        if syntax.arguments.count == 2 {
+            if let value0 = SwiftUICore.Visibility(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let for = SwiftUI.SearchSuggestionsPlacement.Set(syntax: syntax.argument(named: "for")?.expression!) {
+                self = .searchSuggestionsWithVisibilitySet(value0, for: for)
+                return
             }
-            guard let expr_for = syntax.argument(named: "for")?.expression, let for = SwiftUI.SearchSuggestionsPlacement.Set(syntax: expr_for) else {
-                throw ModifierParseError.invalidArguments(modifier: "SearchSuggestionsModifier", variant: "searchSuggestionsWithVisibilitySet", expectedTypes: "SwiftUICore.Visibility, SwiftUI.SearchSuggestionsPlacement.Set")
-            }
-            self = .searchSuggestionsWithVisibilitySet(value0, for: for)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "SearchSuggestionsModifier", expected: [0, 2], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .searchSuggestionsWithClosureAnyView:

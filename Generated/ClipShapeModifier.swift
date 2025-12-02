@@ -13,18 +13,11 @@ extension ClipShapeModifier: RuntimeViewModifier {
     public static var baseName: String { "clipShape" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = AnyShape(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "ClipShapeModifier", variant: "clipShape", expectedTypes: "AnyShape, SwiftUICore.FillStyle")
-            }
-            let style: SwiftUICore.FillStyle = if let expr = syntax.argument(named: "style")?.expression, let parsed = SwiftUICore.FillStyle(syntax: expr) { parsed } else { FillStyle() }
-            self = .clipShape(value0, style: style)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ClipShapeModifier", expected: [2], found: syntax.arguments.count)
-        }
+        let value0: AnyShape = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { AnyShape(syntax: $0) }
+        let style: SwiftUICore.FillStyle = syntax.argument(named: "style")?.expression.flatMap { SwiftUICore.FillStyle(syntax: $0) } ?? FillStyle()
+        self = .clipShape(value0, style: style)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .clipShape(let value0, let style):

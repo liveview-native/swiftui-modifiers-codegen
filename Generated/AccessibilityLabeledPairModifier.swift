@@ -13,23 +13,13 @@ extension AccessibilityLabeledPairModifier: RuntimeViewModifier {
     public static var baseName: String { "accessibilityLabeledPair" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 3:
-            guard let expr_role = syntax.argument(named: "role")?.expression, let role = SwiftUI.AccessibilityLabeledPairRole(syntax: expr_role) else {
-                throw ModifierParseError.invalidArguments(modifier: "AccessibilityLabeledPairModifier", variant: "accessibilityLabeledPair", expectedTypes: "SwiftUI.AccessibilityLabeledPairRole, AnyHashable, SwiftUICore.Namespace.AnyHashable")
+        if syntax.arguments.count == 3 {
+            if let role = SwiftUI.AccessibilityLabeledPairRole(syntax: syntax.argument(named: "role")?.expression!), let id = AnyHashable(syntax: syntax.argument(named: "id")?.expression!), let in = SwiftUICore.Namespace.AnyHashable(syntax: syntax.argument(named: "in")?.expression!) {
+                self = .accessibilityLabeledPair(role: role, id: id, in: in)
+                return
             }
-            guard let expr_id = syntax.argument(named: "id")?.expression, let id = AnyHashable(syntax: expr_id) else {
-                throw ModifierParseError.invalidArguments(modifier: "AccessibilityLabeledPairModifier", variant: "accessibilityLabeledPair", expectedTypes: "SwiftUI.AccessibilityLabeledPairRole, AnyHashable, SwiftUICore.Namespace.AnyHashable")
-            }
-            guard let expr_in = syntax.argument(named: "in")?.expression, let in = SwiftUICore.Namespace.AnyHashable(syntax: expr_in) else {
-                throw ModifierParseError.invalidArguments(modifier: "AccessibilityLabeledPairModifier", variant: "accessibilityLabeledPair", expectedTypes: "SwiftUI.AccessibilityLabeledPairRole, AnyHashable, SwiftUICore.Namespace.AnyHashable")
-            }
-            self = .accessibilityLabeledPair(role: role, id: id, in: in)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "AccessibilityLabeledPairModifier", expected: [3], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .accessibilityLabeledPair(let role, let id, let in):

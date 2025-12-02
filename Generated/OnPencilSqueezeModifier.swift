@@ -13,14 +13,11 @@ extension OnPencilSqueezeModifier: RuntimeViewModifier {
     public static var baseName: String { "onPencilSqueeze" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .onPencilSqueeze
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "OnPencilSqueezeModifier", expected: [0], found: syntax.arguments.count)
+            return
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .onPencilSqueeze:

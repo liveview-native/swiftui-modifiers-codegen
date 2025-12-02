@@ -13,15 +13,13 @@ extension ListRowSpacingModifier: RuntimeViewModifier {
     public static var baseName: String { "listRowSpacing" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let value0: CoreFoundation.CGFloat? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { CoreFoundation.CGFloat(syntax: expr) } else { nil }
-            self = .listRowSpacing(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ListRowSpacingModifier", expected: [1], found: syntax.arguments.count)
+        if syntax.arguments.count == 1 {
+            if let value0 = CoreFoundation.CGFloat(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .listRowSpacing(value0)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .listRowSpacing(let value0):

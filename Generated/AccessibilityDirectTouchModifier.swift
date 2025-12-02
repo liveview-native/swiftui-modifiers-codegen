@@ -13,16 +13,11 @@ extension AccessibilityDirectTouchModifier: RuntimeViewModifier {
     public static var baseName: String { "accessibilityDirectTouch" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            let value0: Swift.Bool = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = Swift.Bool(syntax: expr) { parsed } else { true }
-            let options: SwiftUI.AccessibilityDirectTouchOptions = if let expr = syntax.argument(named: "options")?.expression, let parsed = SwiftUI.AccessibilityDirectTouchOptions(syntax: expr) { parsed } else { [] }
-            self = .accessibilityDirectTouch(value0, options: options)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "AccessibilityDirectTouchModifier", expected: [2], found: syntax.arguments.count)
-        }
+        let value0: Swift.Bool = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { Swift.Bool(syntax: $0) } ?? true
+        let options: SwiftUI.AccessibilityDirectTouchOptions = syntax.argument(named: "options")?.expression.flatMap { SwiftUI.AccessibilityDirectTouchOptions(syntax: $0) } ?? []
+        self = .accessibilityDirectTouch(value0, options: options)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .accessibilityDirectTouch(let value0, let options):

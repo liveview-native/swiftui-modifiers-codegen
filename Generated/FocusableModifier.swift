@@ -15,21 +15,19 @@ extension FocusableModifier: RuntimeViewModifier {
     public static var baseName: String { "focusable" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let value0: Swift.Bool? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { Swift.Bool(syntax: expr) } else { nil }
-            self = .focusableWithBool(value0)
-        case 2:
-            let value0: Swift.Bool = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = Swift.Bool(syntax: expr) { parsed } else { true }
-            guard let expr_interactions = syntax.argument(named: "interactions")?.expression, let interactions = SwiftUI.FocusInteractions(syntax: expr_interactions) else {
-                throw ModifierParseError.invalidArguments(modifier: "FocusableModifier", variant: "focusableWithBoolFocusInteractions", expectedTypes: "Swift.Bool, SwiftUI.FocusInteractions")
-            }
+        let value0: Swift.Bool = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { Swift.Bool(syntax: $0) } ?? true
+        self = .focusableWithBool(value0)
+        return
+        if syntax.argument(named: "interactions") != nil {
+            let value0: Swift.Bool = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { Swift.Bool(syntax: $0) } ?? true
+            let interactions: SwiftUI.FocusInteractions = syntax.argument(named: "interactions")?.expression.flatMap { SwiftUI.FocusInteractions(syntax: $0) }
             self = .focusableWithBoolFocusInteractions(value0, interactions: interactions)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "FocusableModifier", expected: [1, 2], found: syntax.arguments.count)
+            return
         }
+        let value0: Swift.Bool = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { Swift.Bool(syntax: $0) } ?? true
+        self = .focusableWithBoolVoid(value0)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .focusableWithBool(let value0):

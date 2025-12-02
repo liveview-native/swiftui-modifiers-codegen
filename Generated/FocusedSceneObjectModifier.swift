@@ -14,21 +14,17 @@ extension FocusedSceneObjectModifier: RuntimeViewModifier {
     public static var baseName: String { "focusedSceneObject" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            if let value0: T = T(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+        if syntax.arguments.count == 1 {
+            if let value0 = T(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
                 self = .focusedSceneObjectWithT(value0)
-            } else if true {
-                let value0: T = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { T(syntax: expr) } else { nil }
-                self = .focusedSceneObjectWithTOptional(value0)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "FocusedSceneObjectModifier", variant: "multiple variants", expectedTypes: "T or T?")
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "FocusedSceneObjectModifier", expected: [1], found: syntax.arguments.count)
+            if let value0 = T(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .focusedSceneObjectWithTOptional(value0)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .focusedSceneObjectWithT(let value0):

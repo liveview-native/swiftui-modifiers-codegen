@@ -13,14 +13,11 @@ extension SectionActionsModifier: RuntimeViewModifier {
     public static var baseName: String { "sectionActions" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .sectionActions
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "SectionActionsModifier", expected: [0], found: syntax.arguments.count)
+            return
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .sectionActions:

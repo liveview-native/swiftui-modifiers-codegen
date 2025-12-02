@@ -14,20 +14,17 @@ extension OnGeometryChangeModifier: RuntimeViewModifier {
     public static var baseName: String { "onGeometryChange" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            if let expr_for = syntax.argument(named: "for")?.expression, let for = T.Type(syntax: expr_for) {
+        if syntax.arguments.count == 1 {
+            if let for = T.Type(syntax: syntax.argument(named: "for")?.expression!) {
                 self = .onGeometryChangeWithTypeClosureTVoid(for: for)
-            } else if let expr_for = syntax.argument(named: "for")?.expression, let for = T.Type(syntax: expr_for) {
-                self = .onGeometryChangeWithTypeClosureTVoid1(for: for)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "OnGeometryChangeModifier", variant: "multiple variants", expectedTypes: "T.Type or T.Type")
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "OnGeometryChangeModifier", expected: [1], found: syntax.arguments.count)
+            if let for = T.Type(syntax: syntax.argument(named: "for")?.expression!) {
+                self = .onGeometryChangeWithTypeClosureTVoid1(for: for)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .onGeometryChangeWithTypeClosureTVoid(let for):

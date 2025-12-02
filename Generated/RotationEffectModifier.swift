@@ -13,18 +13,11 @@ extension RotationEffectModifier: RuntimeViewModifier {
     public static var baseName: String { "rotationEffect" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUICore.Angle(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "RotationEffectModifier", variant: "rotationEffect", expectedTypes: "SwiftUICore.Angle, SwiftUICore.UnitPoint")
-            }
-            let anchor: SwiftUICore.UnitPoint = if let expr = syntax.argument(named: "anchor")?.expression, let parsed = SwiftUICore.UnitPoint(syntax: expr) { parsed } else { .center }
-            self = .rotationEffect(value0, anchor: anchor)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "RotationEffectModifier", expected: [2], found: syntax.arguments.count)
-        }
+        let value0: SwiftUICore.Angle = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { SwiftUICore.Angle(syntax: $0) }
+        let anchor: SwiftUICore.UnitPoint = syntax.argument(named: "anchor")?.expression.flatMap { SwiftUICore.UnitPoint(syntax: $0) } ?? .center
+        self = .rotationEffect(value0, anchor: anchor)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .rotationEffect(let value0, let anchor):

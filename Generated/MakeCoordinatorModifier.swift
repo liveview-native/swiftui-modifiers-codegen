@@ -14,14 +14,13 @@ extension MakeCoordinatorModifier: RuntimeViewModifier {
     public static var baseName: String { "makeCoordinator" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
-            self = .makeCoordinator()
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "MakeCoordinatorModifier", expected: [0], found: syntax.arguments.count)
+        if syntax.arguments.count == 0 {
+            self = .makeCoordinator
+            return
+            self = .makeCoordinator1
+            return
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .makeCoordinator:

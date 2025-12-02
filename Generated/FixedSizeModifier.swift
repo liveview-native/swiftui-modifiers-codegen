@@ -14,22 +14,17 @@ extension FixedSizeModifier: RuntimeViewModifier {
     public static var baseName: String { "fixedSize" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .fixedSize
-        case 2:
-            guard let expr_horizontal = syntax.argument(named: "horizontal")?.expression, let horizontal = Swift.Bool(syntax: expr_horizontal) else {
-                throw ModifierParseError.invalidArguments(modifier: "FixedSizeModifier", variant: "fixedSizeWithBoolBool", expectedTypes: "Swift.Bool, Swift.Bool")
+            return
+        }
+        if syntax.arguments.count == 2 {
+            if let horizontal = Swift.Bool(syntax: syntax.argument(named: "horizontal")?.expression!), let vertical = Swift.Bool(syntax: syntax.argument(named: "vertical")?.expression!) {
+                self = .fixedSizeWithBoolBool(horizontal: horizontal, vertical: vertical)
+                return
             }
-            guard let expr_vertical = syntax.argument(named: "vertical")?.expression, let vertical = Swift.Bool(syntax: expr_vertical) else {
-                throw ModifierParseError.invalidArguments(modifier: "FixedSizeModifier", variant: "fixedSizeWithBoolBool", expectedTypes: "Swift.Bool, Swift.Bool")
-            }
-            self = .fixedSizeWithBoolBool(horizontal: horizontal, vertical: vertical)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "FixedSizeModifier", expected: [0, 2], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .fixedSizeWithBoolBool(let horizontal, let vertical):

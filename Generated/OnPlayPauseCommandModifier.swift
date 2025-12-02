@@ -13,14 +13,11 @@ extension OnPlayPauseCommandModifier: RuntimeViewModifier {
     public static var baseName: String { "onPlayPauseCommand" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .onPlayPauseCommand
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "OnPlayPauseCommandModifier", expected: [0], found: syntax.arguments.count)
+            return
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .onPlayPauseCommand:

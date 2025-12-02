@@ -13,17 +13,13 @@ extension SerializedDataModifier: RuntimeViewModifier {
     public static var baseName: String { "serializedData" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = [SwiftUICore._ViewDebug.Data](syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "SerializedDataModifier", variant: "serializedData", expectedTypes: "[SwiftUICore._ViewDebug.Data]")
+        if syntax.arguments.count == 1 {
+            if let value0 = [SwiftUICore._ViewDebug.Data](syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .serializedData(value0)
+                return
             }
-            self = .serializedData(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "SerializedDataModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .serializedData(let value0):

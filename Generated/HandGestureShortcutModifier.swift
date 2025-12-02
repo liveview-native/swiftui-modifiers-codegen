@@ -13,18 +13,11 @@ extension HandGestureShortcutModifier: RuntimeViewModifier {
     public static var baseName: String { "handGestureShortcut" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUI.HandGestureShortcut(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "HandGestureShortcutModifier", variant: "handGestureShortcut", expectedTypes: "SwiftUI.HandGestureShortcut, Swift.Bool")
-            }
-            let isEnabled: Swift.Bool = if let expr = syntax.argument(named: "isEnabled")?.expression, let parsed = Swift.Bool(syntax: expr) { parsed } else { true }
-            self = .handGestureShortcut(value0, isEnabled: isEnabled)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "HandGestureShortcutModifier", expected: [2], found: syntax.arguments.count)
-        }
+        let value0: SwiftUI.HandGestureShortcut = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { SwiftUI.HandGestureShortcut(syntax: $0) }
+        let isEnabled: Swift.Bool = syntax.argument(named: "isEnabled")?.expression.flatMap { Swift.Bool(syntax: $0) } ?? true
+        self = .handGestureShortcut(value0, isEnabled: isEnabled)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .handGestureShortcut(let value0, let isEnabled):

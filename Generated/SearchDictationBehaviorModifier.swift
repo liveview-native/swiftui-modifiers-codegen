@@ -13,17 +13,13 @@ extension SearchDictationBehaviorModifier: RuntimeViewModifier {
     public static var baseName: String { "searchDictationBehavior" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUI.TextInputDictationBehavior(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "SearchDictationBehaviorModifier", variant: "searchDictationBehavior", expectedTypes: "SwiftUI.TextInputDictationBehavior")
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUI.TextInputDictationBehavior(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .searchDictationBehavior(value0)
+                return
             }
-            self = .searchDictationBehavior(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "SearchDictationBehaviorModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .searchDictationBehavior(let value0):

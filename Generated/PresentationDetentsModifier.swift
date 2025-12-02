@@ -14,25 +14,19 @@ extension PresentationDetentsModifier: RuntimeViewModifier {
     public static var baseName: String { "presentationDetents" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = Swift.Set<SwiftUI.PresentationDetent>(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "PresentationDetentsModifier", variant: "presentationDetentsWithPresentationDetent", expectedTypes: "Swift.Set<SwiftUI.PresentationDetent>")
+        if syntax.arguments.count == 1 {
+            if let value0 = Swift.Set<SwiftUI.PresentationDetent>(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .presentationDetentsWithPresentationDetent(value0)
+                return
             }
-            self = .presentationDetentsWithPresentationDetent(value0)
-        case 2:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = Swift.Set<SwiftUI.PresentationDetent>(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "PresentationDetentsModifier", variant: "presentationDetentsWithPresentationDetentPresentationDetent", expectedTypes: "Swift.Set<SwiftUI.PresentationDetent>, SwiftUICore.Binding<SwiftUI.PresentationDetent>")
+        }
+        if syntax.arguments.count == 2 {
+            if let value0 = Swift.Set<SwiftUI.PresentationDetent>(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let selection = SwiftUICore.Binding<SwiftUI.PresentationDetent>(syntax: syntax.argument(named: "selection")?.expression!) {
+                self = .presentationDetentsWithPresentationDetentPresentationDetent(value0, selection: selection)
+                return
             }
-            guard let expr_selection = syntax.argument(named: "selection")?.expression, let selection = SwiftUICore.Binding<SwiftUI.PresentationDetent>(syntax: expr_selection) else {
-                throw ModifierParseError.invalidArguments(modifier: "PresentationDetentsModifier", variant: "presentationDetentsWithPresentationDetentPresentationDetent", expectedTypes: "Swift.Set<SwiftUI.PresentationDetent>, SwiftUICore.Binding<SwiftUI.PresentationDetent>")
-            }
-            self = .presentationDetentsWithPresentationDetentPresentationDetent(value0, selection: selection)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "PresentationDetentsModifier", expected: [1, 2], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .presentationDetentsWithPresentationDetent(let value0):

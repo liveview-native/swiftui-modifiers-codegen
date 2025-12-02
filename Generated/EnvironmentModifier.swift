@@ -14,23 +14,19 @@ extension EnvironmentModifier: RuntimeViewModifier {
     public static var baseName: String { "environment" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let value0: T? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { T(syntax: expr) } else { nil }
-            self = .environmentWithTOptional(value0)
-        case 2:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = Swift.WritableKeyPath<SwiftUICore.EnvironmentValues, V>(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "EnvironmentModifier", variant: "environmentWithEnvironmentValuesVV", expectedTypes: "Swift.WritableKeyPath<SwiftUICore.EnvironmentValues, V>, V")
+        if syntax.arguments.count == 1 {
+            if let value0 = T(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .environmentWithTOptional(value0)
+                return
             }
-            guard let expr_value1 = (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil), let value1 = V(syntax: expr_value1) else {
-                throw ModifierParseError.invalidArguments(modifier: "EnvironmentModifier", variant: "environmentWithEnvironmentValuesVV", expectedTypes: "Swift.WritableKeyPath<SwiftUICore.EnvironmentValues, V>, V")
+        }
+        if syntax.arguments.count == 2 {
+            if let value0 = Swift.WritableKeyPath<SwiftUICore.EnvironmentValues, V>(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let value1 = V(syntax: (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil)!) {
+                self = .environmentWithEnvironmentValuesVV(value0, value1)
+                return
             }
-            self = .environmentWithEnvironmentValuesVV(value0, value1)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "EnvironmentModifier", expected: [1, 2], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .environmentWithEnvironmentValuesVV(let value0, let value1):

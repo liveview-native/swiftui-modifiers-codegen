@@ -13,14 +13,11 @@ extension UpdateEnvironmentModifier: RuntimeViewModifier {
     public static var baseName: String { "updateEnvironment" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .updateEnvironment
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "UpdateEnvironmentModifier", expected: [0], found: syntax.arguments.count)
+            return
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .updateEnvironment:

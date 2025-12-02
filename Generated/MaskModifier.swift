@@ -14,26 +14,16 @@ extension MaskModifier: RuntimeViewModifier {
     public static var baseName: String { "mask" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let firstLabel = syntax.arguments.first?.label?.text
-            switch firstLabel {
-            case nil:
-                guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = AnyView(syntax: expr_value0) else {
-                    throw ModifierParseError.invalidArguments(modifier: "MaskModifier", variant: "maskWithAnyView", expectedTypes: "AnyView")
-                }
+        if syntax.arguments.count == 1 {
+            if let value0 = AnyView(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
                 self = .maskWithAnyView(value0)
-            case "alignment":
-                let alignment: SwiftUICore.Alignment = if let expr = syntax.argument(named: "alignment")?.expression, let parsed = SwiftUICore.Alignment(syntax: expr) { parsed } else { .center }
-                self = .maskWithAlignmentClosureAnyView(alignment: alignment)
-            default:
-                throw ModifierParseError.ambiguousVariant(modifier: "MaskModifier", expectedLabels: ["alignment"])
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "MaskModifier", expected: [1], found: syntax.arguments.count)
         }
+        let alignment: SwiftUICore.Alignment = syntax.argument(named: "alignment")?.expression.flatMap { SwiftUICore.Alignment(syntax: $0) } ?? .center
+        self = .maskWithAlignmentClosureAnyView(alignment: alignment)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .maskWithAlignmentClosureAnyView(let alignment):

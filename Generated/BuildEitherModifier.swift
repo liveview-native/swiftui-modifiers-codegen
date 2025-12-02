@@ -14,28 +14,17 @@ extension BuildEitherModifier: RuntimeViewModifier {
     public static var baseName: String { "buildEither" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let firstLabel = syntax.arguments.first?.label?.text
-            switch firstLabel {
-            case "first":
-                guard let expr_first = syntax.argument(named: "first")?.expression, let first = AnyView(syntax: expr_first) else {
-                    throw ModifierParseError.invalidArguments(modifier: "BuildEitherModifier", variant: "buildEitherWithAnyView", expectedTypes: "AnyView")
-                }
+        if syntax.arguments.count == 1 {
+            if let first = AnyView(syntax: syntax.argument(named: "first")?.expression!) {
                 self = .buildEitherWithAnyView(first: first)
-            case "second":
-                guard let expr_second = syntax.argument(named: "second")?.expression, let second = AnyView(syntax: expr_second) else {
-                    throw ModifierParseError.invalidArguments(modifier: "BuildEitherModifier", variant: "buildEitherWithAnyView1", expectedTypes: "AnyView")
-                }
-                self = .buildEitherWithAnyView1(second: second)
-            default:
-                throw ModifierParseError.ambiguousVariant(modifier: "BuildEitherModifier", expectedLabels: ["first", "second"])
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "BuildEitherModifier", expected: [1], found: syntax.arguments.count)
+            if let second = AnyView(syntax: syntax.argument(named: "second")?.expression!) {
+                self = .buildEitherWithAnyView1(second: second)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .buildEitherWithAnyView(let first):

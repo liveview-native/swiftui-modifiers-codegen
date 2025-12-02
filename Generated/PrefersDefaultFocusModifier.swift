@@ -13,18 +13,11 @@ extension PrefersDefaultFocusModifier: RuntimeViewModifier {
     public static var baseName: String { "prefersDefaultFocus" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            let value0: Swift.Bool = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = Swift.Bool(syntax: expr) { parsed } else { true }
-            guard let expr_in = syntax.argument(named: "in")?.expression, let in = SwiftUICore.Namespace.ID(syntax: expr_in) else {
-                throw ModifierParseError.invalidArguments(modifier: "PrefersDefaultFocusModifier", variant: "prefersDefaultFocus", expectedTypes: "Swift.Bool, SwiftUICore.Namespace.ID")
-            }
-            self = .prefersDefaultFocus(value0, in: in)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "PrefersDefaultFocusModifier", expected: [2], found: syntax.arguments.count)
-        }
+        let value0: Swift.Bool = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { Swift.Bool(syntax: $0) } ?? true
+        let in: SwiftUICore.Namespace.ID = syntax.argument(named: "in")?.expression.flatMap { SwiftUICore.Namespace.ID(syntax: $0) }
+        self = .prefersDefaultFocus(value0, in: in)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .prefersDefaultFocus(let value0, let in):

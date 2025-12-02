@@ -14,22 +14,17 @@ extension TypesettingLanguageModifier: RuntimeViewModifier {
     public static var baseName: String { "typesettingLanguage" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            if let value0: Foundation.Locale.Language = Foundation.Locale.Language(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
-                let isEnabled: Swift.Bool = if let expr = syntax.argument(named: "isEnabled")?.expression, let parsed = Swift.Bool(syntax: expr) { parsed } else { true }
-                self = .typesettingLanguageWithLanguageBool(value0, isEnabled: isEnabled)
-            } else if let value0: SwiftUICore.TypesettingLanguage = SwiftUICore.TypesettingLanguage(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
-                let isEnabled: Swift.Bool = if let expr = syntax.argument(named: "isEnabled")?.expression, let parsed = Swift.Bool(syntax: expr) { parsed } else { true }
-                self = .typesettingLanguageWithTypesettingLanguageBool(value0, isEnabled: isEnabled)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "TypesettingLanguageModifier", variant: "multiple variants", expectedTypes: "Foundation.Locale.Language, Swift.Bool or SwiftUICore.TypesettingLanguage, Swift.Bool")
-            }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "TypesettingLanguageModifier", expected: [2], found: syntax.arguments.count)
+        if syntax.argument(named: "isEnabled") != nil {
+            let value0: Foundation.Locale.Language = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { Foundation.Locale.Language(syntax: $0) }
+            let isEnabled: Swift.Bool = syntax.argument(named: "isEnabled")?.expression.flatMap { Swift.Bool(syntax: $0) } ?? true
+            self = .typesettingLanguageWithLanguageBool(value0, isEnabled: isEnabled)
+            return
         }
+        let value0: SwiftUICore.TypesettingLanguage = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { SwiftUICore.TypesettingLanguage(syntax: $0) }
+        let isEnabled: Swift.Bool = syntax.argument(named: "isEnabled")?.expression.flatMap { Swift.Bool(syntax: $0) } ?? true
+        self = .typesettingLanguageWithTypesettingLanguageBool(value0, isEnabled: isEnabled)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .typesettingLanguageWithLanguageBool(let value0, let isEnabled):

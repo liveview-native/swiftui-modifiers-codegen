@@ -13,14 +13,11 @@ extension HiddenModifier: RuntimeViewModifier {
     public static var baseName: String { "hidden" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .hidden
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "HiddenModifier", expected: [0], found: syntax.arguments.count)
+            return
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .hidden:

@@ -13,17 +13,13 @@ extension KerningModifier: RuntimeViewModifier {
     public static var baseName: String { "kerning" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = CoreFoundation.CGFloat(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "KerningModifier", variant: "kerning", expectedTypes: "CoreFoundation.CGFloat")
+        if syntax.arguments.count == 1 {
+            if let value0 = CoreFoundation.CGFloat(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .kerning(value0)
+                return
             }
-            self = .kerning(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "KerningModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .kerning(let value0):

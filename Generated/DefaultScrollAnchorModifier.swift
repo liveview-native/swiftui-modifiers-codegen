@@ -14,21 +14,19 @@ extension DefaultScrollAnchorModifier: RuntimeViewModifier {
     public static var baseName: String { "defaultScrollAnchor" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let value0: SwiftUICore.UnitPoint? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUICore.UnitPoint(syntax: expr) } else { nil }
-            self = .defaultScrollAnchorWithUnitPointOptional(value0)
-        case 2:
-            let value0: SwiftUICore.UnitPoint? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUICore.UnitPoint(syntax: expr) } else { nil }
-            guard let expr_for = syntax.argument(named: "for")?.expression, let for = SwiftUI.ScrollAnchorRole(syntax: expr_for) else {
-                throw ModifierParseError.invalidArguments(modifier: "DefaultScrollAnchorModifier", variant: "defaultScrollAnchorWithUnitPointOptionalScrollAnchorRole", expectedTypes: "SwiftUICore.UnitPoint?, SwiftUI.ScrollAnchorRole")
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUICore.UnitPoint(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .defaultScrollAnchorWithUnitPointOptional(value0)
+                return
             }
-            self = .defaultScrollAnchorWithUnitPointOptionalScrollAnchorRole(value0, for: for)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "DefaultScrollAnchorModifier", expected: [1, 2], found: syntax.arguments.count)
+        }
+        if syntax.arguments.count == 2 {
+            if let value0 = SwiftUICore.UnitPoint(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let for = SwiftUI.ScrollAnchorRole(syntax: syntax.argument(named: "for")?.expression!) {
+                self = .defaultScrollAnchorWithUnitPointOptionalScrollAnchorRole(value0, for: for)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .defaultScrollAnchorWithUnitPointOptional(let value0):

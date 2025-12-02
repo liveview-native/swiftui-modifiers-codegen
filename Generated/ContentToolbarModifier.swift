@@ -14,20 +14,17 @@ extension ContentToolbarModifier: RuntimeViewModifier {
     public static var baseName: String { "contentToolbar" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            if let expr_for = syntax.argument(named: "for")?.expression, let for = SwiftUI.ContentToolbarPlacement(syntax: expr_for) {
+        if syntax.arguments.count == 1 {
+            if let for = SwiftUI.ContentToolbarPlacement(syntax: syntax.argument(named: "for")?.expression!) {
                 self = .contentToolbarWithContentToolbarPlacementClosureAnyView(for: for)
-            } else if let expr_for = syntax.argument(named: "for")?.expression, let for = SwiftUI.ContentToolbarPlacement(syntax: expr_for) {
-                self = .contentToolbarWithContentToolbarPlacementClosureContent(for: for)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "ContentToolbarModifier", variant: "multiple variants", expectedTypes: "SwiftUI.ContentToolbarPlacement or SwiftUI.ContentToolbarPlacement")
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ContentToolbarModifier", expected: [1], found: syntax.arguments.count)
+            if let for = SwiftUI.ContentToolbarPlacement(syntax: syntax.argument(named: "for")?.expression!) {
+                self = .contentToolbarWithContentToolbarPlacementClosureContent(for: for)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .contentToolbarWithContentToolbarPlacementClosureAnyView(let for):

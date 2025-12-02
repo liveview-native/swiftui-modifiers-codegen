@@ -13,14 +13,11 @@ extension OnDeleteModifier: RuntimeViewModifier {
     public static var baseName: String { "onDelete" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .onDelete
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "OnDeleteModifier", expected: [0], found: syntax.arguments.count)
+            return
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .onDelete:

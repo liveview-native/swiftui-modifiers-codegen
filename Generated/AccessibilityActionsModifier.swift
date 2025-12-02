@@ -14,19 +14,17 @@ extension AccessibilityActionsModifier: RuntimeViewModifier {
     public static var baseName: String { "accessibilityActions" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .accessibilityActionsWithClosureAnyView
-        case 1:
-            guard let expr_category = syntax.argument(named: "category")?.expression, let category = SwiftUI.AccessibilityActionCategory(syntax: expr_category) else {
-                throw ModifierParseError.invalidArguments(modifier: "AccessibilityActionsModifier", variant: "accessibilityActionsWithAccessibilityActionCategoryClosureAnyView", expectedTypes: "SwiftUI.AccessibilityActionCategory")
+            return
+        }
+        if syntax.arguments.count == 1 {
+            if let category = SwiftUI.AccessibilityActionCategory(syntax: syntax.argument(named: "category")?.expression!) {
+                self = .accessibilityActionsWithAccessibilityActionCategoryClosureAnyView(category: category)
+                return
             }
-            self = .accessibilityActionsWithAccessibilityActionCategoryClosureAnyView(category: category)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "AccessibilityActionsModifier", expected: [0, 1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .accessibilityActionsWithAccessibilityActionCategoryClosureAnyView(let category):

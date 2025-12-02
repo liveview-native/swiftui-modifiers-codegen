@@ -13,20 +13,13 @@ extension DismantleUIViewModifier: RuntimeViewModifier {
     public static var baseName: String { "dismantleUIView" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = Self.UIViewType(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "DismantleUIViewModifier", variant: "dismantleUIView", expectedTypes: "Self.UIViewType, Self.Coordinator")
+        if syntax.arguments.count == 2 {
+            if let value0 = Self.UIViewType(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let coordinator = Self.Coordinator(syntax: syntax.argument(named: "coordinator")?.expression!) {
+                self = .dismantleUIView(value0, coordinator: coordinator)
+                return
             }
-            guard let expr_coordinator = syntax.argument(named: "coordinator")?.expression, let coordinator = Self.Coordinator(syntax: expr_coordinator) else {
-                throw ModifierParseError.invalidArguments(modifier: "DismantleUIViewModifier", variant: "dismantleUIView", expectedTypes: "Self.UIViewType, Self.Coordinator")
-            }
-            self = .dismantleUIView(value0, coordinator: coordinator)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "DismantleUIViewModifier", expected: [2], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .dismantleUIView(let value0, let coordinator):

@@ -13,18 +13,11 @@ extension ContainerCornerOffsetModifier: RuntimeViewModifier {
     public static var baseName: String { "containerCornerOffset" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUICore.Edge.Set(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "ContainerCornerOffsetModifier", variant: "containerCornerOffset", expectedTypes: "SwiftUICore.Edge.Set, Swift.Bool")
-            }
-            let sizeToFit: Swift.Bool = if let expr = syntax.argument(named: "sizeToFit")?.expression, let parsed = Swift.Bool(syntax: expr) { parsed } else { false }
-            self = .containerCornerOffset(value0, sizeToFit: sizeToFit)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ContainerCornerOffsetModifier", expected: [2], found: syntax.arguments.count)
-        }
+        let value0: SwiftUICore.Edge.Set = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { SwiftUICore.Edge.Set(syntax: $0) }
+        let sizeToFit: Swift.Bool = syntax.argument(named: "sizeToFit")?.expression.flatMap { Swift.Bool(syntax: $0) } ?? false
+        self = .containerCornerOffset(value0, sizeToFit: sizeToFit)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .containerCornerOffset(let value0, let sizeToFit):

@@ -20,32 +20,41 @@ extension DismissalConfirmationDialogModifier: RuntimeViewModifier {
     public static var baseName: String { "dismissalConfirmationDialog" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            if let value0: SwiftUICore.LocalizedStringKey = SwiftUICore.LocalizedStringKey(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_shouldPresent = syntax.argument(named: "shouldPresent")?.expression, let shouldPresent = Swift.Bool(syntax: expr_shouldPresent) {
+        if syntax.arguments.count == 2 {
+            if let value0 = SwiftUICore.LocalizedStringKey(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let shouldPresent = Swift.Bool(syntax: syntax.argument(named: "shouldPresent")?.expression!) {
                 self = .dismissalConfirmationDialogWithLocalizedStringKeyBoolClosureAnyView(value0, shouldPresent: shouldPresent)
-            } else if let value0: Foundation.LocalizedStringResource = Foundation.LocalizedStringResource(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_shouldPresent = syntax.argument(named: "shouldPresent")?.expression, let shouldPresent = Swift.Bool(syntax: expr_shouldPresent) {
-                self = .dismissalConfirmationDialogWithLocalizedStringResourceBoolClosureAnyView(value0, shouldPresent: shouldPresent)
-            } else if let value0: String = String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_shouldPresent = syntax.argument(named: "shouldPresent")?.expression, let shouldPresent = Swift.Bool(syntax: expr_shouldPresent) {
-                self = .dismissalConfirmationDialogWithStringBoolClosureAnyView(value0, shouldPresent: shouldPresent)
-            } else if let value0: SwiftUICore.Text = SwiftUICore.Text(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_shouldPresent = syntax.argument(named: "shouldPresent")?.expression, let shouldPresent = Swift.Bool(syntax: expr_shouldPresent) {
-                self = .dismissalConfirmationDialogWithTextBoolClosureAnyView(value0, shouldPresent: shouldPresent)
-            } else if let value0: SwiftUICore.LocalizedStringKey = SwiftUICore.LocalizedStringKey(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_shouldPresent = syntax.argument(named: "shouldPresent")?.expression, let shouldPresent = Swift.Bool(syntax: expr_shouldPresent) {
-                self = .dismissalConfirmationDialogWithLocalizedStringKeyBoolClosureAnyViewClosureAnyView(value0, shouldPresent: shouldPresent)
-            } else if let value0: Foundation.LocalizedStringResource = Foundation.LocalizedStringResource(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_shouldPresent = syntax.argument(named: "shouldPresent")?.expression, let shouldPresent = Swift.Bool(syntax: expr_shouldPresent) {
-                self = .dismissalConfirmationDialogWithLocalizedStringResourceBoolClosureAnyViewClosureAnyView(value0, shouldPresent: shouldPresent)
-            } else if let value0: String = String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_shouldPresent = syntax.argument(named: "shouldPresent")?.expression, let shouldPresent = Swift.Bool(syntax: expr_shouldPresent) {
-                self = .dismissalConfirmationDialogWithStringBoolClosureAnyViewClosureAnyView(value0, shouldPresent: shouldPresent)
-            } else if let value0: SwiftUICore.Text = SwiftUICore.Text(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_shouldPresent = syntax.argument(named: "shouldPresent")?.expression, let shouldPresent = Swift.Bool(syntax: expr_shouldPresent) {
-                self = .dismissalConfirmationDialogWithTextBoolClosureAnyViewClosureAnyView(value0, shouldPresent: shouldPresent)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "DismissalConfirmationDialogModifier", variant: "multiple variants", expectedTypes: "SwiftUICore.LocalizedStringKey, Swift.Bool or Foundation.LocalizedStringResource, Swift.Bool or String, Swift.Bool or SwiftUICore.Text, Swift.Bool or SwiftUICore.LocalizedStringKey, Swift.Bool or Foundation.LocalizedStringResource, Swift.Bool or String, Swift.Bool or SwiftUICore.Text, Swift.Bool")
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "DismissalConfirmationDialogModifier", expected: [2], found: syntax.arguments.count)
+            if let value0 = Foundation.LocalizedStringResource(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let shouldPresent = Swift.Bool(syntax: syntax.argument(named: "shouldPresent")?.expression!) {
+                self = .dismissalConfirmationDialogWithLocalizedStringResourceBoolClosureAnyView(value0, shouldPresent: shouldPresent)
+                return
+            }
+            if let value0 = String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let shouldPresent = Swift.Bool(syntax: syntax.argument(named: "shouldPresent")?.expression!) {
+                self = .dismissalConfirmationDialogWithStringBoolClosureAnyView(value0, shouldPresent: shouldPresent)
+                return
+            }
+            if let value0 = SwiftUICore.Text(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let shouldPresent = Swift.Bool(syntax: syntax.argument(named: "shouldPresent")?.expression!) {
+                self = .dismissalConfirmationDialogWithTextBoolClosureAnyView(value0, shouldPresent: shouldPresent)
+                return
+            }
+            if let value0 = SwiftUICore.LocalizedStringKey(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let shouldPresent = Swift.Bool(syntax: syntax.argument(named: "shouldPresent")?.expression!) {
+                self = .dismissalConfirmationDialogWithLocalizedStringKeyBoolClosureAnyViewClosureAnyView(value0, shouldPresent: shouldPresent)
+                return
+            }
+            if let value0 = Foundation.LocalizedStringResource(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let shouldPresent = Swift.Bool(syntax: syntax.argument(named: "shouldPresent")?.expression!) {
+                self = .dismissalConfirmationDialogWithLocalizedStringResourceBoolClosureAnyViewClosureAnyView(value0, shouldPresent: shouldPresent)
+                return
+            }
+            if let value0 = String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let shouldPresent = Swift.Bool(syntax: syntax.argument(named: "shouldPresent")?.expression!) {
+                self = .dismissalConfirmationDialogWithStringBoolClosureAnyViewClosureAnyView(value0, shouldPresent: shouldPresent)
+                return
+            }
+            if let value0 = SwiftUICore.Text(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let shouldPresent = Swift.Bool(syntax: syntax.argument(named: "shouldPresent")?.expression!) {
+                self = .dismissalConfirmationDialogWithTextBoolClosureAnyViewClosureAnyView(value0, shouldPresent: shouldPresent)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .dismissalConfirmationDialogWithLocalizedStringKeyBoolClosureAnyView(let value0, let shouldPresent):

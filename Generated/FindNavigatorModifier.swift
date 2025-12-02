@@ -13,17 +13,13 @@ extension FindNavigatorModifier: RuntimeViewModifier {
     public static var baseName: String { "findNavigator" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) else {
-                throw ModifierParseError.invalidArguments(modifier: "FindNavigatorModifier", variant: "findNavigator", expectedTypes: "SwiftUICore.Binding<Swift.Bool>")
+        if syntax.arguments.count == 1 {
+            if let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: syntax.argument(named: "isPresented")?.expression!) {
+                self = .findNavigator(isPresented: isPresented)
+                return
             }
-            self = .findNavigator(isPresented: isPresented)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "FindNavigatorModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .findNavigator(let isPresented):

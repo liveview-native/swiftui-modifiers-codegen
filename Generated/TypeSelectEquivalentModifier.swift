@@ -16,15 +16,25 @@ extension TypeSelectEquivalentModifier: RuntimeViewModifier {
     public static var baseName: String { "typeSelectEquivalent" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let value0: SwiftUICore.Text? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUICore.Text(syntax: expr) } else { nil }
-            self = .typeSelectEquivalentWithTextOptional(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "TypeSelectEquivalentModifier", expected: [1], found: syntax.arguments.count)
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUICore.Text(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .typeSelectEquivalentWithTextOptional(value0)
+                return
+            }
+            if let value0 = SwiftUICore.LocalizedStringKey(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .typeSelectEquivalentWithLocalizedStringKey(value0)
+                return
+            }
+            if let value0 = Foundation.LocalizedStringResource(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .typeSelectEquivalentWithLocalizedStringResource(value0)
+                return
+            }
+            if let value0 = String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .typeSelectEquivalentWithString(value0)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .typeSelectEquivalentWithTextOptional(let value0):

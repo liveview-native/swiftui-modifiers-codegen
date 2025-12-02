@@ -13,20 +13,13 @@ extension MeasureTouchSequenceModifier: RuntimeViewModifier {
     public static var baseName: String { "measureTouchSequence" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            guard let expr_host = syntax.argument(named: "host")?.expression, let host = any SwiftUICore._BenchmarkHost(syntax: expr_host) else {
-                throw ModifierParseError.invalidArguments(modifier: "MeasureTouchSequenceModifier", variant: "measureTouchSequence", expectedTypes: "any SwiftUICore._BenchmarkHost, [Self.Touch]")
+        if syntax.arguments.count == 2 {
+            if let host = any SwiftUICore._BenchmarkHost(syntax: syntax.argument(named: "host")?.expression!), let value1 = [Self.Touch](syntax: (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil)!) {
+                self = .measureTouchSequence(host: host, value1)
+                return
             }
-            guard let expr_value1 = (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil), let value1 = [Self.Touch](syntax: expr_value1) else {
-                throw ModifierParseError.invalidArguments(modifier: "MeasureTouchSequenceModifier", variant: "measureTouchSequence", expectedTypes: "any SwiftUICore._BenchmarkHost, [Self.Touch]")
-            }
-            self = .measureTouchSequence(host: host, value1)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "MeasureTouchSequenceModifier", expected: [2], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .measureTouchSequence(let host, let value1):

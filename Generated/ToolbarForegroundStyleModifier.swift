@@ -13,20 +13,13 @@ extension ToolbarForegroundStyleModifier: RuntimeViewModifier {
     public static var baseName: String { "toolbarForegroundStyle" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = AnyShapeStyle(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "ToolbarForegroundStyleModifier", variant: "toolbarForegroundStyle", expectedTypes: "AnyShapeStyle, SwiftUI.ToolbarPlacement")
+        if syntax.arguments.count == 2 {
+            if let value0 = AnyShapeStyle(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let for = SwiftUI.ToolbarPlacement(syntax: syntax.argument(named: "for")?.expression!) {
+                self = .toolbarForegroundStyle(value0, for: for)
+                return
             }
-            guard let expr_for = syntax.argument(named: "for")?.expression, let for = SwiftUI.ToolbarPlacement(syntax: expr_for) else {
-                throw ModifierParseError.invalidArguments(modifier: "ToolbarForegroundStyleModifier", variant: "toolbarForegroundStyle", expectedTypes: "AnyShapeStyle, SwiftUI.ToolbarPlacement")
-            }
-            self = .toolbarForegroundStyle(value0, for: for)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ToolbarForegroundStyleModifier", expected: [2], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .toolbarForegroundStyle(let value0, let for):

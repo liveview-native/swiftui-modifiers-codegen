@@ -14,20 +14,17 @@ extension ToolbarBackgroundModifier: RuntimeViewModifier {
     public static var baseName: String { "toolbarBackground" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            if let value0: AnyShapeStyle = AnyShapeStyle(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_for = syntax.argument(named: "for")?.expression, let for = SwiftUI.ToolbarPlacement(syntax: expr_for) {
+        if syntax.arguments.count == 2 {
+            if let value0 = AnyShapeStyle(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let for = SwiftUI.ToolbarPlacement(syntax: syntax.argument(named: "for")?.expression!) {
                 self = .toolbarBackgroundWithAnyShapeStyleToolbarPlacement(value0, for: for)
-            } else if let value0: SwiftUICore.Visibility = SwiftUICore.Visibility(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_for = syntax.argument(named: "for")?.expression, let for = SwiftUI.ToolbarPlacement(syntax: expr_for) {
-                self = .toolbarBackgroundWithVisibilityToolbarPlacement(value0, for: for)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "ToolbarBackgroundModifier", variant: "multiple variants", expectedTypes: "AnyShapeStyle, SwiftUI.ToolbarPlacement or SwiftUICore.Visibility, SwiftUI.ToolbarPlacement")
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ToolbarBackgroundModifier", expected: [2], found: syntax.arguments.count)
+            if let value0 = SwiftUICore.Visibility(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let for = SwiftUI.ToolbarPlacement(syntax: syntax.argument(named: "for")?.expression!) {
+                self = .toolbarBackgroundWithVisibilityToolbarPlacement(value0, for: for)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .toolbarBackgroundWithAnyShapeStyleToolbarPlacement(let value0, let for):

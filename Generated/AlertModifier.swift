@@ -32,92 +32,93 @@ extension AlertModifier: RuntimeViewModifier {
     public static var baseName: String { "alert" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let firstLabel = syntax.arguments.first?.label?.text
-            switch firstLabel {
-            case "isPresented":
-                guard let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) else {
-                    throw ModifierParseError.invalidArguments(modifier: "AlertModifier", variant: "alertWithBoolAlert", expectedTypes: "SwiftUICore.Binding<Swift.Bool>")
-                }
-                self = .alertWithBoolAlert(isPresented: isPresented)
-            case "item":
-                guard let expr_item = syntax.argument(named: "item")?.expression, let item = SwiftUICore.Binding<Item?>(syntax: expr_item) else {
-                    throw ModifierParseError.invalidArguments(modifier: "AlertModifier", variant: "alertWithBindingItemOptionalAlert", expectedTypes: "SwiftUICore.Binding<Item?>")
-                }
+        if syntax.arguments.count == 1 {
+            if let item = SwiftUICore.Binding<Item?>(syntax: syntax.argument(named: "item")?.expression!) {
                 self = .alertWithBindingItemOptionalAlert(item: item)
-            default:
-                throw ModifierParseError.ambiguousVariant(modifier: "AlertModifier", expectedLabels: ["item", "isPresented"])
+                return
             }
-        case 2:
-            let firstLabel = syntax.arguments.first?.label?.text
-            switch firstLabel {
-            case nil:
-                if let value0: SwiftUICore.LocalizedStringKey = SwiftUICore.LocalizedStringKey(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                    self = .alertWithLocalizedStringKeyBoolClosureAnyView(value0, isPresented: isPresented)
-                } else if let value0: Foundation.LocalizedStringResource = Foundation.LocalizedStringResource(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                    self = .alertWithLocalizedStringResourceBoolClosureAnyView(value0, isPresented: isPresented)
-                } else if let value0: String = String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                    self = .alertWithStringBoolClosureAnyView(value0, isPresented: isPresented)
-                } else if let value0: SwiftUICore.Text = SwiftUICore.Text(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                    self = .alertWithTextBoolClosureAnyView(value0, isPresented: isPresented)
-                } else if let value0: SwiftUICore.LocalizedStringKey = SwiftUICore.LocalizedStringKey(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                    self = .alertWithLocalizedStringKeyBoolClosureAnyViewClosureAnyView(value0, isPresented: isPresented)
-                } else if let value0: Foundation.LocalizedStringResource = Foundation.LocalizedStringResource(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                    self = .alertWithLocalizedStringResourceBoolClosureAnyViewClosureAnyView(value0, isPresented: isPresented)
-                } else if let value0: String = String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                    self = .alertWithStringBoolClosureAnyViewClosureAnyView(value0, isPresented: isPresented)
-                } else if let value0: SwiftUICore.Text = SwiftUICore.Text(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                    self = .alertWithTextBoolClosureAnyViewClosureAnyView(value0, isPresented: isPresented)
-                } else {
-                    throw ModifierParseError.invalidArguments(modifier: "AlertModifier", variant: "multiple variants", expectedTypes: "SwiftUICore.LocalizedStringKey, SwiftUICore.Binding<Swift.Bool> or Foundation.LocalizedStringResource, SwiftUICore.Binding<Swift.Bool> or String, SwiftUICore.Binding<Swift.Bool> or SwiftUICore.Text, SwiftUICore.Binding<Swift.Bool> or SwiftUICore.LocalizedStringKey, SwiftUICore.Binding<Swift.Bool> or Foundation.LocalizedStringResource, SwiftUICore.Binding<Swift.Bool> or String, SwiftUICore.Binding<Swift.Bool> or SwiftUICore.Text, SwiftUICore.Binding<Swift.Bool>")
-                }
-            case "isPresented":
-                if let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                    let error: E = if let expr = syntax.argument(named: "error")?.expression { E(syntax: expr) } else { nil }
-                    self = .alertWithBoolEOptionalClosureAnyView(isPresented: isPresented, error: error)
-                } else if let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                    let error: E = if let expr = syntax.argument(named: "error")?.expression { E(syntax: expr) } else { nil }
-                    self = .alertWithBoolEOptionalClosureAnyViewClosureAnyView(isPresented: isPresented, error: error)
-                } else {
-                    throw ModifierParseError.invalidArguments(modifier: "AlertModifier", variant: "multiple variants", expectedTypes: "SwiftUICore.Binding<Swift.Bool>, E? or SwiftUICore.Binding<Swift.Bool>, E?")
-                }
-            default:
-                throw ModifierParseError.ambiguousVariant(modifier: "AlertModifier", expectedLabels: ["isPresented"])
+            if let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: syntax.argument(named: "isPresented")?.expression!) {
+                self = .alertWithBoolAlert(isPresented: isPresented)
+                return
             }
-        case 3:
-            if let value0: SwiftUICore.LocalizedStringKey = SwiftUICore.LocalizedStringKey(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let presenting: T = if let expr = syntax.argument(named: "presenting")?.expression { T(syntax: expr) } else { nil }
+        }
+        if syntax.arguments.count == 2 {
+            if let value0 = SwiftUICore.LocalizedStringKey(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: syntax.argument(named: "isPresented")?.expression!) {
+                self = .alertWithLocalizedStringKeyBoolClosureAnyView(value0, isPresented: isPresented)
+                return
+            }
+            if let value0 = Foundation.LocalizedStringResource(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: syntax.argument(named: "isPresented")?.expression!) {
+                self = .alertWithLocalizedStringResourceBoolClosureAnyView(value0, isPresented: isPresented)
+                return
+            }
+            if let value0 = String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: syntax.argument(named: "isPresented")?.expression!) {
+                self = .alertWithStringBoolClosureAnyView(value0, isPresented: isPresented)
+                return
+            }
+            if let value0 = SwiftUICore.Text(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: syntax.argument(named: "isPresented")?.expression!) {
+                self = .alertWithTextBoolClosureAnyView(value0, isPresented: isPresented)
+                return
+            }
+            if let value0 = SwiftUICore.LocalizedStringKey(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: syntax.argument(named: "isPresented")?.expression!) {
+                self = .alertWithLocalizedStringKeyBoolClosureAnyViewClosureAnyView(value0, isPresented: isPresented)
+                return
+            }
+            if let value0 = Foundation.LocalizedStringResource(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: syntax.argument(named: "isPresented")?.expression!) {
+                self = .alertWithLocalizedStringResourceBoolClosureAnyViewClosureAnyView(value0, isPresented: isPresented)
+                return
+            }
+            if let value0 = String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: syntax.argument(named: "isPresented")?.expression!) {
+                self = .alertWithStringBoolClosureAnyViewClosureAnyView(value0, isPresented: isPresented)
+                return
+            }
+            if let value0 = SwiftUICore.Text(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: syntax.argument(named: "isPresented")?.expression!) {
+                self = .alertWithTextBoolClosureAnyViewClosureAnyView(value0, isPresented: isPresented)
+                return
+            }
+            if let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: syntax.argument(named: "isPresented")?.expression!), let error = E(syntax: syntax.argument(named: "error")?.expression!) {
+                self = .alertWithBoolEOptionalClosureAnyView(isPresented: isPresented, error: error)
+                return
+            }
+            if let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: syntax.argument(named: "isPresented")?.expression!), let error = E(syntax: syntax.argument(named: "error")?.expression!) {
+                self = .alertWithBoolEOptionalClosureAnyViewClosureAnyView(isPresented: isPresented, error: error)
+                return
+            }
+        }
+        if syntax.arguments.count == 3 {
+            if let value0 = SwiftUICore.LocalizedStringKey(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: syntax.argument(named: "isPresented")?.expression!), let presenting = T(syntax: syntax.argument(named: "presenting")?.expression!) {
                 self = .alertWithLocalizedStringKeyBoolTOptionalClosureAnyView(value0, isPresented: isPresented, presenting: presenting)
-            } else if let value0: Foundation.LocalizedStringResource = Foundation.LocalizedStringResource(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let presenting: T = if let expr = syntax.argument(named: "presenting")?.expression { T(syntax: expr) } else { nil }
-                self = .alertWithLocalizedStringResourceBoolTOptionalClosureAnyView(value0, isPresented: isPresented, presenting: presenting)
-            } else if let value0: String = String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let presenting: T = if let expr = syntax.argument(named: "presenting")?.expression { T(syntax: expr) } else { nil }
-                self = .alertWithStringBoolTOptionalClosureAnyView(value0, isPresented: isPresented, presenting: presenting)
-            } else if let value0: SwiftUICore.Text = SwiftUICore.Text(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let presenting: T = if let expr = syntax.argument(named: "presenting")?.expression { T(syntax: expr) } else { nil }
-                self = .alertWithTextBoolTOptionalClosureAnyView(value0, isPresented: isPresented, presenting: presenting)
-            } else if let value0: SwiftUICore.LocalizedStringKey = SwiftUICore.LocalizedStringKey(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let presenting: T = if let expr = syntax.argument(named: "presenting")?.expression { T(syntax: expr) } else { nil }
-                self = .alertWithLocalizedStringKeyBoolTOptionalClosureAnyViewClosureAnyView(value0, isPresented: isPresented, presenting: presenting)
-            } else if let value0: Foundation.LocalizedStringResource = Foundation.LocalizedStringResource(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let presenting: T = if let expr = syntax.argument(named: "presenting")?.expression { T(syntax: expr) } else { nil }
-                self = .alertWithLocalizedStringResourceBoolTOptionalClosureAnyViewClosureAnyView(value0, isPresented: isPresented, presenting: presenting)
-            } else if let value0: String = String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let presenting: T = if let expr = syntax.argument(named: "presenting")?.expression { T(syntax: expr) } else { nil }
-                self = .alertWithStringBoolTOptionalClosureAnyViewClosureAnyView(value0, isPresented: isPresented, presenting: presenting)
-            } else if let value0: SwiftUICore.Text = SwiftUICore.Text(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let presenting: T = if let expr = syntax.argument(named: "presenting")?.expression { T(syntax: expr) } else { nil }
-                self = .alertWithTextBoolTOptionalClosureAnyViewClosureAnyView(value0, isPresented: isPresented, presenting: presenting)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "AlertModifier", variant: "multiple variants", expectedTypes: "SwiftUICore.LocalizedStringKey, SwiftUICore.Binding<Swift.Bool>, T? or Foundation.LocalizedStringResource, SwiftUICore.Binding<Swift.Bool>, T? or String, SwiftUICore.Binding<Swift.Bool>, T? or SwiftUICore.Text, SwiftUICore.Binding<Swift.Bool>, T? or SwiftUICore.LocalizedStringKey, SwiftUICore.Binding<Swift.Bool>, T? or Foundation.LocalizedStringResource, SwiftUICore.Binding<Swift.Bool>, T? or String, SwiftUICore.Binding<Swift.Bool>, T? or SwiftUICore.Text, SwiftUICore.Binding<Swift.Bool>, T?")
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "AlertModifier", expected: [1, 2, 3], found: syntax.arguments.count)
+            if let value0 = Foundation.LocalizedStringResource(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: syntax.argument(named: "isPresented")?.expression!), let presenting = T(syntax: syntax.argument(named: "presenting")?.expression!) {
+                self = .alertWithLocalizedStringResourceBoolTOptionalClosureAnyView(value0, isPresented: isPresented, presenting: presenting)
+                return
+            }
+            if let value0 = String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: syntax.argument(named: "isPresented")?.expression!), let presenting = T(syntax: syntax.argument(named: "presenting")?.expression!) {
+                self = .alertWithStringBoolTOptionalClosureAnyView(value0, isPresented: isPresented, presenting: presenting)
+                return
+            }
+            if let value0 = SwiftUICore.Text(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: syntax.argument(named: "isPresented")?.expression!), let presenting = T(syntax: syntax.argument(named: "presenting")?.expression!) {
+                self = .alertWithTextBoolTOptionalClosureAnyView(value0, isPresented: isPresented, presenting: presenting)
+                return
+            }
+            if let value0 = SwiftUICore.LocalizedStringKey(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: syntax.argument(named: "isPresented")?.expression!), let presenting = T(syntax: syntax.argument(named: "presenting")?.expression!) {
+                self = .alertWithLocalizedStringKeyBoolTOptionalClosureAnyViewClosureAnyView(value0, isPresented: isPresented, presenting: presenting)
+                return
+            }
+            if let value0 = Foundation.LocalizedStringResource(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: syntax.argument(named: "isPresented")?.expression!), let presenting = T(syntax: syntax.argument(named: "presenting")?.expression!) {
+                self = .alertWithLocalizedStringResourceBoolTOptionalClosureAnyViewClosureAnyView(value0, isPresented: isPresented, presenting: presenting)
+                return
+            }
+            if let value0 = String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: syntax.argument(named: "isPresented")?.expression!), let presenting = T(syntax: syntax.argument(named: "presenting")?.expression!) {
+                self = .alertWithStringBoolTOptionalClosureAnyViewClosureAnyView(value0, isPresented: isPresented, presenting: presenting)
+                return
+            }
+            if let value0 = SwiftUICore.Text(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: syntax.argument(named: "isPresented")?.expression!), let presenting = T(syntax: syntax.argument(named: "presenting")?.expression!) {
+                self = .alertWithTextBoolTOptionalClosureAnyViewClosureAnyView(value0, isPresented: isPresented, presenting: presenting)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .alertWithBindingItemOptionalAlert(let item):

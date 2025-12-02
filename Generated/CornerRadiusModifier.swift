@@ -13,18 +13,11 @@ extension CornerRadiusModifier: RuntimeViewModifier {
     public static var baseName: String { "cornerRadius" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = CoreFoundation.CGFloat(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "CornerRadiusModifier", variant: "cornerRadius", expectedTypes: "CoreFoundation.CGFloat, Swift.Bool")
-            }
-            let antialiased: Swift.Bool = if let expr = syntax.argument(named: "antialiased")?.expression, let parsed = Swift.Bool(syntax: expr) { parsed } else { true }
-            self = .cornerRadius(value0, antialiased: antialiased)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "CornerRadiusModifier", expected: [2], found: syntax.arguments.count)
-        }
+        let value0: CoreFoundation.CGFloat = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { CoreFoundation.CGFloat(syntax: $0) }
+        let antialiased: Swift.Bool = syntax.argument(named: "antialiased")?.expression.flatMap { Swift.Bool(syntax: $0) } ?? true
+        self = .cornerRadius(value0, antialiased: antialiased)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .cornerRadius(let value0, let antialiased):

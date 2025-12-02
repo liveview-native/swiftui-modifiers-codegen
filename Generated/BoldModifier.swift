@@ -13,15 +13,10 @@ extension BoldModifier: RuntimeViewModifier {
     public static var baseName: String { "bold" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let value0: Swift.Bool = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = Swift.Bool(syntax: expr) { parsed } else { true }
-            self = .bold(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "BoldModifier", expected: [1], found: syntax.arguments.count)
-        }
+        let value0: Swift.Bool = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { Swift.Bool(syntax: $0) } ?? true
+        self = .bold(value0)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .bold(let value0):

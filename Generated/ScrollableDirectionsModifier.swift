@@ -13,17 +13,13 @@ extension ScrollableDirectionsModifier: RuntimeViewModifier {
     public static var baseName: String { "scrollableDirections" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_proxy = syntax.argument(named: "proxy")?.expression, let proxy = SwiftUI._ScrollViewProxy(syntax: expr_proxy) else {
-                throw ModifierParseError.invalidArguments(modifier: "ScrollableDirectionsModifier", variant: "scrollableDirections", expectedTypes: "SwiftUI._ScrollViewProxy")
+        if syntax.arguments.count == 1 {
+            if let proxy = SwiftUI._ScrollViewProxy(syntax: syntax.argument(named: "proxy")?.expression!) {
+                self = .scrollableDirections(proxy: proxy)
+                return
             }
-            self = .scrollableDirections(proxy: proxy)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ScrollableDirectionsModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .scrollableDirections(let proxy):

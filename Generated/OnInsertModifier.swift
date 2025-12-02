@@ -14,20 +14,17 @@ extension OnInsertModifier: RuntimeViewModifier {
     public static var baseName: String { "onInsert" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            if let expr_of = syntax.argument(named: "of")?.expression, let of = [UniformTypeIdentifiers.UTType](syntax: expr_of) {
+        if syntax.arguments.count == 1 {
+            if let of = [UniformTypeIdentifiers.UTType](syntax: syntax.argument(named: "of")?.expression!) {
                 self = .onInsertWithUTTypeVoid(of: of)
-            } else if let expr_of = syntax.argument(named: "of")?.expression, let of = [Swift.String](syntax: expr_of) {
-                self = .onInsertWithStringVoid(of: of)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "OnInsertModifier", variant: "multiple variants", expectedTypes: "[UniformTypeIdentifiers.UTType] or [Swift.String]")
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "OnInsertModifier", expected: [1], found: syntax.arguments.count)
+            if let of = [Swift.String](syntax: syntax.argument(named: "of")?.expression!) {
+                self = .onInsertWithStringVoid(of: of)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .onInsertWithUTTypeVoid(let of):

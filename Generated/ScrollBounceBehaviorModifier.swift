@@ -13,18 +13,11 @@ extension ScrollBounceBehaviorModifier: RuntimeViewModifier {
     public static var baseName: String { "scrollBounceBehavior" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUI.ScrollBounceBehavior(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "ScrollBounceBehaviorModifier", variant: "scrollBounceBehavior", expectedTypes: "SwiftUI.ScrollBounceBehavior, SwiftUICore.Axis.Set")
-            }
-            let axes: SwiftUICore.Axis.Set = if let expr = syntax.argument(named: "axes")?.expression, let parsed = SwiftUICore.Axis.Set(syntax: expr) { parsed } else { [.vertical] }
-            self = .scrollBounceBehavior(value0, axes: axes)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ScrollBounceBehaviorModifier", expected: [2], found: syntax.arguments.count)
-        }
+        let value0: SwiftUI.ScrollBounceBehavior = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { SwiftUI.ScrollBounceBehavior(syntax: $0) }
+        let axes: SwiftUICore.Axis.Set = syntax.argument(named: "axes")?.expression.flatMap { SwiftUICore.Axis.Set(syntax: $0) } ?? [.vertical]
+        self = .scrollBounceBehavior(value0, axes: axes)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .scrollBounceBehavior(let value0, let axes):

@@ -13,14 +13,11 @@ extension InitSizeModifier: RuntimeViewModifier {
     public static var baseName: String { "initSize" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .initSize
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "InitSizeModifier", expected: [0], found: syntax.arguments.count)
+            return
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .initSize:

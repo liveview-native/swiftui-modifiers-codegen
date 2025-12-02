@@ -13,20 +13,13 @@ extension LayoutValueModifier: RuntimeViewModifier {
     public static var baseName: String { "layoutValue" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            guard let expr_key = syntax.argument(named: "key")?.expression, let key = K.Type(syntax: expr_key) else {
-                throw ModifierParseError.invalidArguments(modifier: "LayoutValueModifier", variant: "layoutValue", expectedTypes: "K.Type, K.Value")
+        if syntax.arguments.count == 2 {
+            if let key = K.Type(syntax: syntax.argument(named: "key")?.expression!), let value = K.Value(syntax: syntax.argument(named: "value")?.expression!) {
+                self = .layoutValue(key: key, value: value)
+                return
             }
-            guard let expr_value = syntax.argument(named: "value")?.expression, let value = K.Value(syntax: expr_value) else {
-                throw ModifierParseError.invalidArguments(modifier: "LayoutValueModifier", variant: "layoutValue", expectedTypes: "K.Type, K.Value")
-            }
-            self = .layoutValue(key: key, value: value)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "LayoutValueModifier", expected: [2], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .layoutValue(let key, let value):

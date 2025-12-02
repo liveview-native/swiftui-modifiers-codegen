@@ -13,17 +13,12 @@ extension UnderlineModifier: RuntimeViewModifier {
     public static var baseName: String { "underline" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 3:
-            let value0: Swift.Bool = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = Swift.Bool(syntax: expr) { parsed } else { true }
-            let pattern: SwiftUICore.Text.LineStyle.Pattern = if let expr = syntax.argument(named: "pattern")?.expression, let parsed = SwiftUICore.Text.LineStyle.Pattern(syntax: expr) { parsed } else { .solid }
-            let color: SwiftUICore.Color? = if let expr = syntax.argument(named: "color")?.expression, let parsed = SwiftUICore.Color(syntax: expr) { parsed } else { nil }
-            self = .underline(value0, pattern: pattern, color: color)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "UnderlineModifier", expected: [3], found: syntax.arguments.count)
-        }
+        let value0: Swift.Bool = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { Swift.Bool(syntax: $0) } ?? true
+        let pattern: SwiftUICore.Text.LineStyle.Pattern = syntax.argument(named: "pattern")?.expression.flatMap { SwiftUICore.Text.LineStyle.Pattern(syntax: $0) } ?? .solid
+        let color: SwiftUICore.Color? = syntax.argument(named: "color")?.expression.flatMap { SwiftUICore.Color(syntax: $0) } ?? nil
+        self = .underline(value0, pattern: pattern, color: color)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .underline(let value0, let pattern, let color):

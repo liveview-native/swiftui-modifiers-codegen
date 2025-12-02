@@ -13,15 +13,13 @@ extension PreviewDisplayNameModifier: RuntimeViewModifier {
     public static var baseName: String { "previewDisplayName" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let value0: Swift.String? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { Swift.String(syntax: expr) } else { nil }
-            self = .previewDisplayName(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "PreviewDisplayNameModifier", expected: [1], found: syntax.arguments.count)
+        if syntax.arguments.count == 1 {
+            if let value0 = Swift.String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .previewDisplayName(value0)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .previewDisplayName(let value0):

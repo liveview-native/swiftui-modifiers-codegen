@@ -13,17 +13,13 @@ extension PropertiesModifier: RuntimeViewModifier {
     public static var baseName: String { "properties" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_context = syntax.argument(named: "context")?.expression, let context = SwiftUI.ViewAlignedScrollTargetBehavior.PropertiesContext(syntax: expr_context) else {
-                throw ModifierParseError.invalidArguments(modifier: "PropertiesModifier", variant: "properties", expectedTypes: "SwiftUI.ViewAlignedScrollTargetBehavior.PropertiesContext")
+        if syntax.arguments.count == 1 {
+            if let context = SwiftUI.ViewAlignedScrollTargetBehavior.PropertiesContext(syntax: syntax.argument(named: "context")?.expression!) {
+                self = .properties(context: context)
+                return
             }
-            self = .properties(context: context)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "PropertiesModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .properties(let context):

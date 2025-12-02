@@ -16,28 +16,27 @@ extension SensoryFeedbackModifier: RuntimeViewModifier {
     public static var baseName: String { "sensoryFeedback" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            if let expr_trigger = syntax.argument(named: "trigger")?.expression, let trigger = T(syntax: expr_trigger) {
+        if syntax.arguments.count == 1 {
+            if let trigger = T(syntax: syntax.argument(named: "trigger")?.expression!) {
                 self = .sensoryFeedbackWithTSensoryFeedbackOptional(trigger: trigger)
-            } else if let expr_trigger = syntax.argument(named: "trigger")?.expression, let trigger = T(syntax: expr_trigger) {
+                return
+            }
+            if let trigger = T(syntax: syntax.argument(named: "trigger")?.expression!) {
                 self = .sensoryFeedbackWithTSensoryFeedbackOptional1(trigger: trigger)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "SensoryFeedbackModifier", variant: "multiple variants", expectedTypes: "T or T")
+                return
             }
-        case 2:
-            if let value0: SwiftUI.SensoryFeedback = SwiftUI.SensoryFeedback(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_trigger = syntax.argument(named: "trigger")?.expression, let trigger = T(syntax: expr_trigger) {
+        }
+        if syntax.arguments.count == 2 {
+            if let value0 = SwiftUI.SensoryFeedback(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let trigger = T(syntax: syntax.argument(named: "trigger")?.expression!) {
                 self = .sensoryFeedbackWithSensoryFeedbackT(value0, trigger: trigger)
-            } else if let value0: SwiftUI.SensoryFeedback = SwiftUI.SensoryFeedback(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_trigger = syntax.argument(named: "trigger")?.expression, let trigger = T(syntax: expr_trigger) {
-                self = .sensoryFeedbackWithSensoryFeedbackTBool(value0, trigger: trigger)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "SensoryFeedbackModifier", variant: "multiple variants", expectedTypes: "SwiftUI.SensoryFeedback, T or SwiftUI.SensoryFeedback, T")
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "SensoryFeedbackModifier", expected: [1, 2], found: syntax.arguments.count)
+            if let value0 = SwiftUI.SensoryFeedback(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let trigger = T(syntax: syntax.argument(named: "trigger")?.expression!) {
+                self = .sensoryFeedbackWithSensoryFeedbackTBool(value0, trigger: trigger)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .sensoryFeedbackWithSensoryFeedbackT(let value0, let trigger):

@@ -13,17 +13,13 @@ extension MenuOrderModifier: RuntimeViewModifier {
     public static var baseName: String { "menuOrder" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUI.MenuOrder(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "MenuOrderModifier", variant: "menuOrder", expectedTypes: "SwiftUI.MenuOrder")
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUI.MenuOrder(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .menuOrder(value0)
+                return
             }
-            self = .menuOrder(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "MenuOrderModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .menuOrder(let value0):

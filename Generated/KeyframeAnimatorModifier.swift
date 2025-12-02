@@ -14,21 +14,17 @@ extension KeyframeAnimatorModifier: RuntimeViewModifier {
     public static var baseName: String { "keyframeAnimator" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            if let expr_initialValue = syntax.argument(named: "initialValue")?.expression, let initialValue = Value(syntax: expr_initialValue), let expr_trigger = syntax.argument(named: "trigger")?.expression, let trigger = some Equatable(syntax: expr_trigger) {
+        if syntax.arguments.count == 2 {
+            if let initialValue = Value(syntax: syntax.argument(named: "initialValue")?.expression!), let trigger = some Equatable(syntax: syntax.argument(named: "trigger")?.expression!) {
                 self = .keyframeAnimatorWithValuesomeEquatableClosuresomeViewClosuresomeKeyframesValue(initialValue: initialValue, trigger: trigger)
-            } else if let expr_initialValue = syntax.argument(named: "initialValue")?.expression, let initialValue = Value(syntax: expr_initialValue) {
-                let repeating: Swift.Bool = if let expr = syntax.argument(named: "repeating")?.expression, let parsed = Swift.Bool(syntax: expr) { parsed } else { true }
-                self = .keyframeAnimatorWithValueBoolClosuresomeViewClosuresomeKeyframesValue(initialValue: initialValue, repeating: repeating)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "KeyframeAnimatorModifier", variant: "multiple variants", expectedTypes: "Value, some Equatable or Value, Swift.Bool")
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "KeyframeAnimatorModifier", expected: [2], found: syntax.arguments.count)
         }
+        let initialValue: Value = syntax.argument(named: "initialValue")?.expression.flatMap { Value(syntax: $0) }
+        let repeating: Swift.Bool = syntax.argument(named: "repeating")?.expression.flatMap { Swift.Bool(syntax: $0) } ?? true
+        self = .keyframeAnimatorWithValueBoolClosuresomeViewClosuresomeKeyframesValue(initialValue: initialValue, repeating: repeating)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .keyframeAnimatorWithValuesomeEquatableClosuresomeViewClosuresomeKeyframesValue(let initialValue, let trigger):

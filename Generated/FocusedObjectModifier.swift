@@ -14,21 +14,17 @@ extension FocusedObjectModifier: RuntimeViewModifier {
     public static var baseName: String { "focusedObject" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            if let value0: T = T(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+        if syntax.arguments.count == 1 {
+            if let value0 = T(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
                 self = .focusedObjectWithT(value0)
-            } else if true {
-                let value0: T = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { T(syntax: expr) } else { nil }
-                self = .focusedObjectWithTOptional(value0)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "FocusedObjectModifier", variant: "multiple variants", expectedTypes: "T or T?")
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "FocusedObjectModifier", expected: [1], found: syntax.arguments.count)
+            if let value0 = T(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .focusedObjectWithTOptional(value0)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .focusedObjectWithT(let value0):

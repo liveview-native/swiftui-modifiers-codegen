@@ -28,76 +28,125 @@ extension ConfirmationDialogModifier: RuntimeViewModifier {
     public static var baseName: String { "confirmationDialog" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 3:
-            if let value0: SwiftUICore.LocalizedStringKey = SwiftUICore.LocalizedStringKey(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let titleVisibility: SwiftUICore.Visibility = if let expr = syntax.argument(named: "titleVisibility")?.expression, let parsed = SwiftUICore.Visibility(syntax: expr) { parsed } else { .automatic }
-                self = .confirmationDialogWithLocalizedStringKeyBoolVisibilityClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility)
-            } else if let value0: Foundation.LocalizedStringResource = Foundation.LocalizedStringResource(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let titleVisibility: SwiftUICore.Visibility = if let expr = syntax.argument(named: "titleVisibility")?.expression, let parsed = SwiftUICore.Visibility(syntax: expr) { parsed } else { .automatic }
-                self = .confirmationDialogWithLocalizedStringResourceBoolVisibilityClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility)
-            } else if let value0: String = String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let titleVisibility: SwiftUICore.Visibility = if let expr = syntax.argument(named: "titleVisibility")?.expression, let parsed = SwiftUICore.Visibility(syntax: expr) { parsed } else { .automatic }
-                self = .confirmationDialogWithStringBoolVisibilityClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility)
-            } else if let value0: SwiftUICore.Text = SwiftUICore.Text(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let titleVisibility: SwiftUICore.Visibility = if let expr = syntax.argument(named: "titleVisibility")?.expression, let parsed = SwiftUICore.Visibility(syntax: expr) { parsed } else { .automatic }
-                self = .confirmationDialogWithTextBoolVisibilityClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility)
-            } else if let value0: SwiftUICore.LocalizedStringKey = SwiftUICore.LocalizedStringKey(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let titleVisibility: SwiftUICore.Visibility = if let expr = syntax.argument(named: "titleVisibility")?.expression, let parsed = SwiftUICore.Visibility(syntax: expr) { parsed } else { .automatic }
-                self = .confirmationDialogWithLocalizedStringKeyBoolVisibilityClosureAnyViewClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility)
-            } else if let value0: Foundation.LocalizedStringResource = Foundation.LocalizedStringResource(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let titleVisibility: SwiftUICore.Visibility = if let expr = syntax.argument(named: "titleVisibility")?.expression, let parsed = SwiftUICore.Visibility(syntax: expr) { parsed } else { .automatic }
-                self = .confirmationDialogWithLocalizedStringResourceBoolVisibilityClosureAnyViewClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility)
-            } else if let value0: String = String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let titleVisibility: SwiftUICore.Visibility = if let expr = syntax.argument(named: "titleVisibility")?.expression, let parsed = SwiftUICore.Visibility(syntax: expr) { parsed } else { .automatic }
-                self = .confirmationDialogWithStringBoolVisibilityClosureAnyViewClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility)
-            } else if let value0: SwiftUICore.Text = SwiftUICore.Text(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let titleVisibility: SwiftUICore.Visibility = if let expr = syntax.argument(named: "titleVisibility")?.expression, let parsed = SwiftUICore.Visibility(syntax: expr) { parsed } else { .automatic }
-                self = .confirmationDialogWithTextBoolVisibilityClosureAnyViewClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "ConfirmationDialogModifier", variant: "multiple variants", expectedTypes: "SwiftUICore.LocalizedStringKey, SwiftUICore.Binding<Swift.Bool>, SwiftUICore.Visibility or Foundation.LocalizedStringResource, SwiftUICore.Binding<Swift.Bool>, SwiftUICore.Visibility or String, SwiftUICore.Binding<Swift.Bool>, SwiftUICore.Visibility or SwiftUICore.Text, SwiftUICore.Binding<Swift.Bool>, SwiftUICore.Visibility or SwiftUICore.LocalizedStringKey, SwiftUICore.Binding<Swift.Bool>, SwiftUICore.Visibility or Foundation.LocalizedStringResource, SwiftUICore.Binding<Swift.Bool>, SwiftUICore.Visibility or String, SwiftUICore.Binding<Swift.Bool>, SwiftUICore.Visibility or SwiftUICore.Text, SwiftUICore.Binding<Swift.Bool>, SwiftUICore.Visibility")
-            }
-        case 4:
-            if let value0: SwiftUICore.LocalizedStringKey = SwiftUICore.LocalizedStringKey(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let titleVisibility: SwiftUICore.Visibility = if let expr = syntax.argument(named: "titleVisibility")?.expression, let parsed = SwiftUICore.Visibility(syntax: expr) { parsed } else { .automatic }
-                let presenting: T = if let expr = syntax.argument(named: "presenting")?.expression { T(syntax: expr) } else { nil }
-                self = .confirmationDialogWithLocalizedStringKeyBoolVisibilityTOptionalClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility, presenting: presenting)
-            } else if let value0: Foundation.LocalizedStringResource = Foundation.LocalizedStringResource(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let titleVisibility: SwiftUICore.Visibility = if let expr = syntax.argument(named: "titleVisibility")?.expression, let parsed = SwiftUICore.Visibility(syntax: expr) { parsed } else { .automatic }
-                let presenting: T = if let expr = syntax.argument(named: "presenting")?.expression { T(syntax: expr) } else { nil }
-                self = .confirmationDialogWithLocalizedStringResourceBoolVisibilityTOptionalClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility, presenting: presenting)
-            } else if let value0: String = String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let titleVisibility: SwiftUICore.Visibility = if let expr = syntax.argument(named: "titleVisibility")?.expression, let parsed = SwiftUICore.Visibility(syntax: expr) { parsed } else { .automatic }
-                let presenting: T = if let expr = syntax.argument(named: "presenting")?.expression { T(syntax: expr) } else { nil }
-                self = .confirmationDialogWithStringBoolVisibilityTOptionalClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility, presenting: presenting)
-            } else if let value0: SwiftUICore.Text = SwiftUICore.Text(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let titleVisibility: SwiftUICore.Visibility = if let expr = syntax.argument(named: "titleVisibility")?.expression, let parsed = SwiftUICore.Visibility(syntax: expr) { parsed } else { .automatic }
-                let presenting: T = if let expr = syntax.argument(named: "presenting")?.expression { T(syntax: expr) } else { nil }
-                self = .confirmationDialogWithTextBoolVisibilityTOptionalClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility, presenting: presenting)
-            } else if let value0: SwiftUICore.LocalizedStringKey = SwiftUICore.LocalizedStringKey(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let titleVisibility: SwiftUICore.Visibility = if let expr = syntax.argument(named: "titleVisibility")?.expression, let parsed = SwiftUICore.Visibility(syntax: expr) { parsed } else { .automatic }
-                let presenting: T = if let expr = syntax.argument(named: "presenting")?.expression { T(syntax: expr) } else { nil }
-                self = .confirmationDialogWithLocalizedStringKeyBoolVisibilityTOptionalClosureAnyViewClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility, presenting: presenting)
-            } else if let value0: Foundation.LocalizedStringResource = Foundation.LocalizedStringResource(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let titleVisibility: SwiftUICore.Visibility = if let expr = syntax.argument(named: "titleVisibility")?.expression, let parsed = SwiftUICore.Visibility(syntax: expr) { parsed } else { .automatic }
-                let presenting: T = if let expr = syntax.argument(named: "presenting")?.expression { T(syntax: expr) } else { nil }
-                self = .confirmationDialogWithLocalizedStringResourceBoolVisibilityTOptionalClosureAnyViewClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility, presenting: presenting)
-            } else if let value0: String = String(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let titleVisibility: SwiftUICore.Visibility = if let expr = syntax.argument(named: "titleVisibility")?.expression, let parsed = SwiftUICore.Visibility(syntax: expr) { parsed } else { .automatic }
-                let presenting: T = if let expr = syntax.argument(named: "presenting")?.expression { T(syntax: expr) } else { nil }
-                self = .confirmationDialogWithStringBoolVisibilityTOptionalClosureAnyViewClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility, presenting: presenting)
-            } else if let value0: SwiftUICore.Text = SwiftUICore.Text(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!), let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) {
-                let titleVisibility: SwiftUICore.Visibility = if let expr = syntax.argument(named: "titleVisibility")?.expression, let parsed = SwiftUICore.Visibility(syntax: expr) { parsed } else { .automatic }
-                let presenting: T = if let expr = syntax.argument(named: "presenting")?.expression { T(syntax: expr) } else { nil }
-                self = .confirmationDialogWithTextBoolVisibilityTOptionalClosureAnyViewClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility, presenting: presenting)
-            } else {
-                throw ModifierParseError.invalidArguments(modifier: "ConfirmationDialogModifier", variant: "multiple variants", expectedTypes: "SwiftUICore.LocalizedStringKey, SwiftUICore.Binding<Swift.Bool>, SwiftUICore.Visibility, T? or Foundation.LocalizedStringResource, SwiftUICore.Binding<Swift.Bool>, SwiftUICore.Visibility, T? or String, SwiftUICore.Binding<Swift.Bool>, SwiftUICore.Visibility, T? or SwiftUICore.Text, SwiftUICore.Binding<Swift.Bool>, SwiftUICore.Visibility, T? or SwiftUICore.LocalizedStringKey, SwiftUICore.Binding<Swift.Bool>, SwiftUICore.Visibility, T? or Foundation.LocalizedStringResource, SwiftUICore.Binding<Swift.Bool>, SwiftUICore.Visibility, T? or String, SwiftUICore.Binding<Swift.Bool>, SwiftUICore.Visibility, T? or SwiftUICore.Text, SwiftUICore.Binding<Swift.Bool>, SwiftUICore.Visibility, T?")
-            }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ConfirmationDialogModifier", expected: [3, 4], found: syntax.arguments.count)
+        if syntax.argument(named: "isPresented") != nil || syntax.argument(named: "titleVisibility") != nil || syntax.argument(named: "actions") != nil {
+            let value0: SwiftUICore.LocalizedStringKey = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { SwiftUICore.LocalizedStringKey(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let titleVisibility: SwiftUICore.Visibility = syntax.argument(named: "titleVisibility")?.expression.flatMap { SwiftUICore.Visibility(syntax: $0) } ?? .automatic
+            self = .confirmationDialogWithLocalizedStringKeyBoolVisibilityClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility)
+            return
         }
+        if syntax.argument(named: "isPresented") != nil || syntax.argument(named: "titleVisibility") != nil || syntax.argument(named: "actions") != nil {
+            let value0: Foundation.LocalizedStringResource = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { Foundation.LocalizedStringResource(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let titleVisibility: SwiftUICore.Visibility = syntax.argument(named: "titleVisibility")?.expression.flatMap { SwiftUICore.Visibility(syntax: $0) } ?? .automatic
+            self = .confirmationDialogWithLocalizedStringResourceBoolVisibilityClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility)
+            return
+        }
+        if syntax.argument(named: "isPresented") != nil || syntax.argument(named: "titleVisibility") != nil || syntax.argument(named: "actions") != nil {
+            let value0: String = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { String(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let titleVisibility: SwiftUICore.Visibility = syntax.argument(named: "titleVisibility")?.expression.flatMap { SwiftUICore.Visibility(syntax: $0) } ?? .automatic
+            self = .confirmationDialogWithStringBoolVisibilityClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility)
+            return
+        }
+        if syntax.argument(named: "isPresented") != nil || syntax.argument(named: "titleVisibility") != nil || syntax.argument(named: "actions") != nil {
+            let value0: SwiftUICore.Text = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { SwiftUICore.Text(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let titleVisibility: SwiftUICore.Visibility = syntax.argument(named: "titleVisibility")?.expression.flatMap { SwiftUICore.Visibility(syntax: $0) } ?? .automatic
+            self = .confirmationDialogWithTextBoolVisibilityClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility)
+            return
+        }
+        if syntax.argument(named: "isPresented") != nil || syntax.argument(named: "titleVisibility") != nil || syntax.argument(named: "actions") != nil || syntax.argument(named: "message") != nil {
+            let value0: SwiftUICore.LocalizedStringKey = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { SwiftUICore.LocalizedStringKey(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let titleVisibility: SwiftUICore.Visibility = syntax.argument(named: "titleVisibility")?.expression.flatMap { SwiftUICore.Visibility(syntax: $0) } ?? .automatic
+            self = .confirmationDialogWithLocalizedStringKeyBoolVisibilityClosureAnyViewClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility)
+            return
+        }
+        if syntax.argument(named: "isPresented") != nil || syntax.argument(named: "titleVisibility") != nil || syntax.argument(named: "actions") != nil || syntax.argument(named: "message") != nil {
+            let value0: Foundation.LocalizedStringResource = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { Foundation.LocalizedStringResource(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let titleVisibility: SwiftUICore.Visibility = syntax.argument(named: "titleVisibility")?.expression.flatMap { SwiftUICore.Visibility(syntax: $0) } ?? .automatic
+            self = .confirmationDialogWithLocalizedStringResourceBoolVisibilityClosureAnyViewClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility)
+            return
+        }
+        if syntax.argument(named: "isPresented") != nil || syntax.argument(named: "titleVisibility") != nil || syntax.argument(named: "actions") != nil || syntax.argument(named: "message") != nil {
+            let value0: String = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { String(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let titleVisibility: SwiftUICore.Visibility = syntax.argument(named: "titleVisibility")?.expression.flatMap { SwiftUICore.Visibility(syntax: $0) } ?? .automatic
+            self = .confirmationDialogWithStringBoolVisibilityClosureAnyViewClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility)
+            return
+        }
+        if syntax.argument(named: "isPresented") != nil || syntax.argument(named: "titleVisibility") != nil || syntax.argument(named: "actions") != nil || syntax.argument(named: "message") != nil {
+            let value0: SwiftUICore.Text = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { SwiftUICore.Text(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let titleVisibility: SwiftUICore.Visibility = syntax.argument(named: "titleVisibility")?.expression.flatMap { SwiftUICore.Visibility(syntax: $0) } ?? .automatic
+            self = .confirmationDialogWithTextBoolVisibilityClosureAnyViewClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility)
+            return
+        }
+        if syntax.argument(named: "isPresented") != nil || syntax.argument(named: "titleVisibility") != nil || syntax.argument(named: "presenting") != nil || syntax.argument(named: "actions") != nil {
+            let value0: SwiftUICore.LocalizedStringKey = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { SwiftUICore.LocalizedStringKey(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let titleVisibility: SwiftUICore.Visibility = syntax.argument(named: "titleVisibility")?.expression.flatMap { SwiftUICore.Visibility(syntax: $0) } ?? .automatic
+            let presenting: T? = syntax.argument(named: "presenting")?.expression.flatMap { T(syntax: $0) } ?? nil
+            self = .confirmationDialogWithLocalizedStringKeyBoolVisibilityTOptionalClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility, presenting: presenting)
+            return
+        }
+        if syntax.argument(named: "isPresented") != nil || syntax.argument(named: "titleVisibility") != nil || syntax.argument(named: "presenting") != nil || syntax.argument(named: "actions") != nil {
+            let value0: Foundation.LocalizedStringResource = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { Foundation.LocalizedStringResource(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let titleVisibility: SwiftUICore.Visibility = syntax.argument(named: "titleVisibility")?.expression.flatMap { SwiftUICore.Visibility(syntax: $0) } ?? .automatic
+            let presenting: T? = syntax.argument(named: "presenting")?.expression.flatMap { T(syntax: $0) } ?? nil
+            self = .confirmationDialogWithLocalizedStringResourceBoolVisibilityTOptionalClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility, presenting: presenting)
+            return
+        }
+        if syntax.argument(named: "isPresented") != nil || syntax.argument(named: "titleVisibility") != nil || syntax.argument(named: "presenting") != nil || syntax.argument(named: "actions") != nil {
+            let value0: String = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { String(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let titleVisibility: SwiftUICore.Visibility = syntax.argument(named: "titleVisibility")?.expression.flatMap { SwiftUICore.Visibility(syntax: $0) } ?? .automatic
+            let presenting: T? = syntax.argument(named: "presenting")?.expression.flatMap { T(syntax: $0) } ?? nil
+            self = .confirmationDialogWithStringBoolVisibilityTOptionalClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility, presenting: presenting)
+            return
+        }
+        if syntax.argument(named: "isPresented") != nil || syntax.argument(named: "titleVisibility") != nil || syntax.argument(named: "presenting") != nil || syntax.argument(named: "actions") != nil {
+            let value0: SwiftUICore.Text = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { SwiftUICore.Text(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let titleVisibility: SwiftUICore.Visibility = syntax.argument(named: "titleVisibility")?.expression.flatMap { SwiftUICore.Visibility(syntax: $0) } ?? .automatic
+            let presenting: T? = syntax.argument(named: "presenting")?.expression.flatMap { T(syntax: $0) } ?? nil
+            self = .confirmationDialogWithTextBoolVisibilityTOptionalClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility, presenting: presenting)
+            return
+        }
+        if syntax.argument(named: "isPresented") != nil || syntax.argument(named: "titleVisibility") != nil || syntax.argument(named: "presenting") != nil || syntax.argument(named: "actions") != nil || syntax.argument(named: "message") != nil {
+            let value0: SwiftUICore.LocalizedStringKey = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { SwiftUICore.LocalizedStringKey(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let titleVisibility: SwiftUICore.Visibility = syntax.argument(named: "titleVisibility")?.expression.flatMap { SwiftUICore.Visibility(syntax: $0) } ?? .automatic
+            let presenting: T? = syntax.argument(named: "presenting")?.expression.flatMap { T(syntax: $0) } ?? nil
+            self = .confirmationDialogWithLocalizedStringKeyBoolVisibilityTOptionalClosureAnyViewClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility, presenting: presenting)
+            return
+        }
+        if syntax.argument(named: "isPresented") != nil || syntax.argument(named: "titleVisibility") != nil || syntax.argument(named: "presenting") != nil || syntax.argument(named: "actions") != nil || syntax.argument(named: "message") != nil {
+            let value0: Foundation.LocalizedStringResource = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { Foundation.LocalizedStringResource(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let titleVisibility: SwiftUICore.Visibility = syntax.argument(named: "titleVisibility")?.expression.flatMap { SwiftUICore.Visibility(syntax: $0) } ?? .automatic
+            let presenting: T? = syntax.argument(named: "presenting")?.expression.flatMap { T(syntax: $0) } ?? nil
+            self = .confirmationDialogWithLocalizedStringResourceBoolVisibilityTOptionalClosureAnyViewClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility, presenting: presenting)
+            return
+        }
+        if syntax.argument(named: "isPresented") != nil || syntax.argument(named: "titleVisibility") != nil || syntax.argument(named: "presenting") != nil || syntax.argument(named: "actions") != nil || syntax.argument(named: "message") != nil {
+            let value0: String = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { String(syntax: $0) }
+            let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+            let titleVisibility: SwiftUICore.Visibility = syntax.argument(named: "titleVisibility")?.expression.flatMap { SwiftUICore.Visibility(syntax: $0) } ?? .automatic
+            let presenting: T? = syntax.argument(named: "presenting")?.expression.flatMap { T(syntax: $0) } ?? nil
+            self = .confirmationDialogWithStringBoolVisibilityTOptionalClosureAnyViewClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility, presenting: presenting)
+            return
+        }
+        let value0: SwiftUICore.Text = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { SwiftUICore.Text(syntax: $0) }
+        let isPresented: SwiftUICore.Binding<Swift.Bool> = syntax.argument(named: "isPresented")?.expression.flatMap { SwiftUICore.Binding<Swift.Bool>(syntax: $0) }
+        let titleVisibility: SwiftUICore.Visibility = syntax.argument(named: "titleVisibility")?.expression.flatMap { SwiftUICore.Visibility(syntax: $0) } ?? .automatic
+        let presenting: T? = syntax.argument(named: "presenting")?.expression.flatMap { T(syntax: $0) } ?? nil
+        self = .confirmationDialogWithTextBoolVisibilityTOptionalClosureAnyViewClosureAnyView(value0, isPresented: isPresented, titleVisibility: titleVisibility, presenting: presenting)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .confirmationDialogWithLocalizedStringKeyBoolVisibilityClosureAnyView(let value0, let isPresented, let titleVisibility):

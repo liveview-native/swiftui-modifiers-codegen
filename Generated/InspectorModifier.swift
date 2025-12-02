@@ -13,17 +13,13 @@ extension InspectorModifier: RuntimeViewModifier {
     public static var baseName: String { "inspector" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_isPresented = syntax.argument(named: "isPresented")?.expression, let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: expr_isPresented) else {
-                throw ModifierParseError.invalidArguments(modifier: "InspectorModifier", variant: "inspector", expectedTypes: "SwiftUICore.Binding<Swift.Bool>")
+        if syntax.arguments.count == 1 {
+            if let isPresented = SwiftUICore.Binding<Swift.Bool>(syntax: syntax.argument(named: "isPresented")?.expression!) {
+                self = .inspector(isPresented: isPresented)
+                return
             }
-            self = .inspector(isPresented: isPresented)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "InspectorModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .inspector(let isPresented):

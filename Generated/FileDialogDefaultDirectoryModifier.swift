@@ -13,15 +13,13 @@ extension FileDialogDefaultDirectoryModifier: RuntimeViewModifier {
     public static var baseName: String { "fileDialogDefaultDirectory" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let value0: Foundation.URL? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { Foundation.URL(syntax: expr) } else { nil }
-            self = .fileDialogDefaultDirectory(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "FileDialogDefaultDirectoryModifier", expected: [1], found: syntax.arguments.count)
+        if syntax.arguments.count == 1 {
+            if let value0 = Foundation.URL(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .fileDialogDefaultDirectory(value0)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .fileDialogDefaultDirectory(let value0):

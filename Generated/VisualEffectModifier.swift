@@ -13,14 +13,11 @@ extension VisualEffectModifier: RuntimeViewModifier {
     public static var baseName: String { "visualEffect" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .visualEffect
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "VisualEffectModifier", expected: [0], found: syntax.arguments.count)
+            return
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .visualEffect:

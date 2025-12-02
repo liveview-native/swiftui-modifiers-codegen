@@ -13,16 +13,11 @@ extension FillModifier: RuntimeViewModifier {
     public static var baseName: String { "fill" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            let value0: AnyShapeStyle = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = AnyShapeStyle(syntax: expr) { parsed } else { .foreground }
-            let style: SwiftUICore.FillStyle = if let expr = syntax.argument(named: "style")?.expression, let parsed = SwiftUICore.FillStyle(syntax: expr) { parsed } else { FillStyle() }
-            self = .fill(value0, style: style)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "FillModifier", expected: [2], found: syntax.arguments.count)
-        }
+        let value0: AnyShapeStyle = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { AnyShapeStyle(syntax: $0) } ?? .foreground
+        let style: SwiftUICore.FillStyle = syntax.argument(named: "style")?.expression.flatMap { SwiftUICore.FillStyle(syntax: $0) } ?? FillStyle()
+        self = .fill(value0, style: style)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .fill(let value0, let style):

@@ -13,15 +13,10 @@ extension ClippedModifier: RuntimeViewModifier {
     public static var baseName: String { "clipped" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let antialiased: Swift.Bool = if let expr = syntax.argument(named: "antialiased")?.expression, let parsed = Swift.Bool(syntax: expr) { parsed } else { false }
-            self = .clipped(antialiased: antialiased)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "ClippedModifier", expected: [1], found: syntax.arguments.count)
-        }
+        let antialiased: Swift.Bool = syntax.argument(named: "antialiased")?.expression.flatMap { Swift.Bool(syntax: $0) } ?? false
+        self = .clipped(antialiased: antialiased)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .clipped(let antialiased):

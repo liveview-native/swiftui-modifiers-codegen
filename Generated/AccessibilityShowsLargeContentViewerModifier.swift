@@ -14,14 +14,13 @@ extension AccessibilityShowsLargeContentViewerModifier: RuntimeViewModifier {
     public static var baseName: String { "accessibilityShowsLargeContentViewer" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
-            self = .accessibilityShowsLargeContentViewerWithClosureAnyView()
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "AccessibilityShowsLargeContentViewerModifier", expected: [0], found: syntax.arguments.count)
+        if syntax.arguments.count == 0 {
+            self = .accessibilityShowsLargeContentViewerWithClosureAnyView
+            return
+            self = .accessibilityShowsLargeContentViewer
+            return
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .accessibilityShowsLargeContentViewerWithClosureAnyView:

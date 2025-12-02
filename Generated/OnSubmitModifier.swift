@@ -13,15 +13,10 @@ extension OnSubmitModifier: RuntimeViewModifier {
     public static var baseName: String { "onSubmit" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let of: SwiftUI.SubmitTriggers = if let expr = syntax.argument(named: "of")?.expression, let parsed = SwiftUI.SubmitTriggers(syntax: expr) { parsed } else { .text }
-            self = .onSubmit(of: of)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "OnSubmitModifier", expected: [1], found: syntax.arguments.count)
-        }
+        let of: SwiftUI.SubmitTriggers = syntax.argument(named: "of")?.expression.flatMap { SwiftUI.SubmitTriggers(syntax: $0) } ?? .text
+        self = .onSubmit(of: of)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .onSubmit(let of):

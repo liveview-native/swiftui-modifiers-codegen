@@ -14,21 +14,16 @@ extension RootStateModifier: RuntimeViewModifier {
     public static var baseName: String { "rootState" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let type: S.Type = if let expr = syntax.argument(named: "type")?.expression, let parsed = S.Type(syntax: expr) { parsed } else { S.self }
+        if syntax.argument(named: "type") != nil {
+            let type: S.Type = syntax.argument(named: "type")?.expression.flatMap { S.Type(syntax: $0) } ?? S.self
             self = .rootStateWithType(type: type)
-        case 2:
-            let type: S.Type = if let expr = syntax.argument(named: "type")?.expression, let parsed = S.Type(syntax: expr) { parsed } else { S.self }
-            guard let expr_in = syntax.argument(named: "in")?.expression, let in = AnyView.Type(syntax: expr_in) else {
-                throw ModifierParseError.invalidArguments(modifier: "RootStateModifier", variant: "rootStateWithTypeType", expectedTypes: "S.Type, AnyView.Type")
-            }
-            self = .rootStateWithTypeType(type: type, in: in)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "RootStateModifier", expected: [1, 2], found: syntax.arguments.count)
+            return
         }
+        let type: S.Type = syntax.argument(named: "type")?.expression.flatMap { S.Type(syntax: $0) } ?? S.self
+        let in: AnyView.Type = syntax.argument(named: "in")?.expression.flatMap { AnyView.Type(syntax: $0) }
+        self = .rootStateWithTypeType(type: type, in: in)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .rootStateWithType(let type):

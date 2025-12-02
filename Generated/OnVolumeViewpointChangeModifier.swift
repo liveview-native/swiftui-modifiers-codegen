@@ -13,16 +13,11 @@ extension OnVolumeViewpointChangeModifier: RuntimeViewModifier {
     public static var baseName: String { "onVolumeViewpointChange" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 2:
-            let updateStrategy: SwiftUI.VolumeViewpointUpdateStrategy = if let expr = syntax.argument(named: "updateStrategy")?.expression, let parsed = SwiftUI.VolumeViewpointUpdateStrategy(syntax: expr) { parsed } else { .supported }
-            let initial: Swift.Bool = if let expr = syntax.argument(named: "initial")?.expression, let parsed = Swift.Bool(syntax: expr) { parsed } else { true }
-            self = .onVolumeViewpointChange(updateStrategy: updateStrategy, initial: initial)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "OnVolumeViewpointChangeModifier", expected: [2], found: syntax.arguments.count)
-        }
+        let updateStrategy: SwiftUI.VolumeViewpointUpdateStrategy = syntax.argument(named: "updateStrategy")?.expression.flatMap { SwiftUI.VolumeViewpointUpdateStrategy(syntax: $0) } ?? .supported
+        let initial: Swift.Bool = syntax.argument(named: "initial")?.expression.flatMap { Swift.Bool(syntax: $0) } ?? true
+        self = .onVolumeViewpointChange(updateStrategy: updateStrategy, initial: initial)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .onVolumeViewpointChange(let updateStrategy, let initial):

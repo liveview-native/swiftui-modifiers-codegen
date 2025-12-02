@@ -14,19 +14,17 @@ extension BackgroundExtensionEffectModifier: RuntimeViewModifier {
     public static var baseName: String { "backgroundExtensionEffect" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .backgroundExtensionEffect
-        case 1:
-            guard let expr_isEnabled = syntax.argument(named: "isEnabled")?.expression, let isEnabled = Swift.Bool(syntax: expr_isEnabled) else {
-                throw ModifierParseError.invalidArguments(modifier: "BackgroundExtensionEffectModifier", variant: "backgroundExtensionEffectWithBool", expectedTypes: "Swift.Bool")
+            return
+        }
+        if syntax.arguments.count == 1 {
+            if let isEnabled = Swift.Bool(syntax: syntax.argument(named: "isEnabled")?.expression!) {
+                self = .backgroundExtensionEffectWithBool(isEnabled: isEnabled)
+                return
             }
-            self = .backgroundExtensionEffectWithBool(isEnabled: isEnabled)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "BackgroundExtensionEffectModifier", expected: [0, 1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .backgroundExtensionEffect:

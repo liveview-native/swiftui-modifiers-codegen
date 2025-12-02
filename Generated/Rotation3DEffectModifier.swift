@@ -13,23 +13,14 @@ extension Rotation3DEffectModifier: RuntimeViewModifier {
     public static var baseName: String { "rotation3DEffect" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 5:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUICore.Angle(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "Rotation3DEffectModifier", variant: "rotation3DEffect", expectedTypes: "SwiftUICore.Angle, (x: CoreFoundation.CGFloat, y: CoreFoundation.CGFloat, z: CoreFoundation.CGFloat), SwiftUICore.UnitPoint, CoreFoundation.CGFloat, CoreFoundation.CGFloat")
-            }
-            guard let expr_axis = syntax.argument(named: "axis")?.expression, let axis = (x: CoreFoundation.CGFloat, y: CoreFoundation.CGFloat, z: CoreFoundation.CGFloat)(syntax: expr_axis) else {
-                throw ModifierParseError.invalidArguments(modifier: "Rotation3DEffectModifier", variant: "rotation3DEffect", expectedTypes: "SwiftUICore.Angle, (x: CoreFoundation.CGFloat, y: CoreFoundation.CGFloat, z: CoreFoundation.CGFloat), SwiftUICore.UnitPoint, CoreFoundation.CGFloat, CoreFoundation.CGFloat")
-            }
-            let anchor: SwiftUICore.UnitPoint = if let expr = syntax.argument(named: "anchor")?.expression, let parsed = SwiftUICore.UnitPoint(syntax: expr) { parsed } else { .center }
-            let anchorZ: CoreFoundation.CGFloat = if let expr = syntax.argument(named: "anchorZ")?.expression, let parsed = CoreFoundation.CGFloat(syntax: expr) { parsed } else { 0 }
-            let perspective: CoreFoundation.CGFloat = if let expr = syntax.argument(named: "perspective")?.expression, let parsed = CoreFoundation.CGFloat(syntax: expr) { parsed } else { 1 }
-            self = .rotation3DEffect(value0, axis: axis, anchor: anchor, anchorZ: anchorZ, perspective: perspective)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "Rotation3DEffectModifier", expected: [5], found: syntax.arguments.count)
-        }
+        let value0: SwiftUICore.Angle = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { SwiftUICore.Angle(syntax: $0) }
+        let axis: (x: CoreFoundation.CGFloat, y: CoreFoundation.CGFloat, z: CoreFoundation.CGFloat) = syntax.argument(named: "axis")?.expression.flatMap { (x: CoreFoundation.CGFloat, y: CoreFoundation.CGFloat, z: CoreFoundation.CGFloat)(syntax: $0) }
+        let anchor: SwiftUICore.UnitPoint = syntax.argument(named: "anchor")?.expression.flatMap { SwiftUICore.UnitPoint(syntax: $0) } ?? .center
+        let anchorZ: CoreFoundation.CGFloat = syntax.argument(named: "anchorZ")?.expression.flatMap { CoreFoundation.CGFloat(syntax: $0) } ?? 0
+        let perspective: CoreFoundation.CGFloat = syntax.argument(named: "perspective")?.expression.flatMap { CoreFoundation.CGFloat(syntax: $0) } ?? 1
+        self = .rotation3DEffect(value0, axis: axis, anchor: anchor, anchorZ: anchorZ, perspective: perspective)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .rotation3DEffect(let value0, let axis, let anchor, let anchorZ, let perspective):

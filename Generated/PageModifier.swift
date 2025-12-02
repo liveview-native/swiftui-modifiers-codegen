@@ -14,28 +14,17 @@ extension PageModifier: RuntimeViewModifier {
     public static var baseName: String { "page" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let firstLabel = syntax.arguments.first?.label?.text
-            switch firstLabel {
-            case "backgroundDisplayMode":
-                guard let expr_backgroundDisplayMode = syntax.argument(named: "backgroundDisplayMode")?.expression, let backgroundDisplayMode = SwiftUI.PageIndexViewStyle.BackgroundDisplayMode(syntax: expr_backgroundDisplayMode) else {
-                    throw ModifierParseError.invalidArguments(modifier: "PageModifier", variant: "pageWithBackgroundDisplayMode", expectedTypes: "SwiftUI.PageIndexViewStyle.BackgroundDisplayMode")
-                }
-                self = .pageWithBackgroundDisplayMode(backgroundDisplayMode: backgroundDisplayMode)
-            case "indexDisplayMode":
-                guard let expr_indexDisplayMode = syntax.argument(named: "indexDisplayMode")?.expression, let indexDisplayMode = SwiftUI.PageTabViewStyle.IndexDisplayMode(syntax: expr_indexDisplayMode) else {
-                    throw ModifierParseError.invalidArguments(modifier: "PageModifier", variant: "pageWithIndexDisplayMode", expectedTypes: "SwiftUI.PageTabViewStyle.IndexDisplayMode")
-                }
+        if syntax.arguments.count == 1 {
+            if let indexDisplayMode = SwiftUI.PageTabViewStyle.IndexDisplayMode(syntax: syntax.argument(named: "indexDisplayMode")?.expression!) {
                 self = .pageWithIndexDisplayMode(indexDisplayMode: indexDisplayMode)
-            default:
-                throw ModifierParseError.ambiguousVariant(modifier: "PageModifier", expectedLabels: ["indexDisplayMode", "backgroundDisplayMode"])
+                return
             }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "PageModifier", expected: [1], found: syntax.arguments.count)
+            if let backgroundDisplayMode = SwiftUI.PageIndexViewStyle.BackgroundDisplayMode(syntax: syntax.argument(named: "backgroundDisplayMode")?.expression!) {
+                self = .pageWithBackgroundDisplayMode(backgroundDisplayMode: backgroundDisplayMode)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .pageWithIndexDisplayMode(let indexDisplayMode):

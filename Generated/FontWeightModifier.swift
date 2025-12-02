@@ -13,15 +13,13 @@ extension FontWeightModifier: RuntimeViewModifier {
     public static var baseName: String { "fontWeight" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            let value0: SwiftUICore.Font.Weight? = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil) { SwiftUICore.Font.Weight(syntax: expr) } else { nil }
-            self = .fontWeight(value0)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "FontWeightModifier", expected: [1], found: syntax.arguments.count)
+        if syntax.arguments.count == 1 {
+            if let value0 = SwiftUICore.Font.Weight(syntax: (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil)!) {
+                self = .fontWeight(value0)
+                return
+            }
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .fontWeight(let value0):

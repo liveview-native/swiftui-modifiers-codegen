@@ -13,17 +13,13 @@ extension StatusBarModifier: RuntimeViewModifier {
     public static var baseName: String { "statusBar" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_hidden = syntax.argument(named: "hidden")?.expression, let hidden = Swift.Bool(syntax: expr_hidden) else {
-                throw ModifierParseError.invalidArguments(modifier: "StatusBarModifier", variant: "statusBar", expectedTypes: "Swift.Bool")
+        if syntax.arguments.count == 1 {
+            if let hidden = Swift.Bool(syntax: syntax.argument(named: "hidden")?.expression!) {
+                self = .statusBar(hidden: hidden)
+                return
             }
-            self = .statusBar(hidden: hidden)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "StatusBarModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .statusBar(let hidden):

@@ -13,17 +13,13 @@ extension DefersSystemGesturesModifier: RuntimeViewModifier {
     public static var baseName: String { "defersSystemGestures" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 1:
-            guard let expr_on = syntax.argument(named: "on")?.expression, let on = SwiftUICore.Edge.Set(syntax: expr_on) else {
-                throw ModifierParseError.invalidArguments(modifier: "DefersSystemGesturesModifier", variant: "defersSystemGestures", expectedTypes: "SwiftUICore.Edge.Set")
+        if syntax.arguments.count == 1 {
+            if let on = SwiftUICore.Edge.Set(syntax: syntax.argument(named: "on")?.expression!) {
+                self = .defersSystemGestures(on: on)
+                return
             }
-            self = .defersSystemGestures(on: on)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "DefersSystemGesturesModifier", expected: [1], found: syntax.arguments.count)
         }
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .defersSystemGestures(let on):

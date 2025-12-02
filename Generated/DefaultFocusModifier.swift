@@ -13,21 +13,12 @@ extension DefaultFocusModifier: RuntimeViewModifier {
     public static var baseName: String { "defaultFocus" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 3:
-            guard let expr_value0 = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let value0 = SwiftUI.FocusState<AnyHashable>.Binding(syntax: expr_value0) else {
-                throw ModifierParseError.invalidArguments(modifier: "DefaultFocusModifier", variant: "defaultFocus", expectedTypes: "SwiftUI.FocusState<AnyHashable>.Binding, AnyHashable, SwiftUI.DefaultFocusEvaluationPriority")
-            }
-            guard let expr_value1 = (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil), let value1 = AnyHashable(syntax: expr_value1) else {
-                throw ModifierParseError.invalidArguments(modifier: "DefaultFocusModifier", variant: "defaultFocus", expectedTypes: "SwiftUI.FocusState<AnyHashable>.Binding, AnyHashable, SwiftUI.DefaultFocusEvaluationPriority")
-            }
-            let priority: SwiftUI.DefaultFocusEvaluationPriority = if let expr = syntax.argument(named: "priority")?.expression, let parsed = SwiftUI.DefaultFocusEvaluationPriority(syntax: expr) { parsed } else { .automatic }
-            self = .defaultFocus(value0, value1, priority: priority)
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "DefaultFocusModifier", expected: [3], found: syntax.arguments.count)
-        }
+        let value0: SwiftUI.FocusState<AnyHashable>.Binding = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { SwiftUI.FocusState<AnyHashable>.Binding(syntax: $0) }
+        let value1: AnyHashable = (syntax.arguments.count > 1 ? syntax.arguments[1].expression : nil).flatMap { AnyHashable(syntax: $0) }
+        let priority: SwiftUI.DefaultFocusEvaluationPriority = syntax.argument(named: "priority")?.expression.flatMap { SwiftUI.DefaultFocusEvaluationPriority(syntax: $0) } ?? .automatic
+        self = .defaultFocus(value0, value1, priority: priority)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .defaultFocus(let value0, let value1, let priority):

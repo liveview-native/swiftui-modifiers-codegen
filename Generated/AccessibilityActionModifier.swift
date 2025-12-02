@@ -18,35 +18,32 @@ extension AccessibilityActionModifier: RuntimeViewModifier {
     public static var baseName: String { "accessibilityAction" }
 
     public init(syntax: FunctionCallExprSyntax) throws {
-        switch syntax.arguments.count {
-        case 0:
+        if syntax.arguments.count == 0 {
             self = .accessibilityActionWithVoidClosureAnyView
-        case 1:
-            let firstLabel = syntax.arguments.first?.label?.text
-            switch firstLabel {
-            case nil:
-                let value0: SwiftUI.AccessibilityActionKind = if let expr = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil), let parsed = SwiftUI.AccessibilityActionKind(syntax: expr) { parsed } else { .default }
-                self = .accessibilityActionWithAccessibilityActionKindVoid(value0)
-            case "named":
-                if let expr_named = syntax.argument(named: "named")?.expression, let named = SwiftUICore.Text(syntax: expr_named) {
-                    self = .accessibilityActionWithTextVoid(named: named)
-                } else if let expr_named = syntax.argument(named: "named")?.expression, let named = SwiftUICore.LocalizedStringKey(syntax: expr_named) {
-                    self = .accessibilityActionWithLocalizedStringKeyVoid(named: named)
-                } else if let expr_named = syntax.argument(named: "named")?.expression, let named = Foundation.LocalizedStringResource(syntax: expr_named) {
-                    self = .accessibilityActionWithLocalizedStringResourceVoid(named: named)
-                } else if let expr_named = syntax.argument(named: "named")?.expression, let named = String(syntax: expr_named) {
-                    self = .accessibilityActionWithStringVoid(named: named)
-                } else {
-                    throw ModifierParseError.invalidArguments(modifier: "AccessibilityActionModifier", variant: "multiple variants", expectedTypes: "SwiftUICore.Text or SwiftUICore.LocalizedStringKey or Foundation.LocalizedStringResource or String")
-                }
-            default:
-                throw ModifierParseError.ambiguousVariant(modifier: "AccessibilityActionModifier", expectedLabels: ["named"])
-            }
-        default:
-            throw ModifierParseError.unexpectedArgumentCount(modifier: "AccessibilityActionModifier", expected: [0, 1], found: syntax.arguments.count)
+            return
         }
+        if syntax.arguments.count == 1 {
+            if let named = SwiftUICore.Text(syntax: syntax.argument(named: "named")?.expression!) {
+                self = .accessibilityActionWithTextVoid(named: named)
+                return
+            }
+            if let named = SwiftUICore.LocalizedStringKey(syntax: syntax.argument(named: "named")?.expression!) {
+                self = .accessibilityActionWithLocalizedStringKeyVoid(named: named)
+                return
+            }
+            if let named = Foundation.LocalizedStringResource(syntax: syntax.argument(named: "named")?.expression!) {
+                self = .accessibilityActionWithLocalizedStringResourceVoid(named: named)
+                return
+            }
+            if let named = String(syntax: syntax.argument(named: "named")?.expression!) {
+                self = .accessibilityActionWithStringVoid(named: named)
+                return
+            }
+        }
+        let value0: SwiftUI.AccessibilityActionKind = (syntax.arguments.count > 0 ? syntax.arguments[0].expression : nil).flatMap { SwiftUI.AccessibilityActionKind(syntax: $0) } ?? .default
+        self = .accessibilityActionWithAccessibilityActionKindVoid(value0)
+        return
     }
-
     public func body(content: Content) -> some View {
         switch self {
         case .accessibilityActionWithAccessibilityActionKindVoid(let value0):
