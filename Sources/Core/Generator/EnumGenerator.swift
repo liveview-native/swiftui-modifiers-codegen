@@ -23,28 +23,28 @@ public struct EnumGenerator: Sendable {
     ///   - enumName: The name of the enum to generate.
     ///   - modifiers: The modifiers to include in the enum.
     /// - Returns: A GeneratedCode instance containing the generated enum.
-    /// - Throws: GenerationError if the code cannot be generated.
     public func generate(enumName: String, modifiers: [ModifierInfo]) throws -> GeneratedCode {
         guard !modifiers.isEmpty else {
             throw GenerationError.invalidModifierInfo("Cannot generate enum with no modifiers")
         }
         
-        let warnings: [String] = []
+        // 1. Transform generics to type erasers
+        let erasedModifiers = modifiers.map { transformModifierForTypeErasure($0) }
         
-        // Transform modifiers to use type erasers for generic parameters
-        let transformedModifiers = modifiers.map { transformModifierForTypeErasure($0) }
+        // 2. Transform View-returning closures to ViewReference
+        let transformedModifiers = erasedModifiers.map { transformClosuresToViewReference($0) }
         
-        // Generate unique case names for each modifier variant
+        // 3. Generate unique case names
         let caseNames = generateUniqueCaseNames(for: transformedModifiers)
         
-        // Generate enum cases
+        // 4. Generate enum cases
         var generatedCases: [String] = []
         for (modifier, caseName) in zip(transformedModifiers, caseNames) {
             let enumCase = try generateEnumCase(for: modifier, caseName: caseName)
             generatedCases.append(enumCase)
         }
         
-        // Build complete enum
+        // 5. Build complete enum source
         let sourceCode = buildEnumSource(
             enumName: enumName,
             cases: generatedCases,
@@ -56,27 +56,21 @@ public struct EnumGenerator: Sendable {
         return GeneratedCode(
             sourceCode: sourceCode,
             fileName: "\(enumName).swift",
-            modifierCount: modifiers.count,
-            warnings: warnings
+            modifierCount: modifiers.count
         )
     }
     
     /// Generates the global ModifierParseError type.
-    ///
-    /// This should be called once and the result included in the output.
-    /// - Returns: A GeneratedCode instance containing the error type.
     public func generateParseErrorType() -> GeneratedCode {
         let sourceCode = """
         import Foundation
         
         /// Errors that can occur when parsing modifiers from syntax.
         public enum ModifierParseError: Error, CustomStringConvertible {
-            /// The number of arguments doesn't match any known variant.
             case unexpectedArgumentCount(modifier: String, expected: [Int], found: Int)
-            /// The arguments could not be parsed for the specified variant.
             case invalidArguments(modifier: String, variant: String, expectedTypes: String)
-            /// Multiple variants match the argument count but labels don't match.
             case ambiguousVariant(modifier: String, expectedLabels: [String])
+            case noMatchingVariant(modifier: String, found: Int)
         
             public var description: String {
                 switch self {
@@ -86,6 +80,8 @@ public struct EnumGenerator: Sendable {
                     return "\\(modifier): invalid arguments for '\\(variant)', expected types: \\(expectedTypes)"
                 case .ambiguousVariant(let modifier, let expectedLabels):
                     return "\\(modifier): ambiguous variant, expected first argument label to be one of \\(expectedLabels)"
+                case .noMatchingVariant(let modifier, let found):
+                    return "\\(modifier): no matching variant found for argument count \\(found)"
                 }
             }
         }
@@ -94,20 +90,16 @@ public struct EnumGenerator: Sendable {
         return GeneratedCode(
             sourceCode: sourceCode,
             fileName: "ModifierParseError.swift",
-            modifierCount: 0,
-            warnings: []
+            modifierCount: 0
         )
     }
     
-    // MARK: - Type Erasure Transformation
+    // MARK: - Transformations
     
     /// Transforms a modifier to use type erasers for generic parameters.
     private func transformModifierForTypeErasure(_ modifier: ModifierInfo) -> ModifierInfo {
-        guard modifier.isGeneric else {
-            return modifier
-        }
+        guard modifier.isGeneric else { return modifier }
         
-        // Build a map of generic parameter names to their erased types
         var genericErasures: [String: String] = [:]
         for genericParam in modifier.genericParameters {
             if let constraint = genericParam.constraint,
@@ -116,7 +108,6 @@ public struct EnumGenerator: Sendable {
             }
         }
         
-        // Transform parameters that use generic types
         let transformedParams = modifier.parameters.map { param -> ModifierInfo.Parameter in
             let newType = replaceGenericTypes(in: param.type, with: genericErasures)
             return ModifierInfo.Parameter(
@@ -128,668 +119,327 @@ public struct EnumGenerator: Sendable {
             )
         }
         
-        return ModifierInfo(
-            name: modifier.name,
-            parameters: transformedParams,
-            returnType: modifier.returnType,
-            availability: modifier.availability,
-            documentation: modifier.documentation,
-            isGeneric: modifier.isGeneric,
-            genericConstraints: modifier.genericConstraints,
-            genericParameters: modifier.genericParameters
-        )
+        return ModifierInfo(name: modifier.name, parameters: transformedParams, returnType: modifier.returnType, availability: modifier.availability, documentation: modifier.documentation, isGeneric: modifier.isGeneric, genericConstraints: modifier.genericConstraints, genericParameters: modifier.genericParameters)
     }
     
-    /// Replaces generic type names with their erased counterparts.
+    /// Transforms closures returning View to `ViewReference` struct.
+    private func transformClosuresToViewReference(_ modifier: ModifierInfo) -> ModifierInfo {
+        let newParams = modifier.parameters.map { param -> ModifierInfo.Parameter in
+            if isViewReturningClosure(param.type, genericParams: modifier.genericParameters) {
+                return ModifierInfo.Parameter(
+                    label: param.label,
+                    name: param.name,
+                    type: "ViewReference",
+                    hasDefaultValue: param.hasDefaultValue,
+                    defaultValue: param.defaultValue
+                )
+            }
+            return param
+        }
+        
+        return ModifierInfo(name: modifier.name, parameters: newParams, returnType: modifier.returnType, availability: modifier.availability, documentation: modifier.documentation, isGeneric: modifier.isGeneric, genericConstraints: modifier.genericConstraints, genericParameters: modifier.genericParameters)
+    }
+    
     private func replaceGenericTypes(in type: String, with erasures: [String: String]) -> String {
         var result = type
         for (genericName, erasedType) in erasures {
-            // Replace standalone generic type names
-            // Be careful not to replace partial matches (e.g., "Label" in "LabelStyle")
             let pattern = "\\b\(genericName)\\b"
             if let regex = try? NSRegularExpression(pattern: pattern, options: []) {
-                result = regex.stringByReplacingMatches(
-                    in: result,
-                    options: [],
-                    range: NSRange(result.startIndex..., in: result),
-                    withTemplate: erasedType
-                )
+                result = regex.stringByReplacingMatches(in: result, options: [], range: NSRange(result.startIndex..., in: result), withTemplate: erasedType)
             }
         }
         return result
     }
     
-    // MARK: - Private Generation Methods
-    
-    /// Generates unique case names for all modifier variants.
-    /// If there's only one variant, uses the simple name.
-    /// If there are multiple variants, adds a suffix based on parameter types.
-    private func generateUniqueCaseNames(for modifiers: [ModifierInfo]) -> [String] {
-        let baseName = modifiers.first.map { makeCaseName(from: $0.name) } ?? "modifier"
+    private func isViewReturningClosure(_ type: String, genericParams: [ModifierInfo.GenericParameter]) -> Bool {
+        guard type.contains("->") else { return false }
         
-        // If only one variant, use the simple name
-        if modifiers.count == 1 {
-            return [baseName]
+        let cleaned = type.replacingOccurrences(of: "@escaping", with: "")
+                          .replacingOccurrences(of: "@ViewBuilder", with: "")
+                          .trimmingCharacters(in: .whitespaces)
+        
+        let components = cleaned.components(separatedBy: "->")
+        guard let returnType = components.last?.trimmingCharacters(in: .whitespaces) else { return false }
+        
+        // Check explicit View types
+        if returnType == "some View" || returnType == "View" || returnType == "SwiftUI.View" || returnType == "AnyView" {
+            return true
         }
         
-        // Multiple variants - need to make them unique
-        var caseNames: [String] = []
-        var usedNames: Set<String> = []
-        
-        for modifier in modifiers {
-            var candidateName = baseName
-            
-            // Add parameter type information to make it unique
-            if !modifier.parameters.isEmpty {
-                let typeSignature = modifier.parameters.map { param -> String in
-                    sanitizeTypeForCaseName(param.type)
-                }.joined()
-                
-                candidateName = baseName + "With" + typeSignature
-            }
-            
-            // Ensure the candidate name is a valid Swift identifier
-            candidateName = sanitizeCaseName(candidateName)
-            
-            // If still not unique, add a numeric suffix
-            var finalName = candidateName
-            var counter = 1
-            while usedNames.contains(finalName) {
-                finalName = "\(candidateName)\(counter)"
-                counter += 1
-            }
-            
-            usedNames.insert(finalName)
-            caseNames.append(finalName)
-        }
-        
-        return caseNames
-    }
-    
-    /// Sanitizes a type string for use in a case name.
-    /// Extracts the simple type name and removes invalid characters.
-    private func sanitizeTypeForCaseName(_ type: String) -> String {
-        // Extract simple type name (e.g., "CGFloat" from "CoreFoundation.CGFloat")
-        let components = type.split(separator: ".")
-        var simpleType = components.last.map(String.init) ?? type
-        
-        // Handle closure types - extract a meaningful name
-        if simpleType.contains("->") {
-            // For closures like "() -> Void", extract return type
-            if let arrowIndex = simpleType.range(of: "->") {
-                let returnPart = simpleType[arrowIndex.upperBound...]
-                    .trimmingCharacters(in: .whitespaces)
-                simpleType = "Closure" + sanitizeTypeForCaseName(returnPart)
-            } else {
-                simpleType = "Closure"
+        // Check generic parameters constrained to View
+        for param in genericParams {
+            if returnType == param.name, let constraint = param.constraint, constraint.contains("View") {
+                return true
             }
         }
         
-        // Remove/replace invalid characters
-        var cleanType = simpleType
-            .replacingOccurrences(of: "<", with: "")
-            .replacingOccurrences(of: ">", with: "")
-            .replacingOccurrences(of: "?", with: "Optional")
-            .replacingOccurrences(of: ",", with: "")
-            .replacingOccurrences(of: " ", with: "")
-            .replacingOccurrences(of: "(", with: "")
-            .replacingOccurrences(of: ")", with: "")
-            .replacingOccurrences(of: "@escaping", with: "")
-            .replacingOccurrences(of: "@Sendable", with: "")
-            .replacingOccurrences(of: "@autoclosure", with: "")
-            .replacingOccurrences(of: "->", with: "")
-            .replacingOccurrences(of: "-", with: "")
-            .replacingOccurrences(of: "[", with: "Array")
-            .replacingOccurrences(of: "]", with: "")
-            .replacingOccurrences(of: ":", with: "")
-            .replacingOccurrences(of: "&", with: "And")
-        
-        // Remove any remaining non-alphanumeric characters
-        cleanType = cleanType.filter { $0.isLetter || $0.isNumber }
-        
-        return cleanType
+        return false
     }
     
-    /// Ensures a case name is a valid Swift identifier.
-    private func sanitizeCaseName(_ name: String) -> String {
-        var result = name
-        
-        // Remove any invalid characters that might have slipped through
-        result = result.filter { $0.isLetter || $0.isNumber || $0 == "_" }
-        
-        // Ensure it doesn't start with a number
-        if let first = result.first, first.isNumber {
-            result = "_" + result
-        }
-        
-        // Ensure it's not empty
-        if result.isEmpty {
-            result = "unknown"
-        }
-        
-        return result
-    }
+    // MARK: - Code Generation
     
-    /// Generates an enum case for a single modifier.
-    private func generateEnumCase(for modifier: ModifierInfo, caseName: String) throws -> String {
-        if modifier.parameters.isEmpty {
-            // Simple case with no associated values
-            return "case \(caseName)"
-        }
-        
-        // Case with associated values - filter out closure types for enum cases
-        let filteredParams = modifier.parameters.filter { !isClosure($0.type) }
-        
-        if filteredParams.isEmpty {
-            return "case \(caseName)"
-        }
-        
-        let params = filteredParams.map { param -> String in
-            let type = cleanTypeForEnumCase(param.type)
-            if let label = param.label {
-                return "\(label): \(type)"
-            } else {
-                return type
-            }
-        }.joined(separator: ", ")
-        
-        return "case \(caseName)(\(params))"
-    }
-    
-    /// Checks if a type string represents a closure.
-    private func isClosure(_ type: String) -> Bool {
-        type.contains("->")
-    }
-    
-    /// Cleans a type for use in an enum case (removes attributes, simplifies).
-    private func cleanTypeForEnumCase(_ type: String) -> String {
-        type
-            .replacingOccurrences(of: "@escaping ", with: "")
-            .replacingOccurrences(of: "@Sendable ", with: "")
-            .replacingOccurrences(of: "@autoclosure ", with: "")
-            .trimmingCharacters(in: .whitespaces)
-    }
-    
-    /// Builds the complete enum source code.
-    private func buildEnumSource(
-        enumName: String,
-        cases: [String],
-        modifiers: [ModifierInfo],
-        caseNames: [String],
-        originalModifiers: [ModifierInfo]
-    ) -> String {
+    private func buildEnumSource(enumName: String, cases: [String], modifiers: [ModifierInfo], caseNames: [String], originalModifiers: [ModifierInfo]) -> String {
         var lines: [String] = []
         
-        // Import statements
         lines.append("import SwiftUI")
         lines.append("import SwiftSyntax")
         lines.append("")
-        
-        // Header comment
         lines.append("/// Generated modifier enum for \(enumName) modifiers.")
-        lines.append("///")
-        lines.append("/// This enum provides type-safe access to SwiftUI view modifiers.")
         lines.append("/// Generated by ModifierSwift.")
-        
-        // Get the base name for the modifier
-        let baseName = originalModifiers.first?.name ?? "modifier"
-        
-        // Enum declaration
         lines.append("public enum \(enumName): Sendable {")
-        
-        // Add cases
         for caseStr in cases {
             lines.append("    \(caseStr)")
         }
-        
         lines.append("}")
         lines.append("")
         
-        // RuntimeViewModifier conformance
         lines.append("extension \(enumName): RuntimeViewModifier {")
-        lines.append("    public static var baseName: String { \"\(baseName)\" }")
+        lines.append("    public static var baseName: String { \"\(originalModifiers.first?.name ?? "modifier")\" }")
         lines.append("")
-        
-        // Init from FunctionCallExprSyntax
         lines.append("    public init(syntax: FunctionCallExprSyntax) throws {")
         
-        // 1. Classification: Strict (no defaults) vs Flexible (has defaults)
         let zipped = zip(modifiers, caseNames).map { ($0.0, $0.1) }
-        let strictVariants = zipped.filter { mod, _ in !mod.parameters.contains { $0.hasDefaultValue } }
-        let flexibleVariants = zipped.filter { mod, _ in mod.parameters.contains { $0.hasDefaultValue } }
-
-        // 2. Phase 1: Strict Matches
-        // We group by argument count to check specific signatures efficiently
-        let strictByCount = Dictionary(grouping: strictVariants, by: { $0.0.parameters.filter { !isClosure($0.type) }.count })
+        
+        // Classification: Strict vs Flexible.
+        // Modifiers with ViewReference are treated as Flexible to handle trailing closures gracefully.
+        let strictVariants = zipped.filter { mod, _ in
+            !mod.parameters.contains { $0.hasDefaultValue || $0.type == "ViewReference" }
+        }
+        let flexibleVariants = zipped.filter { mod, _ in
+            mod.parameters.contains { $0.hasDefaultValue || $0.type == "ViewReference" }
+        }
+        
+        // Phase 1: Strict Matches (Grouped by argument count)
+        let strictByCount = Dictionary(grouping: strictVariants, by: { $0.0.parameters.count })
         
         for count in strictByCount.keys.sorted() {
             let variants = strictByCount[count]!
             lines.append("        if syntax.arguments.count == \(count) {")
             
-            for (modifier, caseName) in variants {
-                lines.append(contentsOf: generateStrictMatch(modifier, caseName: caseName, indent: "            "))
+            if variants.count == 1 {
+                lines.append(contentsOf: generateStrictMatch(variants[0].0, caseName: variants[0].1, indent: "            "))
+            } else {
+                // Disambiguate strict variants (usually by argument labels)
+                lines.append(contentsOf: generateDisambiguatedStrictMatches(variants, indent: "            "))
             }
             lines.append("        }")
         }
-
-        // 3. Phase 2: Flexible Matches (Fallback)
-        // These handle cases with default values (e.g. padding() -> padding(.all, nil))
+        
+        // Phase 2: Flexible Matches (Fallback for defaults/trailing closures)
         for (index, (modifier, caseName)) in flexibleVariants.enumerated() {
             let isLast = index == flexibleVariants.count - 1
             
-            // Disambiguation: Check if specific labels exist to confirm this variant
+            // Build disambiguation condition based on unique labels
             let labels = modifier.parameters
                 .compactMap { $0.label }
-                .filter { !isClosure($0) }
+                .filter { !isClosure($0) } // Don't use closures as discriminators
             
-            // Create condition: if syntax.argument(named: "x") != nil ...
             let conditions = labels.map { "syntax.argument(named: \"\($0)\") != nil" }
             let conditionStr = conditions.joined(separator: " || ")
             
             if !conditions.isEmpty && !isLast {
                 lines.append("        if \(conditionStr) {")
-                lines.append(contentsOf: generateFlexibleMatch(modifier, caseName: caseName, indent: "            "))
+                lines.append(contentsOf: generateFlexibleMatchBody(modifier, caseName: caseName, indent: "            "))
                 lines.append("            return")
                 lines.append("        }")
             } else {
-                // Catch-all for the last flexible variant or one with no labels
-                lines.append(contentsOf: generateFlexibleMatch(modifier, caseName: caseName, indent: "        "))
+                // Catch-all or last variant
+                lines.append(contentsOf: generateFlexibleMatchBody(modifier, caseName: caseName, indent: "        "))
                 lines.append("        return")
             }
         }
+        
+        lines.append("        throw ModifierParseError.noMatchingVariant(modifier: \"\(enumName)\", found: syntax.arguments.count)")
         lines.append("    }")
         
-        // Body method (ViewModifier conformance)
-        lines.append("    public func body(content: Content) -> some View {")
+        // Body implementation with new signature
+        lines.append("    public func body<Library: ElementLibrary>(content: Content, library: Library.Type) -> some View {")
         lines.append("        switch self {")
-        
         for (modifier, caseName) in zip(modifiers, caseNames) {
-            let switchCase = generateBodyCase(for: modifier, caseName: caseName)
-            lines.append("        \(switchCase)")
+            lines.append("        \(generateBodyCase(for: modifier, caseName: caseName))")
         }
-        
         lines.append("        }")
         lines.append("    }")
         lines.append("}")
         
         return lines.joined(separator: "\n")
     }
-
-    /// Generates strict matching logic (e.g. "if let x = Int(syntax: ...)")
+    
     private func generateStrictMatch(_ modifier: ModifierInfo, caseName: String, indent: String) -> [String] {
         var lines: [String] = []
-        let params = modifier.parameters.filter { !isClosure($0.type) }
         var conditions: [String] = []
         
-        for (index, param) in params.enumerated() {
+        for (index, param) in modifier.parameters.enumerated() {
             let varName = param.label ?? "value\(index)"
-            let fullType = cleanTypeForEnumCase(param.type)
+            let cleanType = cleanTypeForEnumCase(param.type)
+            let isOptional = cleanType.hasSuffix("?")
+            let typeToParse = isOptional ? String(cleanType.dropLast()) : cleanType
             
-            // Handle Optionals: Strip '?' to parse the base type
-            // e.g. SwiftUICore.Font? -> SwiftUICore.Font
-            let isOptional = fullType.hasSuffix("?")
-            let parseType = isOptional ? String(fullType.dropLast()) : fullType
+            let accessor = param.label.map { "syntax.argument(named: \"\($0)\")?.expression" } 
+                ?? "(syntax.arguments.count > \(index) ? syntax.arguments[\(index)].expression : nil)"
             
-            // Determine accessor (labeled or positional)
-            let accessor: String
-            if let label = param.label {
-                accessor = "syntax.argument(named: \"\(label)\")?.expression"
+            if param.type == "ViewReference" {
+                 conditions.append("let \(varName) = ViewReference(syntax: \(accessor)!)")
             } else {
-                accessor = "(syntax.arguments.count > \(index) ? syntax.arguments[\(index)].expression : nil)"
-            }
-            
-            // Build condition
-            if isOptional {
-                // For optionals in strict mode, we parse if present. 
-                // Note: This assumes Type(syntax:) returns nil on failure. 
-                // If the argument is "nil", BaseType(syntax: "nil") should ideally return nil (or handle it).
-                conditions.append("let \(varName) = \(parseType)(syntax: \(accessor)!)") 
-            } else {
-                conditions.append("let \(varName) = \(parseType)(syntax: \(accessor)!)")
+                 conditions.append("let \(varName) = \(typeToParse)(syntax: \(accessor)!)")
             }
         }
-        
-        let conditionStr = conditions.joined(separator: ", ")
         
         if conditions.isEmpty {
             lines.append("\(indent)self = .\(caseName)")
             lines.append("\(indent)return")
         } else {
-            // If parsing succeeds, return this case
-            lines.append("\(indent)if \(conditionStr) {")
-            
-            let assignParams = params.enumerated().map { i, p in 
+            lines.append("\(indent)if \(conditions.joined(separator: ", ")) {")
+            let args = modifier.parameters.enumerated().map { i, p in 
                 let name = p.label ?? "value\(i)"
                 return p.label != nil ? "\(p.label!): \(name)" : name 
             }.joined(separator: ", ")
-            
-            lines.append("\(indent)    self = .\(caseName)(\(assignParams))")
+            lines.append("\(indent)    self = .\(caseName)(\(args))")
             lines.append("\(indent)    return")
             lines.append("\(indent)}")
         }
-        
+        return lines
+    }
+    
+    private func generateDisambiguatedStrictMatches(_ variants: [(ModifierInfo, String)], indent: String) -> [String] {
+        var lines: [String] = []
+        for (modifier, caseName) in variants {
+            lines.append(contentsOf: generateStrictMatch(modifier, caseName: caseName, indent: indent))
+        }
         return lines
     }
 
-    /// Generates flexible matching logic with defaults (e.g. "let x = ... ?? default")
-    private func generateFlexibleMatch(_ modifier: ModifierInfo, caseName: String, indent: String) -> [String] {
+    private func generateFlexibleMatchBody(_ modifier: ModifierInfo, caseName: String, indent: String) -> [String] {
         var lines: [String] = []
-        let params = modifier.parameters.filter { !isClosure($0.type) }
         
-        for (index, param) in params.enumerated() {
+        for (index, param) in modifier.parameters.enumerated() {
             let varName = param.label ?? "value\(index)"
-            let fullType = cleanTypeForEnumCase(param.type)
-            let isOptional = fullType.hasSuffix("?")
-            let parseType = isOptional ? String(fullType.dropLast()) : fullType
+            let type = cleanTypeForEnumCase(param.type)
+            let isOptional = type.hasSuffix("?")
+            let baseType = isOptional ? String(type.dropLast()) : type
             
-            // Accessor
-            let namedAccess = param.label.map { "syntax.argument(named: \"\($0)\")?.expression" }
-            let positionalAccess = "(syntax.arguments.count > \(index) ? syntax.arguments[\(index)].expression : nil)"
-            let primaryAccess = namedAccess ?? positionalAccess
+            let accessor = param.label.map { "syntax.argument(named: \"\($0)\")?.expression" }
+                ?? "(syntax.arguments.count > \(index) ? syntax.arguments[\(index)].expression : nil)"
             
-            // Default Value
-            let defaultVal = param.defaultValue ?? (isOptional ? "nil" : nil)
-            
-            var extraction = "\(primaryAccess).flatMap { \(parseType)(syntax: $0) }"
-            
-            if let def = defaultVal {
-                extraction += " ?? \(def)"
+            if param.type == "ViewReference" {
+                let isLast = index == modifier.parameters.count - 1
+                let defaultVal = param.defaultValue ?? "ViewReference(reference: nil)"
+                
+                let extractExpr: String
+                if isLast {
+                    extractExpr = "(\(accessor) ?? syntax.trailingClosure.map { ExprSyntax($0) })"
+                } else {
+                    extractExpr = accessor
+                }
+                
+                lines.append("\(indent)let \(varName): \(type) = \(extractExpr).flatMap { ViewReference(syntax: $0) } ?? \(defaultVal)")
+                
+            } else {
+                let defaultVal = param.defaultValue ?? (isOptional ? "nil" : nil)
+                var extraction = "\(accessor).flatMap { \(baseType)(syntax: $0) }"
+                if let def = defaultVal {
+                    extraction += " ?? \(def)"
+                }
+                lines.append("\(indent)let \(varName): \(type) = \(extraction)")
             }
-            
-            lines.append("\(indent)let \(varName): \(fullType) = \(extraction)")
         }
         
-        let assignParams = params.enumerated().map { i, p in 
+        let args = modifier.parameters.enumerated().map { i, p in 
             let name = p.label ?? "value\(i)"
             return p.label != nil ? "\(p.label!): \(name)" : name 
         }.joined(separator: ", ")
         
-        lines.append("\(indent)self = .\(caseName)(\(assignParams))")
-        
+        lines.append("\(indent)self = .\(caseName)(\(args))")
         return lines
     }
+
+    // MARK: - Helpers
     
-    /// Generates the init case parsing code for a modifier variant using guard statements.
-    /// This is used when there's only one variant for a given argument count.
-    private func generateInitCase(for modifier: ModifierInfo, caseName: String, enumName: String, indent: String) -> [String] {
-        var lines: [String] = []
+    private func generateUniqueCaseNames(for modifiers: [ModifierInfo]) -> [String] {
+        let baseName = modifiers.first.map { makeCaseName(from: $0.name) } ?? "modifier"
+        if modifiers.count == 1 { return [baseName] }
         
-        let nonClosureParams = modifier.parameters.filter { !isClosure($0.type) }
+        var names: [String] = []
+        var used: Set<String> = []
         
-        if nonClosureParams.isEmpty {
-            lines.append("\(indent)self = .\(caseName)")
-            return lines
-        }
-        
-        // Generate parsing statements for each parameter (positional or labeled, defaults supported)
-        for (index, param) in nonClosureParams.enumerated() {
-            let varName = param.label ?? "value\(index)"
-            let type = cleanTypeForEnumCase(param.type)
-            let hasDefault = param.hasDefaultValue
-            let defaultVal = param.defaultValue ?? "nil"
-
-            // Build an argument expression accessor that returns an ExprSyntax?.
-            // Use labeled lookup when present; otherwise use positional lookup guarded by count.
-            let argAccessor: String
-            if let label = param.label {
-                // Use the faster helper available in another package
-                argAccessor = "syntax.argument(named: \"\(label)\")?.expression"
-            } else {
-                argAccessor = "(syntax.arguments.count > \(index) ? syntax.arguments[\(index)].expression : nil)"
+        for mod in modifiers {
+            var name = baseName
+            if !mod.parameters.isEmpty {
+                name += "With" + mod.parameters.map { sanitizeTypeForCaseName($0.type) }.joined()
             }
-
-            if type.hasSuffix("?") {
-                // Optional type - parse when argument is present, otherwise use default or nil
-                let baseType = String(type.dropLast())
-
-                if hasDefault {
-                    // If default exists, perform a parsed-or-default assignment using if-expression
-                    lines.append("\(indent)let \(varName): \(type) = if let expr = \(argAccessor), let parsed = \(baseType)(syntax: expr) { parsed } else { \(defaultVal) }")
-                } else {
-                    // No default, just try to parse the argument (may be nil)
-                    lines.append("\(indent)let \(varName): \(type) = if let expr = \(argAccessor) { \(baseType)(syntax: expr) } else { nil }")
-                }
-            } else {
-                // Non-optional (required) type
-                if hasDefault {
-                    // Use argument if present and parsable, otherwise fall back to the default value
-                    lines.append("\(indent)let \(varName): \(type) = if let expr = \(argAccessor), let parsed = \(type)(syntax: expr) { parsed } else { \(defaultVal) }")
-                } else {
-                    // Required type - use guard with labeled/positional lookup
-                    if let label = param.label {
-                        lines.append("\(indent)guard let expr_\(varName) = syntax.argument(named: \"\(label)\")?.expression, let \(varName) = \(type)(syntax: expr_\(varName)) else {")
-                    } else {
-                        lines.append("\(indent)guard let expr_\(varName) = (syntax.arguments.count > \(index) ? syntax.arguments[\(index)].expression : nil), let \(varName) = \(type)(syntax: expr_\(varName)) else {")
-                    }
-                    let expectedTypes = nonClosureParams.map { cleanTypeForEnumCase($0.type) }.joined(separator: ", ")
-                    lines.append("\(indent)    throw ModifierParseError.invalidArguments(modifier: \"\(enumName)\", variant: \"\(caseName)\", expectedTypes: \"\(expectedTypes)\")")
-                    lines.append("\(indent)}")
-                }
+            name = sanitizeCaseName(name)
+            var unique = name
+            var count = 1
+            while used.contains(unique) {
+                unique = "\(name)\(count)"
+                count += 1
             }
+            used.insert(unique)
+            names.append(unique)
         }
-        
-        let caseParams = nonClosureParams.enumerated().map { index, param -> String in
-            let varName = param.label ?? "value\(index)"
-            return param.label != nil ? "\(param.label!): \(varName)" : varName
+        return names
+    }
+    
+    private func makeCaseName(from name: String) -> String {
+        var res = name
+        if res.hasPrefix("_") { res = "underscore" + res.dropFirst() }
+        if let f = res.first { res = f.lowercased() + res.dropFirst() }
+        return res
+    }
+    
+    private func sanitizeCaseName(_ name: String) -> String {
+        let filtered = name.filter { $0.isLetter || $0.isNumber || $0 == "_" }
+        return filtered.isEmpty ? "unknown" : (filtered.first!.isNumber ? "_" + filtered : filtered)
+    }
+    
+    private func sanitizeTypeForCaseName(_ type: String) -> String {
+        if type == "ViewReference" { return "View" }
+        return type.replacingOccurrences(of: "[", with: "Array")
+                   .replacingOccurrences(of: "]", with: "")
+                   .replacingOccurrences(of: "?", with: "Optional")
+                   .filter { $0.isLetter || $0.isNumber }
+    }
+    
+    private func generateEnumCase(for modifier: ModifierInfo, caseName: String) throws -> String {
+        if modifier.parameters.isEmpty { return "case \(caseName)" }
+        let params = modifier.parameters.map { p in
+            let t = cleanTypeForEnumCase(p.type)
+            return p.label != nil ? "\(p.label!): \(t)" : t
         }.joined(separator: ", ")
-        
-        lines.append("\(indent)self = .\(caseName)(\(caseParams))")
-        
-        return lines
+        return "case \(caseName)(\(params))"
     }
     
-    /// Generates disambiguation logic for multiple variants with the same argument count.
-    /// Uses if/else if chains to try each variant by type.
-    private func generateDisambiguatedInitCases(for variants: [(ModifierInfo, String)], enumName: String, indent: String) -> [String] {
-        var lines: [String] = []
-        
-        // Build a mapping of argument labels to variants
-        // Use the first argument's label as the primary discriminator
-        var variantsByFirstLabel: [String?: [(ModifierInfo, String)]] = [:]
-        for (modifier, caseName) in variants {
-            let nonClosureParams = modifier.parameters.filter { !isClosure($0.type) }
-            let firstLabel = nonClosureParams.first?.label
-            variantsByFirstLabel[firstLabel, default: []].append((modifier, caseName))
-        }
-        
-        // If we can disambiguate by first argument label
-        if variantsByFirstLabel.count > 1 {
-            lines.append("\(indent)let firstLabel = syntax.arguments.first?.label?.text")
-            lines.append("\(indent)switch firstLabel {")
-            
-            for (label, labelVariants) in variantsByFirstLabel.sorted(by: { ($0.key ?? "") < ($1.key ?? "") }) {
-                if let label = label {
-                    lines.append("\(indent)case \"\(label)\":")
-                } else {
-                    lines.append("\(indent)case nil:")
-                }
-                
-                if labelVariants.count == 1 {
-                    let (modifier, caseName) = labelVariants[0]
-                    lines.append(contentsOf: generateInitCase(for: modifier, caseName: caseName, enumName: enumName, indent: indent + "    "))
-                } else {
-                    // Multiple variants with same label - try each by type
-                    lines.append(contentsOf: generateTypeBasedDisambiguation(for: labelVariants, enumName: enumName, indent: indent + "    "))
-                }
-            }
-            
-            // Add default case for unexpected labels
-            let expectedLabels = variantsByFirstLabel.keys.compactMap { $0 }.map { "\"\($0)\"" }.joined(separator: ", ")
-            lines.append("\(indent)default:")
-            lines.append("\(indent)    throw ModifierParseError.ambiguousVariant(modifier: \"\(enumName)\", expectedLabels: [\(expectedLabels)])")
-            lines.append("\(indent)}")
-        } else {
-            // Cannot disambiguate by label - try each variant by type
-            lines.append(contentsOf: generateTypeBasedDisambiguation(for: variants, enumName: enumName, indent: indent))
-        }
-        
-        return lines
-    }
-    
-    /// Generates if/else if chain to try each variant by parsing their types.
-    private func generateTypeBasedDisambiguation(for variants: [(ModifierInfo, String)], enumName: String, indent: String) -> [String] {
-        var lines: [String] = []
-        
-        for (index, (modifier, caseName)) in variants.enumerated() {
-            let nonClosureParams = modifier.parameters.filter { !isClosure($0.type) }
-            
-            // Build the if condition
-            var conditions: [String] = []
-            var optionalParams: [(varName: String, type: String, index: Int)] = []
-            
-            for (paramIndex, param) in nonClosureParams.enumerated() {
-                let varName = param.label ?? "value\(paramIndex)"
-                let type = cleanTypeForEnumCase(param.type)
-                let hasDefault = param.hasDefaultValue
-
-                // Build argument accessor for this parameter
-                let argAccessor: String
-                if let label = param.label {
-                    argAccessor = "syntax.argument(named: \"\(label)\")?.expression"
-                } else {
-                    argAccessor = "(syntax.arguments.count > \(paramIndex) ? syntax.arguments[\(paramIndex)].expression : nil)"
-                }
-
-                if type.hasSuffix("?") {
-                    // Track optional params to parse after the condition
-                    let baseType = String(type.dropLast())
-                    optionalParams.append((varName: varName, type: baseType, index: paramIndex))
-                } else if hasDefault {
-                    // Parameters with defaults are not required for the condition; parse in block
-                    optionalParams.append((varName: varName, type: type, index: paramIndex))
-                } else {
-                    if let label = param.label {
-                        let exprName = "expr_\(varName)"
-                        let exprBind = "let \(exprName) = syntax.argument(named: \"\(label)\")?.expression"
-                        let parseBind = "let \(varName) = \(type)(syntax: \(exprName))"
-                        conditions.append(exprBind + ", " + parseBind)
-                    } else {
-                        let parseExpr = "\(type)(syntax: \(argAccessor)!)"
-                        conditions.append("let \(varName): \(type) = \(parseExpr)")
-                    }
-                }
-            }
-            
-            let keyword = index == 0 ? "if" : "} else if"
-            
-            if conditions.isEmpty {
-                // All parameters are optional - this variant always matches
-                if index == 0 {
-                    // Just use this variant directly
-                    for opt in optionalParams {
-                        // Build an accessor for optional param
-                        let argAccessor: String
-                        if let label = nonClosureParams[opt.index].label {
-                            argAccessor = "syntax.argument(named: \"\(label)\")?.expression"
-                        } else {
-                            argAccessor = "(syntax.arguments.count > \(opt.index) ? syntax.arguments[\(opt.index)].expression : nil)"
-                        }
-                        
-                        // If parameter is optional (opt.type is base type without ?), parse into optional value
-                        // Here opt.type is the base type for optional entries.
-                        lines.append("\(indent)let \(opt.varName): \(opt.type)? = if let expr = \(argAccessor) { \(opt.type)(syntax: expr) } else { nil }")
-                    }
-                    let caseParams = nonClosureParams.enumerated().map { idx, param -> String in
-                        let varName = param.label ?? "value\(idx)"
-                        return param.label != nil ? "\(param.label!): \(varName)" : varName
-                    }.joined(separator: ", ")
-                    lines.append("\(indent)self = .\(caseName)(\(caseParams))")
-                    return lines
-                } else {
-                    lines.append("\(indent)\(keyword) true {")
-                }
-            } else {
-                lines.append("\(indent)\(keyword) \(conditions.joined(separator: ", ")) {")
-            }
-            
-            // Parse optional and defaulted parameters inside the if block
-            for opt in optionalParams {
-                let label = nonClosureParams[opt.index].label
-                let argAccessor: String
-                if let label = label {
-                    argAccessor = "syntax.argument(named: \"\(label)\")?.expression"
-                } else {
-                    argAccessor = "(syntax.arguments.count > \(opt.index) ? syntax.arguments[\(opt.index)].expression : nil)"
-                }
-
-                // If this param has a default value, we should fall back to it when parse fails.
-                let hasDefault = nonClosureParams[opt.index].hasDefaultValue
-                let defaultVal = nonClosureParams[opt.index].defaultValue ?? "nil"
-
-                if hasDefault {
-                    lines.append("\(indent)    let \(opt.varName): \(opt.type) = if let expr = \(argAccessor), let parsed = \(opt.type)(syntax: expr) { parsed } else { \(defaultVal) }")
-                } else {
-                    // No default - just try to parse (optional result)
-                    lines.append("\(indent)    let \(opt.varName): \(opt.type) = if let expr = \(argAccessor) { \(opt.type)(syntax: expr) } else { nil }")
-                }
-            }
-            
-            // Build case parameters
-            let caseParams = nonClosureParams.enumerated().map { idx, param -> String in
-                let varName = param.label ?? "value\(idx)"
-                return param.label != nil ? "\(param.label!): \(varName)" : varName
-            }.joined(separator: ", ")
-            
-            lines.append("\(indent)    self = .\(caseName)(\(caseParams))")
-        }
-        
-        // Add else clause with error
-        let allExpectedTypes = variants.map { modifier, _ in
-            let nonClosureParams = modifier.parameters.filter { !isClosure($0.type) }
-            return nonClosureParams.map { cleanTypeForEnumCase($0.type) }.joined(separator: ", ")
-        }.joined(separator: " or ")
-        
-        lines.append("\(indent)} else {")
-        lines.append("\(indent)    throw ModifierParseError.invalidArguments(modifier: \"\(enumName)\", variant: \"multiple variants\", expectedTypes: \"\(allExpectedTypes)\")")
-        lines.append("\(indent)}")
-        
-        return lines
-    }
-    
-    /// Generates a switch case for the body method.
     private func generateBodyCase(for modifier: ModifierInfo, caseName: String) -> String {
-        let nonClosureParams = modifier.parameters.filter { !isClosure($0.type) }
+        if modifier.parameters.isEmpty { return "case .\(caseName):\n            content.\(modifier.name)()" }
         
-        if nonClosureParams.isEmpty {
-            return "case .\(caseName):\n            content.\(modifier.name)()"
-        }
-        
-        // Build pattern and call
-        let pattern = nonClosureParams.enumerated().map { index, param -> String in
-            if let label = param.label {
-                return "let \(label)"
-            } else {
-                return "let value\(index)"
-            }
+        let patterns = modifier.parameters.enumerated().map { i, p in
+            p.label.map { "let \($0)" } ?? "let value\(i)"
         }.joined(separator: ", ")
         
-        let call = nonClosureParams.enumerated().map { index, param -> String in
-            let varName = param.label ?? "value\(index)"
-            if let paramLabel = param.label {
-                return "\(paramLabel): \(varName)"
-            } else {
-                return varName
+        let calls = modifier.parameters.enumerated().map { i, p in
+            let val = p.label ?? "value\(i)"
+            
+            if p.type == "ViewReference" {
+                 if p.label != nil {
+                     return "\(p.label!): { \(val) }"
+                 } else {
+                     return "{ \(val) }"
+                 }
             }
+            
+            return p.label != nil ? "\(p.label!): \(val)" : val
         }.joined(separator: ", ")
         
-        return "case .\(caseName)(\(pattern)):\n            content.\(modifier.name)(\(call))"
+        return "case .\(caseName)(\(patterns)):\n            content.\(modifier.name)(\(calls))"
     }
     
-    /// Creates a valid Swift enum case name from a modifier name.
-    private func makeCaseName(from modifierName: String) -> String {
-        // Remove special characters and convert to camelCase
-        var name = modifierName
-        
-        // Handle leading underscores
-        if name.hasPrefix("_") {
-            name = "underscore" + name.dropFirst()
-        }
-        
-        // Ensure first character is lowercase
-        if let first = name.first {
-            name = first.lowercased() + name.dropFirst()
-        }
-        
-        return name
+    private func isClosure(_ type: String) -> Bool {
+        return type.contains("->") && !type.contains("ViewReference")
+    }
+    
+    private func cleanTypeForEnumCase(_ type: String) -> String {
+        type.replacingOccurrences(of: "@escaping", with: "")
+            .replacingOccurrences(of: "@ViewBuilder", with: "")
+            .trimmingCharacters(in: .whitespaces)
     }
 }
