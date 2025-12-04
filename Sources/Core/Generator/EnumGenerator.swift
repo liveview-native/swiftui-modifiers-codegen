@@ -116,7 +116,17 @@ public struct EnumGenerator: Sendable {
             )
         }
         
-        return ModifierInfo(name: modifier.name, parameters: transformedParams, returnType: modifier.returnType, availability: modifier.availability, documentation: modifier.documentation, isGeneric: modifier.isGeneric, genericConstraints: modifier.genericConstraints, genericParameters: modifier.genericParameters)
+        return ModifierInfo(
+            name: modifier.name,
+            parameters: transformedParams,
+            returnType: modifier.returnType,
+            availability: modifier.availability,
+            buildCondition: modifier.buildCondition,
+            documentation: modifier.documentation,
+            isGeneric: modifier.isGeneric,
+            genericConstraints: modifier.genericConstraints,
+            genericParameters: modifier.genericParameters
+        )
     }
     
     private func transformClosuresToViewReference(_ modifier: ModifierInfo) -> ModifierInfo {
@@ -133,7 +143,17 @@ public struct EnumGenerator: Sendable {
             return param
         }
         
-        return ModifierInfo(name: modifier.name, parameters: newParams, returnType: modifier.returnType, availability: modifier.availability, documentation: modifier.documentation, isGeneric: modifier.isGeneric, genericConstraints: modifier.genericConstraints, genericParameters: modifier.genericParameters)
+        return ModifierInfo(
+            name: modifier.name,
+            parameters: newParams,
+            returnType: modifier.returnType,
+            availability: modifier.availability,
+            buildCondition: modifier.buildCondition,
+            documentation: modifier.documentation,
+            isGeneric: modifier.isGeneric,
+            genericConstraints: modifier.genericConstraints,
+            genericParameters: modifier.genericParameters
+        )
     }
     
     private func replaceGenericTypes(in type: String, with erasures: [String: String]) -> String {
@@ -194,7 +214,6 @@ public struct EnumGenerator: Sendable {
         lines.append("        var errors: [Error] = []")
         
         // 1. Sort variants by Specificity
-        //    Priority: Most required arguments -> Most total arguments
         let variants = zip(modifiers, caseNames).map { ($0, $1) }
         let sortedVariants = variants.sorted { (v1, v2) in
             let req1 = v1.0.parameters.filter { !$0.hasDefaultValue }.count
@@ -203,25 +222,52 @@ public struct EnumGenerator: Sendable {
             return v1.0.parameters.count > v2.0.parameters.count
         }
         
-        // 2. Try each variant in a do-catch block
+        // 2. Try each variant
         for (modifier, caseName) in sortedVariants {
-            lines.append("        do {")
-            lines.append(contentsOf: generateVariantTryBlock(modifier, caseName: caseName, enumName: enumName, indent: "            "))
-            lines.append("            return")
-            lines.append("        } catch {")
-            lines.append("            errors.append(error)")
-            lines.append("        }")
+            if let condition = modifier.buildCondition {
+                lines.append("        #if \(condition)")
+            }
+            
+            if let avail = modifier.availability {
+                lines.append("        if #available(\(avail)) {")
+                lines.append("            do {")
+                lines.append(contentsOf: generateVariantTryBlock(modifier, caseName: caseName, enumName: enumName, indent: "                "))
+                lines.append("                return")
+                lines.append("            } catch {")
+                lines.append("                errors.append(error)")
+                lines.append("            }")
+                lines.append("        }")
+            } else {
+                lines.append("        do {")
+                lines.append(contentsOf: generateVariantTryBlock(modifier, caseName: caseName, enumName: enumName, indent: "            "))
+                lines.append("            return")
+                lines.append("        } catch {")
+                lines.append("            errors.append(error)")
+                lines.append("        }")
+            }
+            
+            if modifier.buildCondition != nil {
+                lines.append("        #endif")
+            }
         }
         
-        // 3. Fallback error
         lines.append("        throw ModifierParseError.noMatchingVariant(modifier: \"\(enumName)\", errors: errors)")
         lines.append("    }")
         
         // Body implementation
+        lines.append("    @ViewBuilder")
         lines.append("    public func body(content: Content) -> some View {")
         lines.append("        switch self {")
         for (modifier, caseName) in zip(modifiers, caseNames) {
+            if let condition = modifier.buildCondition {
+                lines.append("        #if \(condition)")
+            }
+            
             lines.append("        \(generateBodyCase(for: modifier, caseName: caseName))")
+            
+            if modifier.buildCondition != nil {
+                lines.append("        #endif")
+            }
         }
         lines.append("        }")
         lines.append("    }")
@@ -239,7 +285,6 @@ public struct EnumGenerator: Sendable {
             let isOptional = type.hasSuffix("?")
             let baseType = isOptional ? String(type.dropLast()) : type
             
-            // Build accessor string (Labeled or Positional)
             let accessor: String
             if let label = param.label {
                 accessor = "syntax.argument(named: \"\(label)\")"
@@ -247,7 +292,6 @@ public struct EnumGenerator: Sendable {
                 accessor = "(syntax.arguments.count > \(index) ? syntax.arguments[\(index)] : nil)"
             }
             
-            // Generate parsing expression using flatMap({ ... }) syntax with parentheses
             let parseExpr: String
             if param.type.hasPrefix("ViewReference") {
                 parseExpr = "\(accessor).flatMap({ ViewReference<Library>(syntax: $0.expression) })"
@@ -256,11 +300,9 @@ public struct EnumGenerator: Sendable {
             }
             
             if param.hasDefaultValue || isOptional {
-                // Flexible: Use parsed value or default
                 let defaultVal = param.defaultValue ?? (isOptional ? "nil" : "/* error: no default */")
                 lines.append("\(indent)let \(varName): \(type) = \(parseExpr) ?? \(defaultVal)")
             } else {
-                // Required: Must exist and parse
                 lines.append("\(indent)guard let \(varName) = \(parseExpr) else {")
                 lines.append("\(indent)    throw ModifierParseError.missingRequiredArgument(modifier: \"\(enumName)\", argument: \"\(param.name)\")")
                 lines.append("\(indent)}")
@@ -324,36 +366,71 @@ public struct EnumGenerator: Sendable {
     }
     
     private func generateEnumCase(for modifier: ModifierInfo, caseName: String) throws -> String {
-        if modifier.parameters.isEmpty { return "case \(caseName)" }
-        let params = modifier.parameters.map { p in
-            let t = cleanTypeForEnumCase(p.type)
-            return p.label != nil ? "\(p.label!): \(t)" : t
-        }.joined(separator: ", ")
-        return "case \(caseName)(\(params))"
+        var caseLine = "case \(caseName)"
+        
+        if !modifier.parameters.isEmpty {
+            let params = modifier.parameters.map { p in
+                let t = cleanTypeForEnumCase(p.type)
+                return p.label != nil ? "\(p.label!): \(t)" : t
+            }.joined(separator: ", ")
+            caseLine += "(\(params))"
+        }
+        
+        if let avail = modifier.availability {
+            caseLine = "@available(\(avail))\n    \(caseLine)"
+        }
+        
+        if let condition = modifier.buildCondition {
+            caseLine = "#if \(condition)\n    \(caseLine)\n    #endif"
+        }
+        
+        return caseLine
     }
     
     private func generateBodyCase(for modifier: ModifierInfo, caseName: String) -> String {
-        if modifier.parameters.isEmpty { return "case .\(caseName):\n            content.\(modifier.name)()" }
-        
-        let patterns = modifier.parameters.enumerated().map { i, p in
+        let patternParams = modifier.parameters.enumerated().map { i, p in
             p.label.map { "let \($0)" } ?? "let value\(i)"
         }.joined(separator: ", ")
         
+        let pattern = modifier.parameters.isEmpty ? "case .\(caseName)" : "case .\(caseName)(\(patternParams))"
+        
         let calls = modifier.parameters.enumerated().map { i, p in
             let val = p.label ?? "value\(i)"
-            
             if p.type.hasPrefix("ViewReference") {
-                 if p.label != nil {
-                     return "\(p.label!): { \(val) }"
-                 } else {
-                     return "{ \(val) }"
-                 }
+                 return p.label != nil ? "\(p.label!): { \(val) }" : "{ \(val) }"
             }
-            
             return p.label != nil ? "\(p.label!): \(val)" : val
         }.joined(separator: ", ")
         
-        return "case .\(caseName)(\(patterns)):\n            content.\(modifier.name)(\(calls))"
+        let methodCall = "content.\(modifier.name)(\(calls))"
+        
+        if let avail = modifier.availability {
+            // Manual construction for correct indentation
+            // Line 1: Pattern is printed by caller via return value start
+            // Line 2: if #available(...) {
+            // Line 3:     methodCall
+            // Line 4: } else {
+            // Line 5:     content
+            // Line 6: }
+            
+            let lines = [
+                "if #available(\(avail)) {",
+                "    \(methodCall)",
+                "} else {",
+                "    content",
+                "}"
+            ]
+            
+            // Indent all lines after the first one to match the body level (12 spaces)
+            let indentedBlock = lines.enumerated().map { i, line in
+                if i == 0 { return line }
+                return "            " + line
+            }.joined(separator: "\n")
+            
+            return "\(pattern):\n            \(indentedBlock)"
+        }
+        
+        return "\(pattern):\n            \(methodCall)"
     }
     
     private func isClosure(_ type: String) -> Bool {
