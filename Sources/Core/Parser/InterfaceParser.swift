@@ -101,11 +101,7 @@ public struct InterfaceParser: Sendable {
         return modifiers
     }
     
-    /// Cleans raw #if conditions to only include os(...) checks.
-    /// Example: "compiler(>=5.3) && os(iOS)" -> "os(iOS)"
     private func sanitizeCondition(_ raw: String) -> String? {
-        // Regex to match 'os(Name)' or '!os(Name)'
-        // We use string processing since regex literals require newer Swift
         let range = NSRange(location: 0, length: raw.utf16.count)
         let regex = try? NSRegularExpression(pattern: "!?os\\([^)]+\\)")
         
@@ -120,8 +116,6 @@ public struct InterfaceParser: Sendable {
             return ""
         }
         
-        // Join with || to create a permissive build condition (standard for availability lists)
-        // Note: Logic inside #if in swiftinterface is usually OR for platforms
         return conditions.joined(separator: " || ")
     }
     
@@ -173,7 +167,7 @@ public struct InterfaceParser: Sendable {
         
         var availablePlatforms: [String] = []
         var unavailablePlatforms: [String] = []
-        var availabilityString: String? = nil
+        var availabilityEntries: [String] = []
         
         for element in attributes {
             guard let attr = element.as(AttributeSyntax.self),
@@ -182,7 +176,7 @@ public struct InterfaceParser: Sendable {
                   let arguments = attr.arguments?.as(AvailabilityArgumentListSyntax.self)
             else { continue }
             
-            // Ignore swift version checks
+            // Ignore swift language version checks
             if let firstArg = arguments.first?.argument.as(TokenSyntax.self), firstArg.text == "swift" {
                 continue
             }
@@ -205,51 +199,51 @@ public struct InterfaceParser: Sendable {
                     }
                 }
             } else {
-                // Collect valid runtime checks
-                var cleanArgs: [String] = []
+                // Parse Availability entries statefully
+                var currentPlatform: String? = nil
                 
                 for arg in arguments {
-                    // Get raw text and strip trailing comma
-                    let rawText = arg.description.trimmingCharacters(in: .whitespaces)
-                    let text = rawText.hasSuffix(",") ? String(rawText.dropLast()).trimmingCharacters(in: .whitespaces) : rawText
+                    let description = arg.argument.description.trimmingCharacters(in: .whitespaces)
                     
-                    // Filter out deprecated, message, renamed, etc.
-                    // We check prefixes on the clean text string to handle "label: value" and "token"
-                    if text.hasPrefix("message:") || 
-                       text.hasPrefix("renamed:") || 
-                       text.hasPrefix("obsoleted:") || 
-                       text.hasPrefix("introduced:") || 
-                       text.hasPrefix("deprecated") || // Handles "deprecated" and "deprecated:"
-                       text == "noasync" ||
-                       text == "unavailable" {
-                        continue
-                    }
-                    
-                    cleanArgs.append(text)
-                    
-                    // Collect positive platforms for build condition
-                    // We look for known platform names in the text
-                    let parts = text.split(separator: " ")
-                    if let first = parts.first {
-                        let platform = String(first)
-                        if ["iOS", "macOS", "tvOS", "watchOS", "visionOS"].contains(platform) {
-                            availablePlatforms.append(platform)
+                    // 1. Check for PlatformVersion syntax (e.g. "iOS 13.0")
+                    if let platformVer = arg.argument.as(PlatformVersionSyntax.self) {
+                        let versionStr = platformVer.version?.description ?? ""
+                        let entry = "\(platformVer.platform.text) \(versionStr)".trimmingCharacters(in: .whitespaces)
+                        
+                        availabilityEntries.append(entry)
+                        availablePlatforms.append(platformVer.platform.text)
+                        currentPlatform = nil // Reset state
+                    } 
+                    // 2. Check for Token syntax (e.g. "iOS", "*", "deprecated")
+                    else if let token = arg.argument.as(TokenSyntax.self) {
+                        let text = token.text
+                        
+                        if ["iOS", "macOS", "tvOS", "watchOS", "visionOS"].contains(text) {
+                            currentPlatform = text
+                            availablePlatforms.append(text)
+                        } else if text == "*" {
+                            // We add * later manually to ensure it's at the end
                         }
                     }
-                }
-                
-                // Construct availability string
-                // Only if it contains meaningful checks (not just "*")
-                if !cleanArgs.isEmpty {
-                    if cleanArgs.count == 1 && cleanArgs.first == "*" {
-                        // Do not generate specific availability check for just "*"
-                    } else {
-                        if availabilityString == nil {
-                            availabilityString = cleanArgs.joined(separator: ", ")
+                    // 3. Check for Labeled Syntax (e.g. "introduced: 13.0")
+                    else if description.hasPrefix("introduced:") {
+                        if let platform = currentPlatform {
+                            // Extract version part
+                            let version = description.replacingOccurrences(of: "introduced:", with: "").trimmingCharacters(in: .whitespaces)
+                            availabilityEntries.append("\(platform) \(version)")
+                            currentPlatform = nil
                         }
                     }
                 }
             }
+        }
+        
+        // Construct availability string
+        var availabilityString: String? = nil
+        if !availabilityEntries.isEmpty {
+            // Deduplicate entries roughly
+            let uniqueEntries = Array(Set(availabilityEntries)).sorted()
+            availabilityString = uniqueEntries.joined(separator: ", ") + ", *"
         }
         
         // Construct Build Condition

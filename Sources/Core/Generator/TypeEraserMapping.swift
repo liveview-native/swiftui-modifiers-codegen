@@ -1,4 +1,6 @@
 import Foundation
+import SwiftSyntax
+import SwiftParser
 
 /// Maps generic type constraints to their corresponding type erasers.
 ///
@@ -99,25 +101,41 @@ public struct TypeEraserMapping: Sendable {
         "DisclosureGroupStyle": "AnyDisclosureGroupStyle",
     ]
     
-    /// Returns the type eraser for a given constraint, if one exists.
+    /// Returns the type eraser for a given constraint or type string.
     ///
-    /// - Parameter constraint: The protocol constraint (e.g., "View", "StringProtocol").
+    /// - Parameter constraint: The protocol constraint (e.g., "View") or type string (e.g. "some Shape").
     /// - Returns: The corresponding type eraser, or nil if none exists.
     public static func eraser(for constraint: String) -> String? {
-        // Clean up the constraint (remove module prefixes for matching)
-        let cleanConstraint = constraint
+        let clean = constraint
             .replacingOccurrences(of: "SwiftUI.", with: "")
             .replacingOccurrences(of: "SwiftUICore.", with: "")
             .replacingOccurrences(of: "Swift.", with: "")
+            .trimmingCharacters(in: .whitespaces)
         
-        // Check built-in erasers first
-        if let eraser = builtInErasers[constraint] ?? builtInErasers[cleanConstraint] {
+        // 1. Check built-in and custom erasers first (for raw protocol names)
+        if let eraser = builtInErasers[clean] ?? builtInErasers[constraint] {
+            return eraser
+        }
+        if let eraser = customEraserProtocols[clean] ?? customEraserProtocols[constraint] {
             return eraser
         }
         
-        // Check custom eraser protocols
-        if let eraser = customEraserProtocols[constraint] ?? customEraserProtocols[cleanConstraint] {
-            return eraser
+        // 2. Detect `some Type` or `any Type` syntax using SwiftParser
+        let source = "typealias T = \(constraint)"
+        let sourceFile = Parser.parse(source: source)
+        
+        if let typeAlias = sourceFile.statements.first?.item.as(TypeAliasDeclSyntax.self),
+           let someOrAny = typeAlias.initializer.value.as(SomeOrAnyTypeSyntax.self) {
+            
+            let baseType = someOrAny.constraint.description.trimmingCharacters(in: .whitespaces)
+            
+            // Recursively check if the base type has a mapping (e.g. `some View` -> `AnyView`)
+            if let baseEraser = eraser(for: baseType) {
+                return baseEraser
+            }
+            
+            // Default fallback: Add "Any" prefix (e.g. `some CustomProto` -> `AnyCustomProto`)
+            return "Any" + baseType
         }
         
         return nil
